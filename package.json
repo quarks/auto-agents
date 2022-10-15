@@ -1,0 +1,33 @@
+{
+  "name": "auto-agents",
+  "version": "0.0.1",
+  "description": "AutonomousAgents",
+  "main": "index.js",
+  "scripts": {
+    "tsc": "tsc",
+    "typedoc": "npx typedoc",
+    "gcc": "npx google-closure-compiler src_js --js_output_file dist/lib/autoagents.min.js --language_in ECMASCRIPT_2020 --language_out ECMASCRIPT_NEXT "
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/quarks/auto-agents.git"
+  },
+  "keywords": [
+    "autonomous",
+    "agents",
+    "AI"
+  ],
+  "author": "Peter Lager",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/quarks/auto-agents/issues"
+  },
+  "homepage": "https://github.com/quarks/auto-agents#readme",
+  "devDependencies": {
+    "@types/p5": "^1.4.3",
+    "google-closure-compiler": "^20221004.0.0",
+    "p5": "^1.4.2",
+    "typedoc": "^0.23.16",
+    "typescript": "^4.8.4"
+  }
+}
