@@ -1,7 +1,7 @@
 class Mover extends Entity {
     type = MOVER;
     // The domain the entity is constrained to (if any)
-    domain: Domain;
+    _domain: Domain;
     _domainConstraint = WRAP;
 
     // World position after last update
@@ -51,25 +51,8 @@ class Mover extends Entity {
         return fits;
     }
 
-    update(elapsedTime: number): void {
-        this._pos.add(Vector2D.mult(this._vel, elapsedTime));
-        // If a quadtree is provided constrain the balls to the limits
-        // of the root partition 
-        if(this.domain){
-            let root = this.domain;
-            if (this._pos.x - this._bRad < root.lowX) 
-                this._vel.x = Math.abs(this._vel.x);
-            else if (this._pos.x + this._bRad > root.highX) 
-                this._vel.x = -Math.abs(this._vel.x);
-            if (this._pos.y - this._bRad < root.lowY) 
-                this._vel.y = Math.abs(this._vel.y);
-            else if (this._pos.y + this._bRad > root.highY) 
-                this._vel.y = -Math.abs(this._vel.y);
-        }
-    }
-
     constrainTo(area: Domain, method?: number): Mover {
-        this.domain = area ? area.copy() : undefined;
+        this._domain = area ? area.copy() : undefined;
         if (method) this.constrainWith(method)
         return this;
     }
@@ -171,31 +154,229 @@ class Mover extends Entity {
         return this._viewDistance;
     }
 
+    /**
+         * See if the current speed exceeds the maximum speed permitted.
+         * @return true if the speed is greater or equal to the max speed.
+         */
+    isSpeedMaxedOut(): boolean {
+        return this._vel.lengthSq() >= this._maxSpeed * this._maxSpeed;
+    }
 
-    /*
- public  MovingEntity( 
-           String name,
-           Vector2D position,
-           double   radius,
-           Vector2D velocity,
-           double   max_speed,
-           Vector2D heading,
-           double   mass,
-           double   max_turn_rate,
-           double   max_force)
-   {
-       super(name, position, radius);
-       this.heading.set(heading);
-       this.velocity.set(velocity);
-       this.prevPos.set(position);
-       this.mass = mass;
-       this.side = heading.getPerp();
-       this.maxSpeed = max_speed;
-       this.maxTurnRate = max_turn_rate;
-       this.currTurnRate = max_turn_rate;
-       this.prevTurnRate = max_turn_rate;
-       this.maxForce = max_force;
-       visible = true;
-   }
-    */
+    /**
+     * Get the entity's speed. <br>
+     * This is the scalar length of the velocity vector.
+     * @return speed in direction of travel
+     */
+    getSpeed(): number {
+        return this._vel.length();
+    }
+
+    /**
+     * Get the square of the entity's speed.
+     * @return speed in direction of travel squared
+     */
+    getSpeedSq() {
+        return this._vel.lengthSq();
+    }
+
+    /**
+ * After calculating the entity's position it is then constrained by
+ * the domain constraint WRAP or REBOUND
+ */
+    applyDomainConstraint(): void {
+        switch (this._domainConstraint) {
+            case WRAP:
+                if (this._pos.x < this._domain.lowX)
+                    this._pos.x += this._domain.width;
+                else if (this._pos.x > this._domain.highX)
+                    this._pos.x -= this._domain.width;
+                if (this._pos.y < this._domain.lowY)
+                    this._pos.y += this._domain.height;
+                else if (this._pos.y > this._domain.highY)
+                    this._pos.y -= this._domain.height;
+                break;
+            case REBOUND:
+                if (this._pos.x < this._domain.lowX)
+                    this._vel.x = Math.abs(this._vel.x);
+                else if (this._pos.x > this._domain.highX)
+                    this._vel.x = -Math.abs(this._vel.x);
+                if (this._pos.y < this._domain.lowY)
+                    this._vel.y = Math.abs(this._vel.y);
+                else if (this._pos.y > this._domain.highY)
+                    this._vel.y = -Math.abs(this._vel.y);
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * Determines whether two points are either side of this moving entity. If they are 
+     * then they cannot 'see' each other.
+     * 
+     * @param x0 x position of first point of interest
+     * @param y0 y position of first point of interest
+     * @param x1 x position of second point of interest
+     * @param y1 y position of second point of interest
+     * @return true if the points are either side else false
+     */
+    isEitherSide(x0: number, y0: number, x1: number, y1: number): boolean {
+        return Geom2D.line_circle(x0, y0, x1, y1, this._pos.x, this._pos.y, this._bRad);
+    }
+
+    /**
+     * This method determines whether this entity can see a particular location in the world. <br>
+     * It first checks to see if it is within this entity's view distance and field of view (FOV).
+     * If it is then it checks to see if there are any walls or obstacles between them.
+     * 
+     * @param world the world responsible for this entity
+     * @param x0 the x position of the location to test
+     * @param y0 the y position of the location to test
+     * @return true if the entity can see the location
+     */
+    canSee(world: World, x0: number, y0: number): boolean {
+		let toTarget = new Vector2D(x0 - this._pos.x, y0 - this._pos.y);
+		// See if in view range
+		let distToTarget = toTarget.length();
+        if (distToTarget > this._viewDistance)
+            return false;
+        // See if in field of view
+        toTarget.div(distToTarget);	// normalise toTarget
+		let cosAngle = this._heading.dot(toTarget);
+        if (cosAngle < Math.cos(this._viewFOV / 2))
+            return false;
+        // If we get here then the position is within range and field of view, but do we have an obstruction.
+        // First check for an intervening wall 
+        // Set < Wall > walls = world.getWalls(this, x0, y0);
+        // if (walls != null && !walls.isEmpty()) {
+        //     for (Wall wall : walls) {
+        //         if (wall.isEitherSide(pos.x, pos.y, x0, y0))
+        //             return false;
+        //     }
+        // }
+        // // Next check for an intervening obstacle 
+        // Set < Obstacle > obstacles = world.getObstacles(this, x0, y0);
+        // if (obstacles != null && !obstacles.isEmpty()) {
+        //     for (Obstacle obstacle : obstacles) {
+        //         if (obstacle.isEitherSide(pos.x, pos.y, x0, y0))
+        //             return false;
+        //     }
+        // }
+        return true;
+    }
+
+    /**
+     * This method determines whether this entity can see a particular location in the world. <br>
+     * It first checks to see if it is within this entity's view distance and field of view (FOV).
+     * If it is then it checks to see if there are any walls or obstacles between them.
+     * 
+     * @param world the world responsible for this entity
+     * @param pos the location to test
+     * @return true if the entity can see the location
+     */
+    // public boolean canSee(World world, Vector2D pos) {
+    //     if (pos == null)
+    //         return false;
+    //     else
+    //         return canSee(world, pos.x, pos.y);
+    // }
+
+    /**
+     * ----------------------- RotateHeadingToFacePosition ------------------
+     * 
+     * given a target position, this method rotates the entity's heading and
+     * side vectors by an amount not greater than m_dMaxTurnRate until it
+     * directly faces the target.
+     * 
+     * @param deltaTime time
+     * @param faceTarget the world position to face
+     * @return true when the heading is facing in the desired direction
+     */
+    rotateHeadingToFacePosition(deltaTime: number, faceTarget: Vector2D): boolean {
+        // Calculate the normalised vetor to the face target
+        let alignTo = Vector2D.sub(faceTarget, this._pos);
+        alignTo.normalize();
+        return this.rotateHeadingToAlignWith(deltaTime, alignTo);
+    }
+
+    /**
+     * Rotate this entities heading to align with a vector over a given time period
+     * @param deltaTime time (seconds) to turn entity
+     * @param allignTo vector to align entities heading with
+     * @return true if facing alignment vector
+     */
+    rotateHeadingToAlignWith(deltaTime: number, allignTo: Vector2D): boolean {
+        // Calculate the angle between the heading vector and the target
+        let angleBetween = this._heading.angleBetween(allignTo);
+
+        // Return true if the player is virtually facing the target
+        if (Math.abs(angleBetween) < EPSILON) return true;
+
+        // Calculate the amount of turn possible in time allowed
+        let angleToTurn = this._currTurnRate * deltaTime;
+
+        // Prevent over steer by clamping the amount to turn to the angle angle 
+        // between the heading vector and the target
+        if (angleToTurn > angleBetween) angleToTurn = angleBetween;
+
+        // The next few lines use a rotation matrix to rotate the player's heading
+        // vector accordingly
+        let rotMatrix = new Matrix2D();
+
+        // The direction of rotation is needed to create the rotation matrix
+        rotMatrix.rotate(angleToTurn * allignTo.sign(this._heading));
+        // Rotate heading
+        this._heading = rotMatrix.transformVector(this._heading);
+        this._heading.normalize();
+        // Calculate new side
+        this._side = this._heading.getPerp();
+        return false;
+    }
+
+    /**
+     * Determine whether this moving entity is inside or part inside the domain. This method is
+     * used by the world draw method to see if this entity should be drawn.
+     * @param view the world domain
+     * @return true if any part of this entity is inside the domain
+     */
+    isInDomain(view: Domain): boolean {
+        return (this._pos.x >= view.lowX && this._pos.x <= view.highX
+            && this._pos.y >= view.lowY && this._pos.y <= view.highY);
+    }
+
+    /**
+     * Determines whether a point is over this entity's collision circle
+     */
+    isOver(px: number, py: number): boolean {
+        return ((this._pos.x - px) * (this._pos.x - px) + (this._pos.y - py) * (this._pos.y - py))
+            <= (this._bRad * this._bRad);
+    }
+
+    /**
+     * Update method for any moving entity in the world that is not under
+     * the influence of a steering behaviour.
+     * @param deltaTime elapsed time since last update
+     * @param world the game world object
+     */
+    update(deltaTime: number, world: World) {
+        // Remember the starting position
+        this._prevPos.set(this._pos);
+        // Update position
+        this._pos = new Vector2D(this._pos.x + this._vel.x * deltaTime, this._pos.y + this._vel.y * deltaTime);
+        // Apply domain constraints
+        if (this._domain)
+            this.applyDomainConstraint();
+        // Update heading
+        if (this._vel.lengthSq() > 0.01)
+            this.rotateHeadingToAlignWith(deltaTime, this._vel);
+        else {
+            this._vel.set(0, 0);
+            if (this._headingAtRest)
+                this.rotateHeadingToAlignWith(deltaTime, this._headingAtRest);
+        }
+        // Ensure heading and side are normalised
+        this._heading.normalize();
+        this._side = this._heading.getPerp();
+    }
+
 }

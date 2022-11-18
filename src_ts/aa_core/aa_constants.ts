@@ -1,12 +1,13 @@
 const ENTITY = Symbol.for('Entity');
 const ARTEFACT = Symbol.for('Artefact');
-const MOVER = Symbol.for('Entity');
-const VEHICLE = Symbol.for('Entity');
-const OBSTACLE = Symbol.for('Entity');
-const WALL = Symbol.for('Entity');
-const BUILDING = Symbol.for('Entity');
+const MOVER = Symbol.for('Mover');
+const VEHICLE = Symbol.for('Vehicle');
+const OBSTACLE = Symbol.for('Obstacle');
+const WALL = Symbol.for('Wall');
+const BUILDING = Symbol.for('Building');
 
-// AA Behaviours
+// Bit positions for flags for internal library use.
+// These are used to index the force
 const BIT_WALL_AVOID        = 0;
 const BIT_OBSTACLE_AVOID    = 1;
 const BIT_EVADE             = 2;
@@ -64,3 +65,4 @@ const PASS_THROUGH          = 10000;
 const WRAP                  = 10001;
 const REBOUND               = 10002;
 
+const EPSILON               = 1E-10;

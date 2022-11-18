@@ -34,7 +34,7 @@ abstract class Entity {
 
     abstract fits_inside(lowX: number, lowY: number, highX: number, highY: number): boolean;
 
-    abstract update(elapsedTime: number): void;
+    abstract update(elapsedTime: number, world :World): void;
 
 }
 

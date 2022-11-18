@@ -3,7 +3,7 @@
 */
 class Vector2D {
 
-    // /** Null vector (coordinates: 0, 0). */
+    /** Null vector (coordinates: 0, 0). */
     static ZERO = new Vector2D(0, 0);
 
     /** Null vector (coordinates: 1, 1). */
