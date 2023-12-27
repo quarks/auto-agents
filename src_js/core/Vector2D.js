@@ -1,51 +1,121 @@
+const VECTOR2D = '2 # 23 Dec 2023';
 /**
-* Simple 2D vector class.
+* Simple 2D vector class
+*
+* Although it is possible to change the x and y properties with the set
+* methods it is not recommended as changes the actual vector.
+*
+* All methods return a new vector representing the result of the
+* operation. For instance the statement
+*
+* <pre> v0.add(v1);  </pre>
+*
+* will return a the sum of the 2 vectors v0 and v1 as a new vector and
+* will leave v0 unchanged.
+*
+* To change the vector v0 then you must assign the resukt back to v0
+* like this
+*
+* <pre> v0 = v0.add(v1);  </pre>
+*
+* Last updated: 18 Nov 2023
+*
+* @author Peter Lager
 */
 class Vector2D {
     /**
-     * Default to the zero vector
+     * If no values are passed then a zero vector will be created.
+     *
+     * @param x x value
+     * @param y y value
      */
     constructor(x = 0, y = 0) {
-        this.x = 0;
-        this.y = 0;
-        this.x = x;
-        this.y = y;
+        this._p = new Float64Array(2);
+        this._p[0] = x;
+        this._p[1] = y;
+    }
+    /** X coordinate value */
+    get x() { return this._p[0]; }
+    set x(value) { if (Number.isFinite(value))
+        this._p[0] = value; }
+    /** Y coordinate value */
+    get y() { return this._p[1]; }
+    set y(value) { if (Number.isFinite(value))
+        this._p[1] = value; }
+    /** Angle in 2D plane */
+    get angle() { return Math.atan2(this._p[1], this._p[0]); }
+    set angle(n) { this._p[0] = Math.cos(n); this._p[1] = Math.sin(n); }
+    /**
+     * Add a displacement (either vector object or 2 scalars )
+     * to this vector to create a new vector.
+     *
+     * @param x a number or a Vector
+     * @param y a number
+     * @return the sum as a new vector
+     */
+    add(x, y) {
+        let nv = this.copy();
+        if (typeof x === 'object') {
+            nv._p[0] += x._p[0];
+            nv._p[1] += x._p[1];
+        }
+        else if (Number.isFinite(x) && Number.isFinite(y)) {
+            nv._p[0] += x;
+            nv._p[1] += y;
+        }
+        return nv;
+    }
+    /**
+     * Calculate the angle between this and another vector.
+     * @param v the other vector
+     * @return the angle between in radians
+     */
+    angleBetween(v) {
+        let denom = Math.sqrt(this._p[0] * this._p[0] + this._p[1] * this._p[1]) *
+            Math.sqrt(v._p[0] * v._p[0] + v._p[1] * v._p[1]);
+        if (Number.isFinite(denom)) {
+            let a = Math.acos((this._p[0] * v._p[0] + this._p[1] * v._p[1]) / denom);
+            return Number.isFinite(a) ? a : 0;
+        }
+        return 0;
     }
     /**
      * Creates a new vector object that duplicates this one
      * @returns a copy of this vector
      */
     copy() {
-        return new Vector2D(this.x, this.y);
+        return new Vector2D(this._p[0], this._p[1]);
     }
     /**
-     *
-     * @param x x value or vector
-     * @param y y value
-     * @returns
+     * Get the distance between this and an other point.
+     * @param v the other point
+     * @return distance to other point
      */
-    set(x, y) {
-        if (typeof x === "object") {
-            this.x = x.x;
-            this.y = x.y;
-        }
-        else if (Number.isFinite(x) && Number.isFinite(y)) {
-            this.x = x;
-            this.y = y;
-        }
-        return this;
+    dist(v) {
+        let dx = v._p[0] - this._p[0];
+        let dy = v._p[1] - this._p[1];
+        return Math.sqrt(dx * dx + dy * dy);
     }
     /**
-     * Get the vector length squared
+     * Get the distance squared between this and another
+     * point.
+     * @param v the other point
+     * @return distance to other point squared
      */
-    lengthSq() {
-        return this.x * this.x + this.y * this.y;
+    distSq(v) {
+        let dx = v._p[0] - this._p[0];
+        let dy = v._p[1] - this._p[1];
+        return dx * dx + dy * dy;
     }
     /**
-     * Get the vector length
+     * Divide the vector by a scalar to create a new vector.
+     * @param s scalar value to divide by
+     * @return the quotient as a new number
      */
-    length() {
-        return Math.sqrt(this.x * this.x + this.y * this.y);
+    div(s) {
+        if (s == 0)
+            throw new Error('Cannot divide vector by zero)');
+        return new Vector2D(this._p[0] / s, this._p[1] / s);
     }
     /**
      * Calculate the dot product between two un-normalised vectors.
@@ -53,7 +123,7 @@ class Vector2D {
      * @return the dot product
      */
     dot(v) {
-        return (this.x * v.x + this.y * v.y);
+        return (this._p[0] * v._p[0] + this._p[1] * v._p[1]);
     }
     /**
      * Calculate the dot product between two vectors using normalised values
@@ -62,187 +132,9 @@ class Vector2D {
      * @return the cosine of angle between them
      */
     dotNorm(v) {
-        let denom = Math.sqrt(this.x * this.x + this.y * this.y) * Math.sqrt(v.x * v.x + v.y * v.y);
-        return (this.x * v.x + this.y * v.y) / denom;
-    }
-    /**
-     * Calculate the angle between this and another vector.
-     * @param v the other vector
-     * @return the angle between in radians
-     */
-    angleBetween(v) {
-        let denom = Math.sqrt(this.x * this.x + this.y * this.y) * Math.sqrt(v.x * v.x + v.y * v.y);
-        if (Number.isFinite(denom)) {
-            let a = Math.acos((this.x * v.x + this.y * v.y) / denom);
-            return Number.isFinite(a) ? a : 0;
-        }
-        return 0;
-    }
-    /**
-     * Determines whether vector v is clockwise of this vector. <br>
-     * @param v a vector
-     * @return positive (+1) if clockwise else negative (-1)
-     */
-    sign(v) {
-        if (this.y * v.x > this.x * v.y)
-            return Vector2D.CLOCKWISE;
-        else
-            return Vector2D.ANTI_CLOCKWISE;
-    }
-    /**
-     * Get a copy (new object) of this vector.
-     * @return a perpendicular vector
-     */
-    get() {
-        return new Vector2D(this.x, this.y);
-    }
-    /**
-     * Get a vector perpendicular to this one.
-     * @return a perpendicular vector
-     */
-    getPerp() {
-        return new Vector2D(-this.y, this.x);
-    }
-    /**
-     * Get the distance squared between this and another
-     * point.
-     * @param v the other point
-     * @return distance to other point squared
-     */
-    distanceSq(v) {
-        let dx = v.x - this.x;
-        let dy = v.y - this.y;
-        return dx * dx + dy * dy;
-    }
-    /**
-     * Get the distance between this and an other point.
-     * @param v the other point
-     * @return distance to other point
-     */
-    distance(v) {
-        let dx = v.x - this.x;
-        let dy = v.y - this.y;
-        return Math.sqrt(dx * dx + dy * dy);
-    }
-    /**
-     * Normalise this vector
-     */
-    normalize() {
-        let mag = Math.sqrt(this.x * this.x + this.y * this.y);
-        if (Number.isFinite(mag)) {
-            this.x /= mag;
-            this.y /= mag;
-        }
-        else {
-            this.x = this.y = 0;
-        }
-        return this;
-    }
-    /**
-     * Truncate this vector so its length is no greater than
-     * the value provided.
-     * @param max maximum size for this vector
-     */
-    truncate(max) {
-        let mag = Math.sqrt(this.x * this.x + this.y * this.y);
-        if (Number.isFinite(mag) && mag > max) {
-            let f = max / mag;
-            this.x *= f;
-            this.y *= f;
-        }
-        return this;
-    }
-    /**
-     * Get a vector that is the reverse of this vector
-     * @return the reverse vector
-     */
-    getReverse() {
-        return new Vector2D(-this.x, -this.y);
-    }
-    /**
-     * Return the reflection vector about the norm
-     * @param norm
-     * @return the reflected vector
-     */
-    getReflect(norm) {
-        let dot = this.dot(norm);
-        let nx = this.x + (-2 * dot * norm.x);
-        let ny = this.y + (-2 * dot * norm.y);
-        return new Vector2D(nx, ny);
-    }
-    /**
-     * Add a displacement (either vector object or 2 scalars )
-     * to this vector.
-     *
-     * @param x a number or a Vector
-     * @param y a number
-     */
-    add(x, y) {
-        if (typeof x === 'object') {
-            this.x += x.x;
-            this.y += x.y;
-        }
-        else if (Number.isFinite(x) && Number.isFinite(y)) {
-            this.x += x;
-            this.y += y;
-        }
-        return this;
-    }
-    /**
-     * Subtract a displacement (either vector object or 2 scalars )
-     * to this vector.
-     *
-     * @param x a number or a Vector
-     * @param y a number
-     */
-    sub(x, y) {
-        if (typeof x === 'object') {
-            this.x -= x.x;
-            this.y -= x.y;
-        }
-        else if (Number.isFinite(x) && Number.isFinite(y)) {
-            this.x -= x;
-            this.y -= y;
-        }
-        return this;
-    }
-    /**
-     * Multiply the vector by a scalar
-     * @param s scalar value to multiply by
-     */
-    mult(s) {
-        this.x *= s;
-        this.y *= s;
-        return this;
-    }
-    /**
-     * Divide the vector by a scalar
-     * @param s scalar value to divide by
-     * @return this vector
-     */
-    div(s) {
-        this.x /= s;
-        this.y /= s;
-        return this;
-    }
-    /**
-        * Randomize this vector. Its magnitude is governed by the parameter
-        * values. If no parameters are passed then it will be of unit length.
-        *
-        * @param m0 minimum magnitude
-        * @param m1 maximum magnitude
-        * @returns this vector
-        */
-    random(m0, m1) {
-        let angle = Math.random() * 2 * Math.PI;
-        this.x = Math.cos(angle);
-        this.y = Math.sin(angle);
-        if (Number.isFinite(m0) && Number.isFinite(m1)) {
-            let mag = Math.random() * (m1 - m0) + m0;
-            this.x *= mag;
-            this.y *= mag;
-        }
-        return this;
+        let denom = Math.sqrt(this._p[0] * this._p[0] + this._p[1] * this._p[1]) *
+            Math.sqrt(v._p[0] * v._p[0] + v._p[1] * v._p[1]);
+        return (this._p[0] * v._p[0] + this._p[1] * v._p[1]) / denom;
     }
     /**
      * This vector is considered equal to v if  their x and y positions are
@@ -252,71 +144,167 @@ class Vector2D {
      * @returns true if this vector 'equals' v
      */
     equals(v) {
-        return (Math.abs(this.x - v.x) < Vector2D.EPSILON
-            && Math.abs(this.y - v.y) < Vector2D.EPSILON);
+        return (Math.abs(this._p[0] - v._p[0]) <= Vector2D.EPSILON
+            && Math.abs(this._p[1] - v._p[1]) <= Vector2D.EPSILON);
+    }
+    /**
+     * Get a vector perpendicular to this one.
+     * @return a perpendicular vector
+     */
+    getPerp() {
+        return new Vector2D(-this._p[1], this._p[0]);
+    }
+    /**
+     * Return the reflection of this vector about the norm
+     * @param norm
+     * @return the reflected vector
+     */
+    getReflect(norm, normalize = false) {
+        if (normalize)
+            norm = norm.normalize();
+        let dot = this.dot(norm);
+        let nx = this._p[0] + (-2 * dot * norm._p[0]);
+        let ny = this._p[1] + (-2 * dot * norm._p[1]);
+        return new Vector2D(nx, ny);
+    }
+    /**
+     * Get a vector that is the reverse of this vector
+     * @return the reverse vector
+     */
+    getReverse() {
+        return new Vector2D(-this._p[0], -this._p[1]);
+    }
+    /**
+     * Get the vector length
+     */
+    length() {
+        return Math.sqrt(this._p[0] * this._p[0] + this._p[1] * this._p[1]);
+    }
+    /**
+     * Get the vector length squared
+     */
+    lengthSq() {
+        return this._p[0] * this._p[0] + this._p[1] * this._p[1];
+    }
+    /**
+     * Multiply the vector by a scalar to create a new vector.
+     * @param s scalar value to multiply by
+     * @return the product as a new number
+     */
+    mult(s) {
+        let nv = this.copy();
+        nv._p[0] *= s;
+        nv._p[1] *= s;
+        return nv;
+    }
+    /**
+     * Multiplies this vetor by -1 effectively reversing
+     * the vector direction.
+     *
+     * @return the negated version as a new vector
+     */
+    negate() {
+        return new Vector2D(-this._p[0], -this._p[1]);
+    }
+    /**
+     * Normalise this vector
+     */
+    normalize() {
+        let nv = this.copy();
+        let mag = Math.sqrt(nv._p[0] * nv._p[0] + nv._p[1] * nv._p[1]);
+        if (!Number.isFinite(mag) || mag == 0)
+            throw new Error('Cannot normalise a vector of zero or infinite length');
+        nv._p[0] /= mag;
+        nv._p[1] /= mag;
+        return nv;
+    }
+    /**
+     * Invalid parameters will leave the vector unchanged.
+     * @param x x value or a Vector2D
+     * @param y y value
+     * @returns this vector
+     */
+    // set(x: number | Vector2D, y?: number): Vector2D {
+    //     if (typeof x === "object") {
+    //         this.p[0] = x.p[0]; this.p[1] = x.p[1];
+    //     }
+    //     else if (Number.isFinite(x) && Number.isFinite(y)) {
+    //         this.p[0] = x; this.p[1] = y;
+    //     }
+    //     return this;
+    // }
+    /**
+     *
+     * @param position change the coordinates to match position
+     * @returns
+     */
+    set(position) {
+        if (position instanceof Array) {
+            this._p[0] = position[0];
+            this._p[1] = position[1];
+        }
+        else {
+            this._p[0] = position.x;
+            this._p[1] = position.y;
+        }
+        return this;
+    }
+    /**
+     * Determines whether vector v is clockwise of this vector. <br>
+     * @param v a vector
+     * @return positive (+1) if clockwise else negative (-1)
+     */
+    sign(v) {
+        if (this._p[1] * v._p[0] > this._p[0] * v._p[1])
+            return Vector2D.CLOCKWISE;
+        else
+            return Vector2D.ANTI_CLOCKWISE;
+    }
+    /**
+     * Subtract a displacement (either vector object or 2 scalars )
+     * to this vector  to create a new vector.
+     *
+     * @param x a number or a Vector
+     * @param y a number
+     * @return the difference as a new vector
+     */
+    sub(x, y) {
+        let nv = this.copy();
+        if (typeof x === 'object') {
+            nv._p[0] -= x._p[0];
+            nv._p[1] -= x._p[1];
+        }
+        else if (Number.isFinite(x) && Number.isFinite(y)) {
+            nv._p[0] -= x;
+            nv._p[1] -= y;
+        }
+        return nv;
+    }
+    /**
+     * Truncate this vector so its length is no greater than
+     * the value provided and return as a new vector.
+     * @param max maximum size for the new vector
+     * @return the new truncated vector
+     */
+    truncate(max) {
+        let nv = this.copy();
+        let mag = nv.length();
+        if (Number.isFinite(mag) && mag > max)
+            nv = nv.mult(max / mag);
+        return nv;
+    }
+    /**
+     * Get the x,y coordinates as an array.
+     */
+    toArray() {
+        return [this._p[0], this._p[1]];
     }
     /**       +++++++++++++ CLASS METHODS +++++++++++++++        */
-    /** Create a copy of a vector */
-    static copy(v) {
-        return new Vector2D(v.x, v.y);
-    }
     /**
      * @returns true if these vectors have the same coordinates
      */
     static areEqual(v0, v1) {
-        return (Math.abs(v1.x - v0.x) < Vector2D.EPSILON && Math.abs(v1.y - v0.y) < Vector2D.EPSILON);
-    }
-    /** returns the dot product of two vector */
-    static dot(v0, v1) {
-        return (v0.x * v1.x + v0.y * v1.y);
-    }
-    /**
-     * Get a new vector that is the sum of 2 vectors.
-     * @param v0 first vector
-     * @param v1 second vector
-     * @return the sum of the 2 vectors
-     */
-    static add(v0, v1) {
-        return new Vector2D(v0.x + v1.x, v0.y + v1.y);
-    }
-    /**
-     * Get a new vector that is the difference between the
-     * 2 vectors.
-     * @param v0 first vector
-     * @param v1 second vector
-     * @return the difference between the 2 vectors
-     */
-    static sub(v0, v1) {
-        return new Vector2D(v0.x - v1.x, v0.y - v1.y);
-    }
-    /**
-     * Get a new vector that is the product of a vector and a scalar
-     * @param v the original vector
-     * @param s the multiplier
-     * @return the calculated vector
-     */
-    static mult(v, s) {
-        return new Vector2D(v.x * s, v.y * s);
-    }
-    /**
-     * Get a new vector that is a vector divided by a scalar
-     * @param v the original vector
-     * @param d the divisor
-     * @return the calculated vector
-     */
-    static div(v, s) {
-        return new Vector2D(v.x / s, v.y / s);
-    }
-    /**
-     * The square of the distance between two vectors
-     * @param v0 the first vector
-     * @param v1 the second vector
-     * @return square of the distance between them
-     */
-    static distSq(v0, v1) {
-        let dx = v1.x - v0.x;
-        let dy = v1.y - v0.y;
-        return dx * dx + dy * dy;
+        return (Math.abs(v1._p[0] - v0._p[0]) <= Vector2D.EPSILON && Math.abs(v1._p[1] - v0._p[1]) <= Vector2D.EPSILON);
     }
     /**
      * The distance between two vectors
@@ -325,21 +313,20 @@ class Vector2D {
      * @return the distance between them
      */
     static dist(v0, v1) {
-        let dx = v1.x - v0.x;
-        let dy = v1.y - v0.y;
+        let dx = v1._p[0] - v0._p[0];
+        let dy = v1._p[1] - v0._p[1];
         return Math.sqrt(dx * dx + dy * dy);
     }
     /**
-     * Get a new vector that is the given vector normalised
-     * @param v the original vector
-     * @return the normalised vector
+     * The square of the distance between two vectors
+     * @param v0 the first vector
+     * @param v1 the second vector
+     * @return square of the distance between them
      */
-    static normalize(v) {
-        let mag = v.length();
-        if (Number.isFinite(mag))
-            return new Vector2D(v.x / mag, v.y / mag);
-        else
-            return new Vector2D(0, 0);
+    static distSq(v0, v1) {
+        let dx = v1._p[0] - v0._p[0];
+        let dy = v1._p[1] - v0._p[1];
+        return dx * dx + dy * dy;
     }
     /**
      * Calculate the angle between two vectors.
@@ -348,54 +335,63 @@ class Vector2D {
      * @return the angle between in radians
      */
     static angleBetween(v0, v1) {
-        let denom = Math.sqrt(v0.x * v0.x + v0.y * v0.y) * Math.sqrt(v1.x * v1.x + v1.y * v1.y);
+        let denom = Math.sqrt(v0._p[0] * v0._p[0] + v0._p[1] * v0._p[1]) * Math.sqrt(v1._p[0] * v1._p[0] + v1._p[1] * v1._p[1]);
         if (Number.isFinite(denom)) {
-            let a = Math.acos((v0.x * v1.x + v0.y * v1.y) / denom);
+            let a = Math.acos((v0._p[0] * v1._p[0] + v0._p[1] * v1._p[1]) / denom);
             return Number.isFinite(a) ? a : 0;
         }
         return 0;
     }
     /**
      * Determines whether entity 2 is visible from entity 1.
-     * @param posFirst position of first entity
-     * @param facingFirst direction first entity is facing
-     * @param fovFirst field of view (radians) of first entity
-     * @param posSecond position of second entity
+     * @param pos1 position of first entity
+     * @param facing1 direction first entity is facing
+     * @param fov1 field of view (radians) of first entity
+     * @param pos2 position of second entity
      * @return true if second entity is inside 'visible' to the first entity
      */
-    static isSecondInFOVofFirst(posFirst, facingFirst, fovFirst, posSecond) {
-        let toTarget = Vector2D.sub(posSecond, posFirst);
-        let dd = toTarget.length() * facingFirst.length();
-        let angle = facingFirst.dot(toTarget) / dd;
-        return angle >= Math.cos(fovFirst / 2);
+    static isSecondInFOVofFirst(pos1, facing1, fov1, pos2) {
+        let toTarget = pos2.sub(pos1); // Vector2D.sub(pos2, pos1);
+        let dd = toTarget.length() * facing1.length();
+        let angle = facing1.dot(toTarget) / dd;
+        return angle >= Math.cos(fov1 / 2);
     }
     /**
      * Create a random vector whose magnitude is in the range provided.
-    * @param m0 minimum magnitude
-    * @param m1 maximum magnitude
-    * @return the randomised vector
+     * @param m0 minimum length
+     * @param m1 maximum length
+     * @return the randomised vector
      */
-    static random(m0, m1) {
-        let angle = Math.random() * 2 * Math.PI;
-        let target = new Vector2D(Math.cos(angle), Math.sin(angle));
-        if (Number.isFinite(m0) && Number.isFinite(m1))
-            target.mult(Math.random() * (m1 - m0) + m0);
-        return target;
+    static fromRandom(m0 = 1, m1 = 1) {
+        let v = new Vector2D(Math.random(), Math.random());
+        return v.normalize().mult(Math.random() * (m1 - m0) + m0);
     }
     /**
-     * Get the x,y coordinates as an array.
+     *
+     * @param position
+     * @param colRadius
+     * @returns
      */
-    toArray() {
-        return [this.x, this.y];
+    static from(position, colRadius = 0) {
+        if (position instanceof Array)
+            return new Vector2D(position[0], position[1]);
+        else
+            return new Vector2D(position.x, position.y);
     }
-    toShortString() {
-        return "[" + Math.round(this.x) + ", " + Math.round(this.y) + "] ";
+    print(precision = 16) {
+        console.log(this.$(precision));
+        return this;
+    }
+    $(precision = 16) {
+        let xv = this.x.toPrecision(precision);
+        let yv = this.y.toPrecision(precision);
+        return `[${xv}, ${yv}]`;
     }
     toString() {
-        return "[" + this.x + ", " + this.y + "] ";
+        return this.$();
     }
 }
-// /** Null vector (coordinates: 0, 0). */
+/** Null vector (coordinates: 0, 0). */
 Vector2D.ZERO = new Vector2D(0, 0);
 /** Null vector (coordinates: 1, 1). */
 Vector2D.ONE = new Vector2D(1, 1);
@@ -411,7 +407,7 @@ Vector2D.MINUS_J = new Vector2D(0, -1);
 Vector2D.POSITIVE_INFINITY = new Vector2D(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
 /** A vector with all coordinates set to negative infinity. */
 Vector2D.NEGATIVE_INFINITY = new Vector2D(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY);
-Vector2D.EPSILON = 1e-10;
+Vector2D.EPSILON = 1E-10;
 Vector2D.CLOCKWISE = 1;
 Vector2D.ANTI_CLOCKWISE = -1;
-//# sourceMappingURL=Vector2D.js.map
+//# sourceMappingURL=vector2d.js.map

@@ -6,4 +6,4 @@ class Building extends Entity {
         throw new Error("Method not implemented.");
     }
 }
-//# sourceMappingURL=Building.js.map
+//# sourceMappingURL=building.js.map

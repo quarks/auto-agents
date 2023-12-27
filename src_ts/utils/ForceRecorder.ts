@@ -1,6 +1,5 @@
 class ForceRecorder {
 
-
     forceNames: Array<string> = [
         " Wall avoid.    ",
         " Obstacle avoid ",

@@ -80,11 +80,11 @@ class Geom2D {
      */
     static po_nearest_line(v0, v1, p) {
         let vp = undefined;
-        let the_line = Vector2D.sub(v1, v0);
+        let the_line = v1.sub(v0); // Vector2D.sub(v1, v0);
         let lineMag = the_line.length();
         lineMag = lineMag * lineMag;
         if (lineMag > 0.0) {
-            let pv0_line = Vector2D.sub(p, v0);
+            let pv0_line = p.sub(v0); //Vector2D.sub(p, v0);
             let t = pv0_line.dot(the_line) / lineMag;
             if (t >= 0 && t <= 1) {
                 vp = new Vector2D();
@@ -103,12 +103,12 @@ class Geom2D {
      */
     static po_nearest_infinite_line(v0, v1, p) {
         let vp = undefined;
-        let the_line = Vector2D.sub(v1, v0);
+        let the_line = v1.sub(v0); // Vector2D.sub(v1, v0);
         let lineMag = the_line.length();
         lineMag = lineMag * lineMag;
         if (lineMag > 0.0) {
             vp = new Vector2D();
-            let pv0_line = Vector2D.sub(p, v0);
+            let pv0_line = p.sub(v0); // Vector2D.sub(p, v0);
             let t = pv0_line.dot(the_line) / lineMag;
             vp.x = the_line.x * t + v0.x;
             vp.y = the_line.y * t + v0.y;
@@ -695,7 +695,7 @@ class Geom2D {
      * @param by0 top-left corner of rectangle B
      * @param bx1 bottom-right corner of rectangle B
      * @param by1 bottom-right corner of rectangle B
-     * @return true if the boxes ersect
+     * @return true if the boxes intersect
      */
     static box_box(ax0, ay0, ax1, ay1, bx0, by0, bx1, by1) {
         let topA = Math.min(ay0, ay1);
@@ -965,4 +965,4 @@ Geom2D.OUT_TOP = 2;
 Geom2D.OUT_RIGHT = 4;
 Geom2D.OUT_BOTTOM = 8;
 Geom2D.NEARNESS = 1.0;
-//# sourceMappingURL=Geom2D.js.map
+//# sourceMappingURL=geom2d.js.map

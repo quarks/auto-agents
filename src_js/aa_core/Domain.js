@@ -7,33 +7,41 @@ class Domain {
      * @param highY
      */
     constructor(lowX, lowY, highX, highY) {
-        this.lowX = lowX;
-        this.lowY = lowY;
-        this.highX = highX;
-        this.highY = highY;
-        this.centre = new Vector2D((lowX + highX) / 2, (lowY + highY) / 2);
-        this.width = highX - lowX;
-        this.height = highY - lowY;
+        this._lowX = lowX;
+        this._lowY = lowY;
+        this._highX = highX;
+        this._highY = highY;
+        this._center = new Vector2D((lowX + highX) / 2, (lowY + highY) / 2);
+        this._width = highX - lowX;
+        this._height = highY - lowY;
     }
+    // Domain attribute getters
+    get lowX() { return this._lowX; }
+    get highX() { return this._highX; }
+    get lowY() { return this._lowY; }
+    get highY() { return this._highY; }
+    get center() { return this._center; }
+    get width() { return this._width; }
+    get height() { return this._height; }
     /**
      * Create a Domain that is a copy of another one.
      * @param d domain to be copied
      */
     set_d(d) {
-        this.lowX = d.lowX;
-        this.lowY = d.lowY;
-        this.highX = d.highX;
-        this.highY = d.highY;
-        this.width = this.highX - this.lowX;
-        this.height = this.highY - this.lowY;
-        this.centre = d.centre.copy();
+        this._lowX = d._lowX;
+        this._lowY = d._lowY;
+        this._highX = d._highX;
+        this._highY = d._highY;
+        this._width = this._highX - this._lowX;
+        this._height = this._highY - this._lowY;
+        this._center = d._center.copy();
     }
     /**
      *
      * @returns a copy of this domain object
      */
     copy() {
-        return new Domain(this.lowX, this.lowY, this.highX, this.highY);
+        return new Domain(this._lowX, this._lowY, this._highX, this._highY);
     }
     /**
      * Set the domain size.
@@ -44,13 +52,13 @@ class Domain {
      * @param height domain height
      */
     set_xywh(lowX, lowY, width, height) {
-        this.lowX = lowX;
-        this.lowY = lowY;
-        this.width = width;
-        this.height = height;
-        this.highX = lowX + width;
-        this.highY = lowY + height;
-        this.centre.set((lowX + this.highX) / 2, (lowY + this.highY) / 2);
+        this._lowX = lowX;
+        this._lowY = lowY;
+        this._width = width;
+        this._height = height;
+        this._highX = lowX + width;
+        this._highY = lowY + height;
+        this._center.set([(lowX + this._highX) / 2, (lowY + this._highY) / 2]);
     }
     /**
      * Centre the domain about the given world position.
@@ -58,29 +66,29 @@ class Domain {
      * @param wy world y position
      */
     move_centre_xy_to(wx, wy) {
-        this.centre.set(wx, wy);
-        this.lowX = this.centre.x - this.width / 2;
-        this.lowY = this.centre.y - this.height / 2;
-        this.highX = this.lowX + this.width;
-        this.highY = this.lowY + this.height;
+        this._center.set([wx, wy]);
+        this._lowX = this._center.x - this._width / 2;
+        this._lowY = this._center.y - this._height / 2;
+        this._highX = this._lowX + this._width;
+        this._highY = this._lowY + this._height;
     }
     /**
      * Centre the domain about the given horizontal position.
      * @param wx world x position
      */
     move_centre_x_to(wx) {
-        this.centre.x = wx;
-        this.lowX = this.centre.x - this.width / 2;
-        this.highX = this.lowX + this.width;
+        this._center.x = wx;
+        this._lowX = this._center.x - this._width / 2;
+        this._highX = this._lowX + this._width;
     }
     /**
      * Centre the domain about the given vertical position.
      * @param wy world y position
      */
     move_centre_y_to(wy) {
-        this.centre.y = wy;
-        this.lowY = this.centre.y - this.height / 2;
-        this.highY = this.lowY + this.height;
+        this._center.y = wy;
+        this._lowY = this._center.y - this._height / 2;
+        this._highY = this._lowY + this._height;
     }
     /**
      * Centre the domain about the given position.
@@ -88,30 +96,30 @@ class Domain {
      * @param wy world y centre position
      */
     move_centre_xy_by(wx, wy) {
-        this.centre.x -= wx;
-        this.centre.y -= wy;
-        this.lowX -= wx;
-        this.lowY -= wy;
-        this.highX = this.lowX + this.width;
-        this.highY = this.lowY + this.height;
+        this._center.x -= wx;
+        this._center.y -= wy;
+        this._lowX -= wx;
+        this._lowY -= wy;
+        this._highX = this._lowX + this._width;
+        this._highY = this._lowY + this._height;
     }
     /**
      * Move the domain centre horizontally by the world distance given.
      * @param wx world x centre position
      */
     move_centre_x_by(wx) {
-        this.centre.x -= wx;
-        this.lowX -= wx;
-        this.highX = this.lowX + this.width;
+        this._center.x -= wx;
+        this._lowX -= wx;
+        this._highX = this._lowX + this._width;
     }
     /**
      * Move the domain centre vertically by the world distance given.
      * @param wy world y centre position
      */
     move_centre_y_by(wy) {
-        this.centre.y -= wy;
-        this.lowY -= wy;
-        this.highY = this.lowY + this.height;
+        this._center.y -= wy;
+        this._lowY -= wy;
+        this._highY = this._lowY + this._height;
     }
     /**
      * See if this point is within the domain
@@ -124,7 +132,7 @@ class Domain {
             y = x.y;
             x = x.x;
         }
-        return (x >= this.lowX && x <= this.highX && y >= this.lowY && y <= this.highY);
+        return (x >= this._lowX && x <= this._highX && y >= this._lowY && y <= this._highY);
     }
     /**
      * See if this point is within a box scaled by the second parameter. <br>
@@ -145,7 +153,7 @@ class Domain {
      * Return the Domain as a String
      */
     toString() {
-        return `Domain from ${this.lowX}, ${this.lowY} to ${this.highX}, ${this.highY}  Size ${this.width}, ${this.height}`;
+        return `Domain from ${this._lowX}, ${this._lowY} to ${this._highX}, ${this._highY}  Size ${this._width}, ${this._height}`;
     }
 }
-//# sourceMappingURL=Domain.js.map
+//# sourceMappingURL=domain.js.map

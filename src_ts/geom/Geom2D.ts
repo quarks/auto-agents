@@ -97,11 +97,11 @@ class Geom2D {
 	 */
 	static po_nearest_line(v0: Vector2D, v1: Vector2D, p: Vector2D): Vector2D {
 		let vp = undefined;
-		let the_line = Vector2D.sub(v1, v0);
+		let the_line = v1.sub(v0);  // Vector2D.sub(v1, v0);
 		let lineMag = the_line.length();
 		lineMag = lineMag * lineMag;
 		if (lineMag > 0.0) {
-			let pv0_line = Vector2D.sub(p, v0);
+			let pv0_line = p.sub(v0);  //Vector2D.sub(p, v0);
 			let t = pv0_line.dot(the_line) / lineMag;
 			if (t >= 0 && t <= 1) {
 				vp = new Vector2D();
@@ -121,12 +121,12 @@ class Geom2D {
 	 */
 	static po_nearest_infinite_line(v0: Vector2D, v1: Vector2D, p: Vector2D): Vector2D {
 		let vp = undefined;
-		let the_line = Vector2D.sub(v1, v0);
+		let the_line = v1.sub(v0);  // Vector2D.sub(v1, v0);
 		let lineMag = the_line.length();
 		lineMag = lineMag * lineMag;
 		if (lineMag > 0.0) {
 			vp = new Vector2D();
-			let pv0_line = Vector2D.sub(p, v0);
+			let pv0_line = p.sub(v0);  // Vector2D.sub(p, v0);
 			let t = pv0_line.dot(the_line) / lineMag;
 			vp.x = the_line.x * t + v0.x;
 			vp.y = the_line.y * t + v0.y;
@@ -748,7 +748,7 @@ class Geom2D {
 	 * @param by0 top-left corner of rectangle B
 	 * @param bx1 bottom-right corner of rectangle B
 	 * @param by1 bottom-right corner of rectangle B
-	 * @return true if the boxes ersect
+	 * @return true if the boxes intersect
 	 */
 	static box_box(ax0: number, ay0: number, ax1: number, ay1: number, bx0: number, by0: number, bx1, by1: number): boolean {
 		let topA = Math.min(ay0, ay1);
@@ -969,7 +969,7 @@ class Geom2D {
 
 		for (let v = nv - 1; nv > 2;) {
 			/* if we loop, it is probably a non-simple polygon */
-			if (0 >= (count--)) 
+			if (0 >= (count--))
 				return []; // Triangulation: ERROR - probable bad polygon!
 
 			/* three consecutive vertices in current polygon, <u,v,w> */

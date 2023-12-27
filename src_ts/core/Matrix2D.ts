@@ -1,3 +1,8 @@
+const MATRIX2D = '1 # 06 Nov 2022';
+
+// Some problems with translation yet to iron out
+// should this class be immutable
+
 /**
 * Class to represent a 2D matrix that can be used to create transformed Vector2D
 * objects.
@@ -9,6 +14,10 @@ class Matrix2D {
     constructor() {
         this.matrix = new Matrix();
         this.matrix.identity();
+    }
+
+    set(n: Array<number>) {
+        this.matrix.set(n);
     }
 
     /**
@@ -94,7 +103,7 @@ class Matrix2D {
 
     /**
      * Rotation implementation given an angle.
-     * @phidden
+     * @hidden
      */
     _rotAngle(rot: number) {
         let mat = new Matrix();
@@ -140,6 +149,29 @@ class Matrix2D {
         this.matrix = mat;
     }
 
+    // /**
+    //  * Multiply this matrix by another
+    //  * @param mIn the multiplying matrix
+    //  * @hidden
+    //  */
+    // _matMultiply2D(m: Matrix2D) :Matr{
+    //     let mIn = m.matrix;
+    //     let mat = new Matrix();
+    //     // Row 1
+    //     mat._11 = (this.matrix._11 * mIn._11) + (this.matrix._12 * mIn._21) + (this.matrix._13 * mIn._31);
+    //     mat._12 = (this.matrix._11 * mIn._12) + (this.matrix._12 * mIn._22) + (this.matrix._13 * mIn._32);
+    //     mat._13 = (this.matrix._11 * mIn._13) + (this.matrix._12 * mIn._23) + (this.matrix._13 * mIn._33);
+    //     // Row 2
+    //     mat._21 = (this.matrix._21 * mIn._11) + (this.matrix._22 * mIn._21) + (this.matrix._23 * mIn._31);
+    //     mat._22 = (this.matrix._21 * mIn._12) + (this.matrix._22 * mIn._22) + (this.matrix._23 * mIn._32);
+    //     mat._23 = (this.matrix._21 * mIn._13) + (this.matrix._22 * mIn._23) + (this.matrix._23 * mIn._33);
+    //     // Row 3
+    //     mat._31 = (this.matrix._31 * mIn._11) + (this.matrix._32 * mIn._21) + (this.matrix._33 * mIn._31);
+    //     mat._32 = (this.matrix._31 * mIn._12) + (this.matrix._32 * mIn._22) + (this.matrix._33 * mIn._32);
+    //     mat._33 = (this.matrix._31 * mIn._13) + (this.matrix._32 * mIn._23) + (this.matrix._33 * mIn._33);
+    //     this.matrix = mat;
+    // }
+
     // setters for the matrix elements
     _11(val) { this.matrix._11 = val; }
     _12(val) { this.matrix._12 = val; }
@@ -152,6 +184,10 @@ class Matrix2D {
     _31(val) { this.matrix._31 = val; }
     _32(val) { this.matrix._32 = val; }
     _33(val) { this.matrix._33 = val; }
+
+    toString(): string {
+        return this.matrix.toString();
+    }
 
 }
 
@@ -170,6 +206,12 @@ class Matrix {
      */
     constructor() { }
 
+    set(n: Array<number>) {
+        this._11 = n[0]; this._12 = n[1]; this._13 = n[2];
+        this._21 = n[3]; this._22 = n[4]; this._23 = n[5];
+        this._31 = n[6]; this._32 = n[7]; this._33 = n[8];
+    }
+
     /**
      * Set to the identity matrix. Erases previous matrix data.
      */
@@ -179,5 +221,11 @@ class Matrix {
         this._31 = 0.0; this._32 = 0.0; this._33 = 1.0;
     }
 
+    toString(): string {
+        let s = `[ ${this._11}, ${this._12}, ${this._13} ] `;
+        s += `[ ${this._21}, ${this._22}, ${this._23} ] `;
+        s += `[ ${this._31}, ${this._32}, ${this._33} ] `;
+        return s;
+    }
 
 }

@@ -1,7 +1,7 @@
 class Artefact extends Entity {
     constructor(center, width, height) {
         super(center);
-        this.type = ARTEFACT;
+        this._type = ARTEFACT;
         this._width = width;
         this._height = height;
         this._lowX = center.x - width / 2;
@@ -18,4 +18,4 @@ class Artefact extends Entity {
         throw new Error("Method not implemented.");
     }
 }
-//# sourceMappingURL=Artefact.js.map
+//# sourceMappingURL=artefact.js.map

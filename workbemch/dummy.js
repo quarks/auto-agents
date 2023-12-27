@@ -1,14 +1,17 @@
-/**
- * Implementation of a quadtree partition. <br>
- *
- * This is a dynamic implementation of a quadtree where partitions are
- * created as needed provided the three depth is not exceeded.
- *
- *
- * @author Peter Lager 2022
- *
- */
-class QPart {
+class __QPart {
+
+    /**
+     * Use this method to create the root partition for a dynamic 
+     * quadtree.
+     * @param size the length and width of the tree domain
+     * @param depth maximum number of levels in the tree
+     * @param splitAt build subtree when this occupancy is reached or exceeded
+     * @returns the quadtree root partition
+     */
+    static makeTree(size: number, depth: number, splitAt: number) {
+        return new __QPart(undefined, size / 2, size / 2, size, 0, depth, splitAt);
+    }
+
     /**
      * Do not use this constructor to create a quadtree partition. Use the
      * WorldPart.makeTree(...) to create the root partition for a
@@ -20,26 +23,8 @@ class QPart {
      * @param size the length of the partition's side
      * @param level the level of the partition (0 being the root level)
      */
-    constructor(parent, cX, cY, size, level, depth, splitAt) {
-        // Each partition is linked to its parent and children. If parent is undefined
-        // then it is the root partition
-        this.parent = undefined;
-        this.children = undefined;
-        this.qpx = 0;
-        this.qpy = 0;
-        this._entities = [];
-        this.level = 0;
-        this.lowX = 0;
-        this.highX = 0;
-        this.lowY = 0;
-        this.highY = 0;
-        this.cX = 0;
-        this.cY = 0;
-        this.size = 0;
-        this.halfSize = 0;
-        // We use these to gather statistics on collision detection
-        this.nbrTests = 0;
-        this.nbrCollisions = 0;
+    constructor(parent: __QPart, cX: number, cY: number, size: number,
+        level: number, depth: number, splitAt: number) {
         this.parent = parent;
         this.cX = cX;
         this.cY = cY;
@@ -52,56 +37,15 @@ class QPart {
         this.halfSize = hs;
         this.level = level;
         this.depth = depth;
-        this.splitAt = splitAt;
+        this.splitAt = splitAt
         let halfSize = size / 2;
         this.lowX = cX - halfSize;
         this.highX = cX + halfSize;
         this.lowY = cY - halfSize;
         this.highY = cY + halfSize;
     }
-    /**
-     * Use this method to create the root partition for a dynamic
-     * quadtree.
-     * @param size the length and width of the tree domain
-     * @param depth maximum number of levels in the tree
-     * @param splitAt build subtree when this occupancy is reached or exceeded
-     * @returns the quadtree root partition
-     */
-    static makeTree(size, depth, splitAt) {
-        return new QPart(undefined, size / 2, size / 2, size, 0, depth, splitAt);
-    }
-    /**
-     * Utility method to generate various statistics about the
-     * tree while running.
-     * @param tree
-     * @returns
-     */
-    static getStats(tree) {
-        let root = tree.getRoot();
-        let stat = new WorldStats();
-        QPart.__getStats(root, stat);
-        stat.occ_by_level.length = root.depth;
-        return stat;
-    }
-    /**
-     * Recursive method for collecting tree statistics since
-     * last call to this method.
-     * @param part the current partition
-     * @param stat the statistic collector object
-     */
-    static __getStats(part, stat) {
-        // Collisions
-        stat.nbr_colls += part.nbrCollisions;
-        stat.nbr_tests += part.nbrTests;
-        part.nbrCollisions = part.nbrTests = 0;
-        // Occcupancy
-        stat.occ_by_level[part.level] += part._entities.length;
-        stat.max_occ = Math.max(stat.max_occ, part._entities.length);
-        stat.nbr_parts++;
-        // Now do children
-        part.children?.forEach(p => QPart.__getStats(p, stat));
-    }
-    populateGrid(grid, partSize, minCellSize) {
+
+    populateGrid(grid: Array<Array<__QPart>>, partSize: number, minCellSize: number) {
         let x = Math.round(this.lowX / minCellSize);
         let y = Math.round(this.lowY / minCellSize);
         for (let gx = 0; gx < partSize; gx++)
@@ -110,9 +54,10 @@ class QPart {
         // console.log(` ${x}:${x + partSize - 1}   ${y}:${y + partSize - 1}   cX: ${this.cX}  cY:${this.cY}  size: ${this.size}`)
         this.children?.forEach(p => p.populateGrid(grid, partSize / 2, minCellSize));
     }
+
     /**
-     * Entry point for updating the quadtree.
-     * It first finds the tree root and then
+     * Entry point for updating the quadtree. 
+     * It first finds the tree root and then 
      * (1) moves the entities
      * (2) updates the partitions
      *     a) entities that don't fit their partition are moved up the tree
@@ -122,13 +67,14 @@ class QPart {
     *
      * @param time the elapsed time since last update in seconds
      */
-    updateTree(time) {
+    updateTree(time: number) {
         // make sure we are starting from the root partition
         let root = this.getRoot();
         this._moveEnities(root, time);
         root._updatePartitions();
         root._collisionDetection();
     }
+
     /*
     ---------------- PARTITION UPDATE ALGORITHM -----------------
     if this is not a leaf partition and has no children and the occupancy >= splitAt then
@@ -163,8 +109,7 @@ class QPart {
             else { //  Does not contain ball
                 if (this.parent) {
                     let dst = this.parent;
-                    while (dst && !dst._contains(b))
-                        dst = dst.parent;
+                    while (dst && !dst._contains(b)) dst = dst.parent;
                     if (dst && dst !== this) {
                         this._entities = this._entities.filter(ball => ball !== b);
                         dst._entities.push(b);
@@ -172,10 +117,11 @@ class QPart {
                 }
             }
         });
-        this.children?.forEach(part => { part._updatePartitions(); });
+        this.children?.forEach(part => { part._updatePartitions() })
     }
+
     /**
-    *                        Child arrangement:  0|1
+    *                        Child arrangement:  0|1 
     * Create the next level down in the sub      ---
     * tree andattempt to push down nodes         2|3
     */
@@ -183,18 +129,12 @@ class QPart {
         this.children = [];
         let cX = this.cX, cY = this.cY, size2 = this.size / 2, size4 = this.size / 4;
         let level = this.level + 1, depth = this.depth, splitAt = this.splitAt;
-        this.children[0] = new QPart(this, cX - size4, cY - size4, size2, level, depth, splitAt);
-        this.children[1] = new QPart(this, cX + size4, cY - size4, size2, level, depth, splitAt);
-        this.children[2] = new QPart(this, cX - size4, cY + size4, size2, level, depth, splitAt);
-        this.children[3] = new QPart(this, cX + size4, cY + size4, size2, level, depth, splitAt);
+        this.children[0] = new __QPart(this, cX - size4, cY - size4, size2, level, depth, splitAt);
+        this.children[1] = new __QPart(this, cX + size4, cY - size4, size2, level, depth, splitAt);
+        this.children[2] = new __QPart(this, cX - size4, cY + size4, size2, level, depth, splitAt);
+        this.children[3] = new __QPart(this, cX + size4, cY + size4, size2, level, depth, splitAt);
     }
-    /**
-     * Move balls based on their velocity and elapsed time.
-     */
-    _moveEnities(part, time) {
-        // part._balls.forEach(b => { b.update(time, part); });
-        // part.children?.forEach(p => this._moveEnities(p, time));
-    }
+
     /**
      * Perform collision detection in this partition.
      */
@@ -219,13 +159,14 @@ class QPart {
             this.parent._cdBorderObjects(this._entities);
         }
     }
+
     /**
      * This method is called by lower level partitions to check for collisions
      * between their entities and those in the upper level partitions. Start with the
      * root partition and work recursively down until we reach the parent partition.
      * @param entitiesInChildLevel
      */
-    _cdBorderObjects(entitiesInChildLevel) {
+    _cdBorderObjects(entitiesInChildLevel: Array<Entity>) {
         if (this.parent != null)
             this.parent._cdBorderObjects(entitiesInChildLevel);
         if (this._entities.length > 0) {
@@ -239,27 +180,24 @@ class QPart {
             }
         }
     }
+
+
     /**
      * Returns true if it completely encompasses the object
      * @param ball
      * @return
      */
-    _contains(entity) {
-        return entity.fits_inside(this.lowX, this.highX, this.lowY, this.highY);
+    _contains(entity: Entity): boolean {
+        return entity.fitsInside(this.lowX, this.highX, this.lowY, this.highY);
     }
-    /**
-     * Always add aball to root. Update will move ball ensure it
-     * will get to correct partition
-     */
-    // addBall(ball: Ball) {
-    //     this.getRoot()._balls.push(ball)
-    // }
+
     /**
      * Get the root of the quadtree
      */
-    getRoot() {
+    getRoot(): __QPart {
         return this.parent ? this.parent.getRoot() : this;
     }
+
     /**
      * @returns true if this partition is the root
      */
@@ -272,28 +210,37 @@ class QPart {
     _isLeaf() {
         return this.level === this.depth - 1;
     }
-    toString() {
+
+    toString(): string {
         let s = `lowX: ${Math.round(this.lowX)}  lowY: ${Math.round(this.lowY)}    `;
         s += `highX: ${Math.round(this.highX)}  highY: ${Math.round(this.highY)}    `;
         return s;
     }
-    center() {
+
+    center(): string {
         return `cX: ${this.cX}   cY: ${this.cY}`;
     }
+    // Each partition is linked to its parent and children. If parent is undefined
+    // then it is the root partition
+    parent: __QPart = undefined;
+    children: Array<__QPart> = undefined;
+
+    qpx: number = 0;
+    qpy: number = 0;
+
+    _entities: Array<Entity> = [];
+    level = 0;
+    lowX = 0; highX = 0; lowY = 0; highY = 0;
+    cX = 0; cY = 0;
+    size = 0;
+    halfSize = 0;
+    // We use these to gather statistics on collision detection
+    nbrTests = 0;
+    nbrCollisions = 0;
+    // The depth and splitAt is the same for all partitions so could
+    // be set up as static methods on the class. This way we can have 
+    // multiple quadtrees with different configurations.
+    depth: number;      // number of levels in the quadtree
+    splitAt: number;    // child partitions are created if we get this occupancy
 }
-class WorldStats {
-    constructor() {
-        this.occ_by_level = [0, 0, 0, 0, 0, 0, 0];
-        this.max_occ = 0;
-        this.nbr_parts = 0;
-        this.nbr_tests = 0;
-        this.nbr_colls = 0;
-    }
-    toString() {
-        let s = `Nbr Part: ${this.nbr_parts}       `;
-        s += `Test: ${this.nbr_tests}  Collisions: ${this.nbr_colls}      `;
-        s += `Max occ: ${this.max_occ}  [ ${this.occ_by_level.join(' ')}]`;
-        return s;
-    }
-}
-//# sourceMappingURL=QPart.js.map
+

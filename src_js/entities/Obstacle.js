@@ -6,4 +6,4 @@ class Obstacle extends Entity {
         throw new Error("Method not implemented.");
     }
 }
-//# sourceMappingURL=Obstacle.js.map
+//# sourceMappingURL=obstacle.js.map

@@ -1,5 +1,5 @@
 class Artefact extends Entity {
-    type = ARTEFACT;
+    _type = ARTEFACT;
 
     _lowX: number;
     _highX: number;

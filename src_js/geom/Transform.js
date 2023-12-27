@@ -90,4 +90,4 @@ class Transform {
         return mat.transformVector(v);
     }
 }
-//# sourceMappingURL=Transform.js.map
+//# sourceMappingURL=transform.js.map

@@ -6,4 +6,4 @@ class Wall extends Entity {
         throw new Error("Method not implemented.");
     }
 }
-//# sourceMappingURL=Wall.js.map
+//# sourceMappingURL=wall.js.map

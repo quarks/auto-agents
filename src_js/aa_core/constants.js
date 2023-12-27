@@ -1,11 +1,12 @@
 const ENTITY = Symbol.for('Entity');
 const ARTEFACT = Symbol.for('Artefact');
-const MOVER = Symbol.for('Entity');
-const VEHICLE = Symbol.for('Entity');
-const OBSTACLE = Symbol.for('Entity');
-const WALL = Symbol.for('Entity');
-const BUILDING = Symbol.for('Entity');
-// AA Behaviours
+const MOVER = Symbol.for('Mover');
+const VEHICLE = Symbol.for('Vehicle');
+const OBSTACLE = Symbol.for('Obstacle');
+const WALL = Symbol.for('Wall');
+const BUILDING = Symbol.for('Building');
+// Bit positions for flags for internal library use.
+// These are used to index the force
 const BIT_WALL_AVOID = 0;
 const BIT_OBSTACLE_AVOID = 1;
 const BIT_EVADE = 2;
@@ -56,4 +57,10 @@ const NBR_AGENT_ARRAY = 4;
 const PASS_THROUGH = 10000;
 const WRAP = 10001;
 const REBOUND = 10002;
-//# sourceMappingURL=aa_constants.js.map
+const SAFE_TIME_INTERVAL = 250;
+const EPSILON = 1E-10;
+// interface Position {
+//     x: number;
+//     y: number;
+// }
+//# sourceMappingURL=constants.js.map

@@ -1,21 +1,21 @@
 class Mover extends Entity {
-    type = MOVER;
+    _type = MOVER;
     // The domain the entity is constrained to (if any)
     _domain: Domain;
     _domainConstraint = WRAP;
 
     // World position after last update
     _prevPos = new Vector2D();
-    // Bounding radius
-    _bRad: number;
-    // Current velocity vector
+
+    // Current velocity vector (controls speed and direction of travel)
     _vel = new Vector2D();
-    // a normalised vector pointing in the direction the entity is heading. 
+    // a normalised vector pointing in the direction the entity is heading / facing. 
     _heading = new Vector2D(1, 0); // facing East;
     // a normalised vector pointing in the entity's rest heading. 
     _headingAtRest = new Vector2D(1, 0); // facing East;
-    //a normalised vector perpendicular to the heading vector
+    // a normalised vector perpendicular to the heading vector
     _side: Vector2D;
+
     // The mass of the entity
     _mass: number;
     // The maximum speed this entity may travel at.
@@ -33,21 +33,71 @@ class Mover extends Entity {
     // Field of view (radians)
     _viewFOV = 1.047; // Default is 60 degrees
 
-    constructor(position: Vector2D, radius: number) {
-        super(position);
-        this._pos.set(position);
-        this._prevPos.set(position);
-        this._bRad = radius;
-        this._mass = this._bRad * this._bRad;
+    /** Position */
+    set pos(v: Vector2D) { this._pos = v; };
+    get pos(): Vector2D { return this._pos };
+    /** Prev position */
+    set prevPos(v: Vector2D) { this._prevPos = v; };
+    get prevPos(): Vector2D { return this._prevPos };
+    /** Velocity */
+    set vel(v: Vector2D) { this._vel = v; };
+    get vel(): Vector2D { return this._vel };
+    /** Speed */
+    get speed(): number { return this._vel.length() }
+    get speedSq(): number { return this._vel.lengthSq() }
+
+    /** Heading / facing */
+    set heading(v: Vector2D) { this._heading = v; }
+    get heading(): Vector2D { return this._heading; }
+    /** Heading / facing angle */
+    set headingAngle(n: number) { this._heading.x = Math.cos(n); this._heading.x = Math.sin(n); }
+    get headingAngle(): number { return this.heading.angle; }
+    /** Heading at rest */
+    set headingAtRest(v: Vector2D) { this._heading = v; }
+    get headingAtRest(): Vector2D { return this._heading; }
+    /** Heading at rest angle */
+    set headingAtRestAngle(n: number) { this._heading.x = Math.cos(n); this._heading.x = Math.sin(n); }
+    get headingAtRestAngle(): number { return this.heading.angle; }
+    /** Perpendiclar to heading */
+    get side() { return this._heading.getPerp() }
+    /** Mass */
+    set mass(n: number) { this._mass = n; }
+    get mass(): number { return this._mass; }
+    /** Max speed */
+    set maxSpeed(n: number) { this._maxSpeed = n; }
+    get maxSpeed(): number { return this._maxSpeed; }
+    /** Max force */
+    set maxForce(n: number) { this._maxForce = n; }
+    get maxForce(): number { return this._maxForce; }
+    /** Max turn rate */
+    set maxTurnRate(n: number) { this._maxTurnRate = n; }
+    get maxTurnRate(): number { return this._maxTurnRate; }
+    /** Current turn rate */
+    set currTurnRate(n: number) { this._currTurnRate = n; }
+    get currTurnRate(): number { return this._currTurnRate; }
+    /** Previous turn rate */
+    set prevTurnRate(n: number) { this._prevTurnRate = n; }
+    get prevTurnRate(): number { return this._prevTurnRate; }
+    /** View distance */
+    set viewDistance(n: number) { this._viewDistance = n; }
+    get viewDistance(): number { return this._viewDistance; }
+    /** View distance */
+    set viewFOV(n: number) { this._viewFOV = n; }
+    get viewFOV(): number { return this._viewFOV; }
+
+    constructor(position: Array<number> | Vector2D, colRadius = 0) {
+        super(position, colRadius);
+        this._prevPos.set(this._pos);
+        this._mass = this._colRad * this._colRad;
         this._side = this._heading.getPerp();
     }
 
     fits_inside(lowX: number, lowY: number, highX: number, highY: number): boolean {
         let fits: boolean =
-            (this._pos.x - this._bRad >= lowX)
-            && (this._pos.x + this._bRad <= highX)
-            && (this._pos.y - this._bRad >= lowY)
-            && (this._pos.y + this._bRad <= highY);
+            (this._pos.x - this._colRad >= lowX)
+            && (this._pos.x + this._colRad <= highX)
+            && (this._pos.y - this._colRad >= lowY)
+            && (this._pos.y + this._colRad <= highY);
         return fits;
     }
 
@@ -58,151 +108,42 @@ class Mover extends Entity {
     }
 
     constrainWith(method: number) {
-        if (Number.isFinite(method))
-            if (method === WRAP || method === REBOUND || method === PASS_THROUGH)
-                this._domainConstraint = method;
-    }
-
-    pos(x: number, y: number): Mover {
-        this._pos.set(x, y);
-        return this;
-    }
-
-    vel(x: number, y: number): Mover {
-        this._vel.set(x, y);
-        return this;
-    }
-
-    mass(m: number): Mover {
-        this._mass = m;
-        return this;
-    }
-
-    heading(x: number, y: number): Mover {
-        this._heading.set(x, y);
-        this._side = this._heading.getPerp();
-        return this;
-    }
-
-    headingAtRest(x: number, y: number): Mover {
-        this._headingAtRest.set(x, y);
-        return this;
-    }
-
-    maxSpeed(ms: number): Mover {
-        this._maxSpeed = ms;
-        return this;
-    }
-
-    maxForce(mf: number): Mover {
-        this._maxForce = mf;
-        return this;
-    }
-
-    maxTurnRate(mtr: number): Mover {
-        this._maxTurnRate = mtr;
-        return this;
-    }
-
-    viewDistance(vd: number): Mover {
-        this._viewDistance = vd;
-        return this;
-    }
-
-    viewFOV(fov: number): Mover {
-        this._viewFOV = fov;
-        return this;
-    }
-
-    getPos(): Vector2D {
-        return this._pos;
-    }
-
-    getVel(): Vector2D {
-        return this._vel;
-    }
-
-    getMass(): number {
-        return this._mass;
-    }
-
-    getHeading(): Vector2D {
-        return this._heading;
-    }
-
-    getHeadingAtRest(): Vector2D {
-        return this._headingAtRest;
-    }
-
-    getMaxSpeed(): number {
-        return this._maxSpeed;
-    }
-
-    getMaxForce(): number {
-        return this._maxForce;
-    }
-
-    getMaxTurnRate(): number {
-        return this._maxForce;
-    }
-
-    getViewDistance(): number {
-        return this._viewDistance;
-    }
-
-    getViewFOV(): number {
-        return this._viewDistance;
+        if (method === WRAP || method === REBOUND || method === PASS_THROUGH)
+            this._domainConstraint = method;
     }
 
     /**
-         * See if the current speed exceeds the maximum speed permitted.
-         * @return true if the speed is greater or equal to the max speed.
-         */
+     * See if the current speed exceeds the maximum speed permitted.
+     * @return true if the speed is greater or equal to the max speed.
+     */
     isSpeedMaxedOut(): boolean {
         return this._vel.lengthSq() >= this._maxSpeed * this._maxSpeed;
     }
 
     /**
-     * Get the entity's speed. <br>
-     * This is the scalar length of the velocity vector.
-     * @return speed in direction of travel
+     * After calculating the entity's position it is then constrained by
+     * the domain constraint WRAP or REBOUND
      */
-    getSpeed(): number {
-        return this._vel.length();
-    }
-
-    /**
-     * Get the square of the entity's speed.
-     * @return speed in direction of travel squared
-     */
-    getSpeedSq() {
-        return this._vel.lengthSq();
-    }
-
-    /**
- * After calculating the entity's position it is then constrained by
- * the domain constraint WRAP or REBOUND
- */
     applyDomainConstraint(): void {
         switch (this._domainConstraint) {
             case WRAP:
-                if (this._pos.x < this._domain.lowX)
-                    this._pos.x += this._domain.width;
-                else if (this._pos.x > this._domain.highX)
-                    this._pos.x -= this._domain.width;
-                if (this._pos.y < this._domain.lowY)
-                    this._pos.y += this._domain.height;
-                else if (this._pos.y > this._domain.highY)
-                    this._pos.y -= this._domain.height;
+                if (this._pos.x < this._domain._lowX)
+                    this._pos.x += this._domain._width;
+                else if (this._pos.x > this._domain._highX)
+                    this._pos.x -= this._domain._width;
+                if (this._pos.y < this._domain._lowY)
+                    this._pos.y += this._domain._height;
+                else if (this._pos.y > this._domain._highY)
+                    this._pos.y -= this._domain._height;
                 break;
             case REBOUND:
-                if (this._pos.x < this._domain.lowX)
+                if (this._pos.x < this._domain._lowX)
                     this._vel.x = Math.abs(this._vel.x);
-                else if (this._pos.x > this._domain.highX)
+                else if (this._pos.x > this._domain._highX)
                     this._vel.x = -Math.abs(this._vel.x);
-                if (this._pos.y < this._domain.lowY)
+                if (this._pos.y < this._domain._lowY)
                     this._vel.y = Math.abs(this._vel.y);
-                else if (this._pos.y > this._domain.highY)
+                else if (this._pos.y > this._domain._highY)
                     this._vel.y = -Math.abs(this._vel.y);
                 break;
             default:
@@ -221,7 +162,7 @@ class Mover extends Entity {
      * @return true if the points are either side else false
      */
     isEitherSide(x0: number, y0: number, x1: number, y1: number): boolean {
-        return Geom2D.line_circle(x0, y0, x1, y1, this._pos.x, this._pos.y, this._bRad);
+        return Geom2D.line_circle(x0, y0, x1, y1, this._pos.x, this._pos.y, this._colRad);
     }
 
     /**
@@ -235,14 +176,14 @@ class Mover extends Entity {
      * @return true if the entity can see the location
      */
     canSee(world: World, x0: number, y0: number): boolean {
-		let toTarget = new Vector2D(x0 - this._pos.x, y0 - this._pos.y);
-		// See if in view range
-		let distToTarget = toTarget.length();
+        let toTarget = new Vector2D(x0 - this._pos.x, y0 - this._pos.y);
+        // See if in view range
+        let distToTarget = toTarget.length();
         if (distToTarget > this._viewDistance)
             return false;
         // See if in field of view
         toTarget.div(distToTarget);	// normalise toTarget
-		let cosAngle = this._heading.dot(toTarget);
+        let cosAngle = this._heading.dot(toTarget);
         if (cosAngle < Math.cos(this._viewFOV / 2))
             return false;
         // If we get here then the position is within range and field of view, but do we have an obstruction.
@@ -294,7 +235,7 @@ class Mover extends Entity {
      */
     rotateHeadingToFacePosition(deltaTime: number, faceTarget: Vector2D): boolean {
         // Calculate the normalised vetor to the face target
-        let alignTo = Vector2D.sub(faceTarget, this._pos);
+        let alignTo = faceTarget.sub(this._pos); // Vector2D.sub(faceTarget, this._pos);
         alignTo.normalize();
         return this.rotateHeadingToAlignWith(deltaTime, alignTo);
     }
@@ -340,8 +281,8 @@ class Mover extends Entity {
      * @return true if any part of this entity is inside the domain
      */
     isInDomain(view: Domain): boolean {
-        return (this._pos.x >= view.lowX && this._pos.x <= view.highX
-            && this._pos.y >= view.lowY && this._pos.y <= view.highY);
+        return (this._pos.x >= view._lowX && this._pos.x <= view._highX
+            && this._pos.y >= view._lowY && this._pos.y <= view._highY);
     }
 
     /**
@@ -349,7 +290,7 @@ class Mover extends Entity {
      */
     isOver(px: number, py: number): boolean {
         return ((this._pos.x - px) * (this._pos.x - px) + (this._pos.y - py) * (this._pos.y - py))
-            <= (this._bRad * this._bRad);
+            <= (this._colRad * this._colRad);
     }
 
     /**
@@ -370,7 +311,7 @@ class Mover extends Entity {
         if (this._vel.lengthSq() > 0.01)
             this.rotateHeadingToAlignWith(deltaTime, this._vel);
         else {
-            this._vel.set(0, 0);
+            this._vel.set([0, 0]);
             if (this._headingAtRest)
                 this.rotateHeadingToAlignWith(deltaTime, this._headingAtRest);
         }
