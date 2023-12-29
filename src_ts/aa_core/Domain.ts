@@ -1,12 +1,13 @@
 class Domain {
-
 	_lowX: number;
 	_highX: number;
 	_lowY: number;
 	_highY: number;
-	_center: Vector2D;
+	_cX: number;
+	_cY: number;
 	_width: number;
 	_height: number;
+	_constraint = REBOUND;
 
 	/**
 	 * Create a Domain object given the top-left and bottom-right coordinates.
@@ -15,37 +16,40 @@ class Domain {
 	 * @param highX
 	 * @param highY
 	 */
-	constructor(lowX: number, lowY: number, highX: number, highY: number) {
-		this._lowX = lowX;
-		this._lowY = lowY;
-		this._highX = highX;
-		this._highY = highY;
-		this._center = new Vector2D((lowX + highX) / 2, (lowY + highY) / 2);
-		this._width = highX - lowX;
-		this._height = highY - lowY;
-	}
 
 	// Domain attribute getters
 	get lowX(): number { return this._lowX; }
 	get highX(): number { return this._highX; }
 	get lowY(): number { return this._lowY; }
 	get highY(): number { return this._highY; }
-	get center(): Vector2D { return this._center; }
+	get cX(): number { return this._cX; }
+	get cY(): number { return this._cY; }
 	get width(): number { return this._width; }
 	get height(): number { return this._height; }
+	get constraint(): symbol { return this._constraint; }
+	set constraint(c: symbol) {
+		if (c == REBOUND || c == WRAP || c == PASS_THROUGH)
+			this._constraint = c;
+	}
+
+	constructor(lowX: number, lowY: number, highX: number, highY: number, constraint = REBOUND) {
+		this._lowX = lowX; this._lowY = lowY;
+		this._highX = highX; this._highY = highY;
+		this._width = highX - lowX; this._height = highY - lowY;
+		this._cX = (lowX + highX) / 2; this._cY = (lowY + highY) / 2;
+		this._constraint = constraint;
+	}
 
 	/**
 	 * Create a Domain that is a copy of another one.
 	 * @param d domain to be copied
 	 */
 	set_d(d: Domain) {
-		this._lowX = d._lowX;
-		this._lowY = d._lowY;
-		this._highX = d._highX;
-		this._highY = d._highY;
-		this._width = this._highX - this._lowX;
-		this._height = this._highY - this._lowY;
-		this._center = d._center.copy();
+		this._lowX = d._lowX; this._lowY = d._lowY;
+		this._highX = d._highX; this._highY = d._highY;
+		this._width = d._width; this._height = d._height;
+		this._cX = d._cX; this._cY = d._cY;
+		this._constraint = d._constraint;
 	}
 
 	/**
@@ -53,7 +57,7 @@ class Domain {
 	 * @returns a copy of this domain object
 	 */
 	copy(): Domain {
-		return new Domain(this._lowX, this._lowY, this._highX, this._highY);
+		return new Domain(this._lowX, this._lowY, this._highX, this._highY, this._constraint);
 	}
 
 	/**
@@ -65,13 +69,11 @@ class Domain {
 	 * @param height domain height
 	 */
 	set_xywh(lowX: number, lowY: number, width: number, height: number) {
-		this._lowX = lowX;
-		this._lowY = lowY;
-		this._width = width;
-		this._height = height;
-		this._highX = lowX + width;
-		this._highY = lowY + height;
-		this._center.set([(lowX + this._highX) / 2, (lowY + this._highY) / 2]);
+		this._lowX = lowX; this._lowY = lowY;
+		this._width = width; this._height = height;
+		this._highX = lowX + width; this._highY = lowY + height;
+		this._cX = (this._lowX + this._highX) / 2;
+		this._cY = (this._lowY + this._highY) / 2;
 	}
 
 	/**
@@ -80,9 +82,9 @@ class Domain {
 	 * @param wy world y position
 	 */
 	move_centre_xy_to(wx, wy) {
-		this._center.set([wx, wy]);
-		this._lowX = this._center.x - this._width / 2;
-		this._lowY = this._center.y - this._height / 2;
+		this._cX = wx; this._cY = wy;
+		this._lowX = this._cX - this._width / 2;
+		this._lowY = this._cY - this._height / 2;
 		this._highX = this._lowX + this._width;
 		this._highY = this._lowY + this._height;
 	}
@@ -92,8 +94,8 @@ class Domain {
 	 * @param wx world x position
 	 */
 	move_centre_x_to(wx) {
-		this._center.x = wx;
-		this._lowX = this._center.x - this._width / 2;
+		this._cX = wx;
+		this._lowX = this._cX - this._width / 2;
 		this._highX = this._lowX + this._width;
 	}
 
@@ -102,8 +104,8 @@ class Domain {
 	 * @param wy world y position
 	 */
 	move_centre_y_to(wy) {
-		this._center.y = wy;
-		this._lowY = this._center.y - this._height / 2;
+		this._cY = wy;
+		this._lowY = this._cY - this._height / 2;
 		this._highY = this._lowY + this._height;
 	}
 
@@ -113,10 +115,8 @@ class Domain {
 	 * @param wy world y centre position
 	 */
 	move_centre_xy_by(wx, wy) {
-		this._center.x -= wx;
-		this._center.y -= wy;
-		this._lowX -= wx;
-		this._lowY -= wy;
+		this._cX -= wx; this._cY -= wy;
+		this._lowX -= wx; this._lowY -= wy;
 		this._highX = this._lowX + this._width;
 		this._highY = this._lowY + this._height;
 	}
@@ -126,7 +126,7 @@ class Domain {
 	 * @param wx world x centre position
 	 */
 	move_centre_x_by(wx) {
-		this._center.x -= wx;
+		this._cX -= wx;
 		this._lowX -= wx;
 		this._highX = this._lowX + this._width;
 	}
@@ -136,7 +136,7 @@ class Domain {
 	 * @param wy world y centre position
 	 */
 	move_centre_y_by(wy) {
-		this._center.y -= wy;
+		this._cY -= wy;
 		this._lowY -= wy;
 		this._highY = this._lowY + this._height;
 	}
@@ -175,6 +175,9 @@ class Domain {
 	 * Return the Domain as a String
 	 */
 	toString() {
-		return `Domain from ${this._lowX}, ${this._lowY} to ${this._highX}, ${this._highY}  Size ${this._width}, ${this._height}`;
+		let s = `Domain from ${this._lowX}, ${this._lowY} to ${this._highX}, ${this._highY}  `
+		s += `Size ${this._width}, ${this._height}  `
+		s += `Constraint: ${Symbol.keyFor(this._constraint)}`;
+		return s;
 	}
 }

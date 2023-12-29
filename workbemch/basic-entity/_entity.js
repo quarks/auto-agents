@@ -27,8 +27,8 @@ function makeEntities() {
     ]
     for (let i = 0; i < data.length; i++) {
         let d = data[i];
-        entities.push(new Entity({ x: d[0], y: d[1] }));
-        entities[i].colRad = d[2];
+        entities.push(new Entity({ x: d[0], y: d[1] }, d[2]));
+        // entities[i].colRad = d[2];
         entities[i].painter = d[3];
         world.birth(entities[i]);
     }
@@ -41,10 +41,6 @@ function drawEnclosingPartition(part) {
         fill(0, 30); noStroke();
         rect(x0, y0, x1 - x0, y1 - y0);
     }
-}
-
-function getEntitiesInPartition(part) {
-
 }
 
 function draw() {
@@ -73,13 +69,14 @@ function renderTreeGrid() {
 function keyTyped() {
     if (key == 't') printTree(world._tree);
     if (key == 'e') {
-        entities = world._tree?.getEntitiesInPartition(encPart);
-        entities.forEach(value => value.painter = ppRed);
+        let ents = world._tree?.getEntitiesInPartition(encPart);
+        ents.forEach(value => value.painter = ppRed);
     }
     let eid = '0123456789'.indexOf(key);
-    if (eid >= 0 && eid < entities.length)
+    if (eid >= 0 && eid < entities.length) {
         world.death(eid);
-    // world.death(entities[eid]);
+        //world.death(entities[eid]);
+    }
 }
 
 function personPainter(colF, colS, p = p5.instance) {
@@ -108,9 +105,18 @@ function personPainter(colF, colS, p = p5.instance) {
 }
 
 function printTree(tree) {
-    if (tree._entities.size > 0)
-        console.log(tree.toString());
-    if (tree._children)
-        for (let child of tree._children)
-            printTree(child);
+    function pt(tree) {
+        if (tree._entities.size > 0)
+            console.log(tree.toString());
+        if (tree._children)
+            for (let child of tree._children)
+                pt(child);
+    }
+    console.log('=====================================================================================');
+    pt(tree);
+    console.log(`World population        ( Size = ${world._population.size} )`)
+    if (world._population.size > 0) {
+        let pop = [...world._population.values()].map(x => x.id).reduce((x, y) => x + ' ' + y, '{ ') + '  }';
+        console.log(pop);
+    }
 }

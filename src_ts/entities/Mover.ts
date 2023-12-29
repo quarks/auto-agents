@@ -2,7 +2,6 @@ class Mover extends Entity {
     _type = MOVER;
     // The domain the entity is constrained to (if any)
     _domain: Domain;
-    _domainConstraint = WRAP;
 
     // World position after last update
     _prevPos = new Vector2D();
@@ -25,7 +24,7 @@ class Mover extends Entity {
     // The maximum rate (radians per second) this vehicle can rotate         
     _maxTurnRate: number = 1;
     // The current rate of turn (radians per second)         
-    _currTurnRate = 0;
+    _currTurnRate = 0.5;
     // The previous rate of turn i.e. on last update (radians per second)         
     _prevTurnRate = 0;
     // The distance that the entity can see another moving entity
@@ -92,26 +91,6 @@ class Mover extends Entity {
         this._side = this._heading.getPerp();
     }
 
-    fits_inside(lowX: number, lowY: number, highX: number, highY: number): boolean {
-        let fits: boolean =
-            (this._pos.x - this._colRad >= lowX)
-            && (this._pos.x + this._colRad <= highX)
-            && (this._pos.y - this._colRad >= lowY)
-            && (this._pos.y + this._colRad <= highY);
-        return fits;
-    }
-
-    constrainTo(area: Domain, method?: number): Mover {
-        this._domain = area ? area.copy() : undefined;
-        if (method) this.constrainWith(method)
-        return this;
-    }
-
-    constrainWith(method: number) {
-        if (method === WRAP || method === REBOUND || method === PASS_THROUGH)
-            this._domainConstraint = method;
-    }
-
     /**
      * See if the current speed exceeds the maximum speed permitted.
      * @return true if the speed is greater or equal to the max speed.
@@ -122,33 +101,34 @@ class Mover extends Entity {
 
     /**
      * After calculating the entity's position it is then constrained by
-     * the domain constraint WRAP or REBOUND
+     * the domain constraint REBOUND, WRAP or PASS_THROUGH (not constrained)
      */
-    applyDomainConstraint(): void {
-        switch (this._domainConstraint) {
-            case WRAP:
-                if (this._pos.x < this._domain._lowX)
-                    this._pos.x += this._domain._width;
-                else if (this._pos.x > this._domain._highX)
-                    this._pos.x -= this._domain._width;
-                if (this._pos.y < this._domain._lowY)
-                    this._pos.y += this._domain._height;
-                else if (this._pos.y > this._domain._highY)
-                    this._pos.y -= this._domain._height;
-                break;
-            case REBOUND:
-                if (this._pos.x < this._domain._lowX)
-                    this._vel.x = Math.abs(this._vel.x);
-                else if (this._pos.x > this._domain._highX)
-                    this._vel.x = -Math.abs(this._vel.x);
-                if (this._pos.y < this._domain._lowY)
-                    this._vel.y = Math.abs(this._vel.y);
-                else if (this._pos.y > this._domain._highY)
-                    this._vel.y = -Math.abs(this._vel.y);
-                break;
-            default:
-                break;
-        }
+    applyDomainConstraint(domain: Domain): void {
+        if (domain)
+            switch (domain._constraint) {
+                case WRAP:
+                    if (this._pos.x < domain._lowX)
+                        this._pos.x += domain._width;
+                    else if (this._pos.x > domain._highX)
+                        this._pos.x -= domain._width;
+                    if (this._pos.y < domain._lowY)
+                        this._pos.y += domain._height;
+                    else if (this._pos.y > domain._highY)
+                        this._pos.y -= domain._height;
+                    break;
+                case REBOUND:
+                    if (this._pos.x < domain._lowX)
+                        this._vel.x = Math.abs(this._vel.x);
+                    else if (this._pos.x > domain._highX)
+                        this._vel.x = -Math.abs(this._vel.x);
+                    if (this._pos.y < domain._lowY)
+                        this._vel.y = Math.abs(this._vel.y);
+                    else if (this._pos.y > domain._highY)
+                        this._vel.y = -Math.abs(this._vel.y);
+                    break;
+                default:
+                    break;
+            }
     }
 
     /**
@@ -243,12 +223,12 @@ class Mover extends Entity {
     /**
      * Rotate this entities heading to align with a vector over a given time period
      * @param deltaTime time (seconds) to turn entity
-     * @param allignTo vector to align entities heading with
+     * @param alignTo vector to align entities heading with
      * @return true if facing alignment vector
      */
-    rotateHeadingToAlignWith(deltaTime: number, allignTo: Vector2D): boolean {
+    rotateHeadingToAlignWith(deltaTime: number, alignTo: Vector2D): boolean {
         // Calculate the angle between the heading vector and the target
-        let angleBetween = this._heading.angleBetween(allignTo);
+        let angleBetween = this._heading.angleBetween(alignTo);
 
         // Return true if the player is virtually facing the target
         if (Math.abs(angleBetween) < EPSILON) return true;
@@ -265,7 +245,7 @@ class Mover extends Entity {
         let rotMatrix = new Matrix2D();
 
         // The direction of rotation is needed to create the rotation matrix
-        rotMatrix.rotate(angleToTurn * allignTo.sign(this._heading));
+        rotMatrix.rotate(angleToTurn * alignTo.sign(this._heading));
         // Rotate heading
         this._heading = rotMatrix.transformVector(this._heading);
         this._heading.normalize();
@@ -296,24 +276,23 @@ class Mover extends Entity {
     /**
      * Update method for any moving entity in the world that is not under
      * the influence of a steering behaviour.
-     * @param deltaTime elapsed time since last update
+     * @param elapsedTime elapsed time since last update (milliseconds)
      * @param world the game world object
      */
-    update(deltaTime: number, world: World) {
+    update(elapsedTime: number, world: World) {
         // Remember the starting position
         this._prevPos.set(this._pos);
         // Update position
-        this._pos = new Vector2D(this._pos.x + this._vel.x * deltaTime, this._pos.y + this._vel.y * deltaTime);
-        // Apply domain constraints
-        if (this._domain)
-            this.applyDomainConstraint();
+        this._pos = new Vector2D(this._pos.x + this._vel.x * elapsedTime, this._pos.y + this._vel.y * elapsedTime);
+        // Apply domain constraint
+        this.applyDomainConstraint(this._domain ? this._domain : world._domain);
         // Update heading
         if (this._vel.lengthSq() > 0.01)
-            this.rotateHeadingToAlignWith(deltaTime, this._vel);
+            this.rotateHeadingToAlignWith(elapsedTime, this._vel);
         else {
             this._vel.set([0, 0]);
             if (this._headingAtRest)
-                this.rotateHeadingToAlignWith(deltaTime, this._headingAtRest);
+                this.rotateHeadingToAlignWith(elapsedTime, this._headingAtRest);
         }
         // Ensure heading and side are normalised
         this._heading.normalize();

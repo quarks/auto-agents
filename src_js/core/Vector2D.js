@@ -357,14 +357,15 @@ class Vector2D {
         return angle >= Math.cos(fov1 / 2);
     }
     /**
-     * Create a random vector whose magnitude is in the range provided.
+     * Create a randomly orientated vector whose magnitude is in the range provided.
      * @param m0 minimum length
      * @param m1 maximum length
      * @return the randomised vector
      */
     static fromRandom(m0 = 1, m1 = 1) {
-        let v = new Vector2D(Math.random(), Math.random());
-        return v.normalize().mult(Math.random() * (m1 - m0) + m0);
+        let a = 2 * Math.PI * Math.random();
+        let m = Math.random() * (m1 - m0) + m0;
+        return new Vector2D(m * Math.cos(a), m * Math.sin(a));
     }
     /**
      *

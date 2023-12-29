@@ -2,8 +2,8 @@ const MATRIX2D = '1 # 06 Nov 2022';
 // Some problems with translation yet to iron out
 // should this class be immutable
 /**
-* Class to represent a 2D matrix that can be used to create transformed Vector2D
-* objects.
+* Class to represent a 2D matrix that can be used to create transformed
+* Vector2D objects.
 */
 class Matrix2D {
     constructor() {
@@ -14,8 +14,8 @@ class Matrix2D {
         this.matrix.set(n);
     }
     /**
-     * Create a new list of vectors from the provided list after being transformed
-     * by this this.matrix.
+     * Create a new list of vectors from the provided list after being
+     * transformed by this this.matrix.
      *
      * @param vList the original list of vectors
      * @return a list of transformed vectors.

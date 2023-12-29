@@ -35,13 +35,25 @@ class World {
 
 
     update(elapsedTime: number): void {
+        // ======================================================================
         // Births and deaths
         while (this._births.length > 0) this._addEntity(this._births.pop());
         while (this._deaths.length > 0) this._subEntity(this._deaths.pop());
+        // ======================================================================
         // Process telegrams
         this._postman?.update();
+        // ======================================================================
+        // FSMs
+        [...this._population.values()].forEach(v => v.fsm?.update(elapsedTime, this));
+        // ======================================================================
         // Entity movement
-        for (let e of this._population.values()) e.update(elapsedTime, this);
+        [...this._population.values()].forEach(v => v.update(elapsedTime, this));
+        //for (let e of this._population.values()) e.update(elapsedTime, this);
+
+
+
+        // Correct partition data
+        this._tree.correctPatritionContents();
     }
 
     render() {

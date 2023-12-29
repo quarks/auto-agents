@@ -61,9 +61,9 @@ const AGENT_TO_PURSUE = 2;
 const AGENT_TO_EVADE = 3;
 const NBR_AGENT_ARRAY = 4;
 
-const PASS_THROUGH = 10000;
-const WRAP = 10001;
-const REBOUND = 10002;
+const PASS_THROUGH = Symbol.for('Pass through');;
+const WRAP = Symbol.for('Wrap');;
+const REBOUND = Symbol.for('Rebound');;
 
 const SAFE_TIME_INTERVAL = 250;
 

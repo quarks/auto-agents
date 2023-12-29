@@ -91,7 +91,7 @@ class Vehicle extends Mover {
         //this._pos.add(Vector2D.mult(this._vel, deltaTime));
         this._pos = this._pos.add(this._vel.mult(deltaTime));
         // Apply domain constraints
-        this.applyDomainConstraint();
+        this.applyDomainConstraint(this._domain ? this._domain : world._domain);
         // Update heading
         if (this._vel.lengthSq() > 0.25)
             this.rotateHeadingToAlignWith(deltaTime, this._vel);

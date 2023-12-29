@@ -46,10 +46,6 @@ class Entity {
     }
     fitsInside(lowX, lowY, highX, highY) {
         let p = this._pos, cr = this._colRad;
-        // let result = p.x - cr >= lowX && p.x + cr <= highX && p.y - cr >= lowY && p.y + cr <= highY;
-        // if (this.id == 1) {
-        //     console.log(`${p.x - cr} >= ${lowX} && ${p.x + cr} <= ${highX} && ${p.y - cr} >= ${lowY} && ${p.y + cr} <= ${highY}   Result ${result}`)
-        // }
         return p.x - cr >= lowX && p.x + cr <= highX && p.y - cr >= lowY && p.y + cr <= highY;
     }
     update(elapsedTime, world) {
