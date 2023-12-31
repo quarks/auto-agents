@@ -14,19 +14,16 @@ class Mover extends Entity {
         this._maxSpeed = 50;
         // The maximum force this entity can use to power itself 
         this._maxForce = 10000;
-        // The maximum rate (radians per second) this vehicle can rotate         
-        this._maxTurnRate = 1;
         // The current rate of turn (radians per second)         
-        this._currTurnRate = 0.5;
-        // The previous rate of turn i.e. on last update (radians per second)         
-        this._prevTurnRate = 0;
+        this._turnRate = 8;
         // The distance that the entity can see another moving entity
         this._viewDistance = 50;
         // Field of view (radians)
         this._viewFOV = 1.047; // Default is 60 degrees
         this._prevPos.set(this._pos);
-        this._mass = this._colRad * this._colRad;
+        this._mass = this._colRad * this._colRad * 0.01;
         this._side = this._heading.getPerp();
+        console.log(`Mass:  ${this._mass}`);
     }
     /** Position */
     set pos(v) { this._pos = v; }
@@ -69,21 +66,18 @@ class Mover extends Entity {
     /** Max force */
     set maxForce(n) { this._maxForce = n; }
     get maxForce() { return this._maxForce; }
-    /** Max turn rate */
-    set maxTurnRate(n) { this._maxTurnRate = n; }
-    get maxTurnRate() { return this._maxTurnRate; }
     /** Current turn rate */
-    set currTurnRate(n) { this._currTurnRate = n; }
-    get currTurnRate() { return this._currTurnRate; }
-    /** Previous turn rate */
-    set prevTurnRate(n) { this._prevTurnRate = n; }
-    get prevTurnRate() { return this._prevTurnRate; }
+    set turnRate(n) { this._turnRate = Math.min(Math.max(n, 0), MAX_TURN_RATE); }
+    get turnRate() { return this._turnRate; }
     /** View distance */
     set viewDistance(n) { this._viewDistance = n; }
     get viewDistance() { return this._viewDistance; }
     /** View distance */
     set viewFOV(n) { this._viewFOV = n; }
     get viewFOV() { return this._viewFOV; }
+    /** Domain */
+    set domain(d) { this._domain = d.copy(); }
+    get domain() { return this._domain.copy(); }
     /**
      * See if the current speed exceeds the maximum speed permitted.
      * @return true if the speed is greater or equal to the max speed.
@@ -220,7 +214,7 @@ class Mover extends Entity {
         if (Math.abs(angleBetween) < EPSILON)
             return true;
         // Calculate the amount of turn possible in time allowed
-        let angleToTurn = this._currTurnRate * deltaTime;
+        let angleToTurn = this._turnRate * deltaTime;
         // Prevent over steer by clamping the amount to turn to the angle angle 
         // between the heading vector and the target
         if (angleToTurn > angleBetween)

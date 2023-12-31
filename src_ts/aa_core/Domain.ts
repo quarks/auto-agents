@@ -40,6 +40,11 @@ class Domain {
 		this._constraint = constraint;
 	}
 
+	/** returns a copy of this domain object */
+	copy(): Domain {
+		return new Domain(this._lowX, this._lowY, this._highX, this._highY, this._constraint);
+	}
+
 	/**
 	 * Create a Domain that is a copy of another one.
 	 * @param d domain to be copied
@@ -53,16 +58,7 @@ class Domain {
 	}
 
 	/**
-	 * 
-	 * @returns a copy of this domain object
-	 */
-	copy(): Domain {
-		return new Domain(this._lowX, this._lowY, this._highX, this._highY, this._constraint);
-	}
-
-	/**
 	 * Set the domain size.
-	 * 
 	 * @param lowX top-left x coordinate
 	 * @param lowY top-left y coordinate
 	 * @param width domain width
@@ -81,7 +77,7 @@ class Domain {
 	 * @param wx world x position
 	 * @param wy world y position
 	 */
-	move_centre_xy_to(wx, wy) {
+	move_centre_xy_to(wx: number, wy: number) {
 		this._cX = wx; this._cY = wy;
 		this._lowX = this._cX - this._width / 2;
 		this._lowY = this._cY - this._height / 2;
@@ -94,19 +90,15 @@ class Domain {
 	 * @param wx world x position
 	 */
 	move_centre_x_to(wx) {
-		this._cX = wx;
-		this._lowX = this._cX - this._width / 2;
-		this._highX = this._lowX + this._width;
+		this.move_centre_xy_to(wx, this._cY)
 	}
 
 	/**
 	 * Centre the domain about the given vertical position.
 	 * @param wy world y position
 	 */
-	move_centre_y_to(wy) {
-		this._cY = wy;
-		this._lowY = this._cY - this._height / 2;
-		this._highY = this._lowY + this._height;
+	move_centre_y_to(wy: number) {
+		this.move_centre_xy_to(this._cX, wy)
 	}
 
 	/**
@@ -114,7 +106,7 @@ class Domain {
 	 * @param wx world x centre position
 	 * @param wy world y centre position
 	 */
-	move_centre_xy_by(wx, wy) {
+	move_centre_xy_by(wx: number, wy: number) {
 		this._cX -= wx; this._cY -= wy;
 		this._lowX -= wx; this._lowY -= wy;
 		this._highX = this._lowX + this._width;
@@ -125,20 +117,16 @@ class Domain {
 	 * Move the domain centre horizontally by the world distance given.
 	 * @param wx world x centre position
 	 */
-	move_centre_x_by(wx) {
-		this._cX -= wx;
-		this._lowX -= wx;
-		this._highX = this._lowX + this._width;
+	move_centre_x_by(wx: number) {
+		this.move_centre_xy_by(wx, 0);
 	}
 
 	/**
 	 * Move the domain centre vertically by the world distance given.
 	 * @param wy world y centre position
 	 */
-	move_centre_y_by(wy) {
-		this._cY -= wy;
-		this._lowY -= wy;
-		this._highY = this._lowY + this._height;
+	move_centre_y_by(wy: number) {
+		this.move_centre_xy_by(0, wy);
 	}
 
 	/**
@@ -149,8 +137,7 @@ class Domain {
 	 */
 	contains(x: number | Vector2D, y?: number): boolean {
 		if (x instanceof Vector2D) {
-			y = x.y;
-			x = x.x;
+			y = x.y; x = x.x;
 		}
 		return (x >= this._lowX && x <= this._highX && y >= this._lowY && y <= this._highY);
 	}

@@ -43,17 +43,15 @@ class World {
         // Process telegrams
         this._postman?.update();
         // ======================================================================
-        // FSMs
+        // Update FSMs
         [...this._population.values()].forEach(v => v.fsm?.update(elapsedTime, this));
         // ======================================================================
-        // Entity movement
+        // Update all entities
         [...this._population.values()].forEach(v => v.update(elapsedTime, this));
-        //for (let e of this._population.values()) e.update(elapsedTime, this);
 
-
-
+        // ======================================================================
         // Correct partition data
-        this._tree.correctPatritionContents();
+        this._tree.correctPartitionContents();
     }
 
     render() {

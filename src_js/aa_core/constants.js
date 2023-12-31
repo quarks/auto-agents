@@ -23,6 +23,12 @@ const BIT_INTERPOSE = 12;
 const BIT_HIDE = 13;
 const BIT_PATH = 14;
 const BIT_FLOCK = 15;
+const FORCE_NAME = [
+    'Wall avoid     ', 'Obstacle avoid ', 'Evade          ', 'Flee           ',
+    'Separation     ', 'Alignment      ', 'Cohesion       ', 'Seek           ',
+    'Arrive         ', 'Wander         ', 'Pursuit        ', 'Offset Pursuit ',
+    'Interpose      ', 'Hide           ', 'Path           ', 'Flock          '
+];
 // Behaviour identifier constants (flag values)
 const WALL_AVOID = 1 << BIT_WALL_AVOID;
 const OBSTACLE_AVOID = 1 << BIT_OBSTACLE_AVOID;
@@ -42,18 +48,22 @@ const PATH = 1 << BIT_PATH;
 const FLOCK = 1 << BIT_FLOCK;
 // All behaviours mask used when switching off a behaviour
 const ALL_SB_MASK = 0x0ffffff;
-const WEIGHTED = 1;
-const WEIGHTED_PRIORITIZED = 2;
+const WEIGHTED = Symbol.for('Weighted Truncated Sum');
+const WEIGHTED_PRIORITIZED = Symbol.for('Weighted Truncated Running Sum with Prioritization');
 const DECEL_TWEEK = [0.0, 0.3, 0.6, 0.9];
 const FAST = 1;
 const NORMAL = 2;
 const SLOW = 3;
+const WANDER_MIN_ANGLE = -Math.PI;
+const WANDER_MAX_ANGLE = Math.PI;
+const WANDER_ANGLE_RANGE = WANDER_MAX_ANGLE - WANDER_MIN_ANGLE;
 // These refer to array index values so don't change them.
 const AGENT0 = 0;
 const AGENT1 = 1;
 const AGENT_TO_PURSUE = 2;
 const AGENT_TO_EVADE = 3;
 const NBR_AGENT_ARRAY = 4;
+const MAX_TURN_RATE = 25;
 const PASS_THROUGH = Symbol.for('Pass through');
 ;
 const WRAP = Symbol.for('Wrap');
@@ -62,8 +72,4 @@ const REBOUND = Symbol.for('Rebound');
 ;
 const SAFE_TIME_INTERVAL = 250;
 const EPSILON = 1E-10;
-// interface Position {
-//     x: number;
-//     y: number;
-// }
 //# sourceMappingURL=constants.js.map

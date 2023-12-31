@@ -1,10 +1,18 @@
 class Vehicle extends Mover {
     _type = VEHICLE;
+    _autopilot: AutoPilot;
+    _forceRecorder: ForceRecorder;
+
+    get pilot() { return this._autopilot; }
+    get recorder() { return this._forceRecorder; }
 
     constructor(position: Vector2D, radius: number) {
         super(position, radius);
     }
 
+    addAutoPilot(world: World) {
+        this._autopilot = new AutoPilot(this, world);
+    }
 
     fits_inside(lowX: number, lowY: number, highX: number, highY: number): boolean {
         let fits: boolean =
@@ -26,10 +34,9 @@ class Vehicle extends Mover {
      * help decide on the best force calculation method to use. <br>
      * 
      * The force recorder should be switched off in the final sketch.
-     * 
      */
     forceRecorderOn(): Vehicle {
-        //forceRecorder = new ForceRecorder(this);
+        this._forceRecorder = new ForceRecorder(this);
         return this;
     }
 
@@ -72,48 +79,45 @@ class Vehicle extends Mover {
 
     _force = new Vector2D();
     _accel = new Vector2D();
-    _ap;
 
     /**
      * Update method for any moving entity in the world that is under
      * the influence of a steering behaviour.
-     * @param deltaTime elapsed time since last update
+     * @param elapsedTime elapsed time since last update
      * @param world the game world object
      */
-    update(deltaTime: number, world: World): void {
+    update(elapsedTime: number, world: World): void {
         // Remember the starting position
         this._prevPos.set(this._pos);
         // Accumulator for forces
         this._force.set([0, 0]);
         this._accel.set([0, 0]);
-        if (this._ap != null) {
-            this._force.set(this._ap.calculateForce(deltaTime, world));
+        if (this._autopilot != null) {
+            this._force.set(this._autopilot.calculateForce(elapsedTime, world));
             this._force.truncate(this._maxForce);
-            //this._accel.set(Vector2D.div(this._force, this._mass));
-            this._accel = this._force.div(this._mass);
-            // this._accel.set(this._force);
-            // this._accel.div(this._mass);
+            this._accel = this._force.div(this._mass).mult(elapsedTime);
             // Change velocity according to acceleration and elapsed time
-            this._accel.mult(deltaTime);
-            this._vel.add(this._accel);
+            //this._accel = this._accel.mult(elapsedTime);
+            this._vel = this._vel.add(this._accel);
+            //console.log(`Position: ${this._pos.toString()}  Force ${this._force.toString()}    Accel: ${this._accel.toString()},    Vel: ${this._vel.toString()}`);
+            //console.log(`Position: ${this._pos.toString()}  Vel: ${this._vel.toString()}  MagSquared: ${this._vel.lengthSq()}`);
         }
         // Make sure we don't exceed maximum speed
-        this._vel.truncate(this._maxSpeed);
+        this._vel = this._vel.truncate(this._maxSpeed);
         // Change position according to velocity and elapsed time
-        //this._pos.add(Vector2D.mult(this._vel, deltaTime));
-        this._pos = this._pos.add(this._vel.mult(deltaTime));
+        this._pos = this._pos.add(this._vel.mult(elapsedTime));
         // Apply domain constraints
         this.applyDomainConstraint(this._domain ? this._domain : world._domain);
         // Update heading
-        if (this._vel.lengthSq() > 0.25)
-            this.rotateHeadingToAlignWith(deltaTime, this._vel);
+        if (this._vel.lengthSq() > 0.01 / this._mass)
+            this.rotateHeadingToAlignWith(elapsedTime, this._vel);
         else {
             this._vel.set([0, 0]);
             if (this._headingAtRest)
-                this.rotateHeadingToAlignWith(deltaTime, this._headingAtRest);
+                this.rotateHeadingToAlignWith(elapsedTime, this._headingAtRest);
         }
         // Ensure heading and side are normalised
-        this._heading.normalize();
+        this._heading = this._heading.normalize();
         this._side.set([-this._heading.y, this._heading.x]);
     }
 }

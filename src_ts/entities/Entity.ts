@@ -15,10 +15,10 @@ abstract class Entity {
     _zorder: number = 0;
     _colRad: number = 0;
 
-    constructor(position: Array<number> | Position, colRadius = 0) {
+    constructor(position: Array<number> | Position, colRadius = 1) {
         this._id = Entity.NEXT_ID++;
         this._pos = Vector2D.from(position);
-        this.colRad = colRadius;
+        this._colRad = colRadius;
     }
 
     /** Position coordinates */
@@ -70,9 +70,7 @@ abstract class Entity {
         return p.x - cr >= lowX && p.x + cr <= highX && p.y - cr >= lowY && p.y + cr <= highY;
     }
 
-    update(elapsedTime: number, world: World): void {
-
-    }
+    update(elapsedTime: number, world: World): void { }
 
     changeState(newState: State) {
         this._fsm?.changeState(newState);

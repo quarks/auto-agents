@@ -1,56 +1,53 @@
 let wx = 400, wy = 400, depth = 4;
+let painters = [];
 
 function setup() {
-    //console.clear();
+    console.clear();
     console.log('GLOBAL mode');
     let p5canvas = createCanvas(800, 440);
     p5canvas.parent('sketch');
     world = new World(wx, wy, depth);
-    makeEntities();
-
-    x0 = 210; y0 = 20, x1 = 330, y1 = 150;
-    encPart = world._tree?.getEnclosingPartition(x0, y0, x1, y1);
+    world._domain.constraint = REBOUND;
+    makevehicles();
+    let art = new Artefact({ x: 190, y: 210 }, 80, 45);
+    world.birth(art);
 
 }
 
-function makeEntities() {
-    entities = [];
-    ppRed = personPainter(color(255, 200, 200), color(160, 20, 20));
-    ppPurple = personPainter(color(255, 200, 255), color(160, 20, 160));
-    ppBlue = personPainter(color(200, 200, 255), color(20, 20, 160));
-    ppCyan = personPainter(color(200, 255, 255), color(20, 200, 200));
+function makevehicles() {
+    let vehicles = [];
+    painters[1] = personPainter(color(255, 200, 200), color(160, 20, 20));
+    painters[2] = personPainter(color(200, 255, 255), color(20, 200, 200));
+    painters[3] = personPainter(color(255, 120, 255), color(200, 20, 200));
+    painters[4] = personPainter(color(200, 200, 255), color(20, 20, 160));
+
     let data = [
-        [280, 125, 20, ppCyan],
-        [70, 85, 20, ppCyan],
-        [175, 210, 20, ppCyan],
-        [250, 175, 20, ppCyan],
+        [30, 384, 20, painters[1]],
+        // [70, 85, 12, painters[1]],
+        // [175, 210, 14, painters[1]],
+        // [250, 175, 16, painters[1]],
     ]
     for (let i = 0; i < data.length; i++) {
         let d = data[i];
-        entities.push(new Entity({ x: d[0], y: d[1] }, d[2]));
-        entities[i].painter = d[3];
-        world.birth(entities[i]);
+        vehicles.push(new Vehicle({ x: d[0], y: d[1] }, d[2]));
+        vehicles[i].painter = d[3];
+        let v = Vector2D.fromRandom(40, 80);
+        vehicles[i].vel = v.copy();
+        world.birth(vehicles[i]);
     }
-}
-
-function drawEnclosingPartition(part) {
-    if (part) {
-        stroke(255, 200, 200, 160); strokeWeight(6); noFill();
-        rect(part.lowX, part.lowY, part.width, part.height);
-        fill(0, 30); noStroke();
-        rect(x0, y0, x1 - x0, y1 - y0);
-    }
+    console.log(`Col Radius: ${vehicles[0]._colRad}     Mass: ${vehicles[0]._mass}    Rest factor: ${0.1 / vehicles[0]._mass}`);
+    vehicles[0].addAutoPilot(world);
+    vehicles[0].pilot.seekOn([200, 150]);
 }
 
 function draw() {
-    world.update(deltaTime);
+    world.update(deltaTime / 1000);
+    world._tree.colorizeEntities(painters);
     background(220);
     noStroke(); fill(220, 255, 220);
-    let d = world._domain;
-    rect(d.lowX, d.lowY, d.width, d.height);
+    let d = world._domain; rect(d.lowX, d.lowY, d.width, d.height);
     renderTreeGrid();
     world.render();
-    drawEnclosingPartition(encPart)
 }
 
 function renderTreeGrid() {
@@ -67,19 +64,9 @@ function renderTreeGrid() {
 
 function keyTyped() {
     if (key == 't') printTree(world._tree);
-    if (key == 'e') {
-        let ents = world._tree?.getEntitiesInPartition(encPart);
-        ents.forEach(value => value.painter = ppRed);
-    }
-    let eid = '0123456789'.indexOf(key);
-    if (eid >= 0 && eid < entities.length) {
-        world.death(eid);
-        //world.death(entities[eid]);
-    }
 }
 
 function personPainter(colF, colS, p = p5.instance) {
-    //let size = this.colRad;
     let body = [
         0.15, -0.5,
         0.15, 0.5,
@@ -89,7 +76,8 @@ function personPainter(colF, colS, p = p5.instance) {
     return (function () {
         p.push();
         p.translate(this._pos.x, this._pos.y);
-        let size = this.colRad;
+        p.rotate(this.headingAngle)
+        let size = 2 * this.colRad;
         // p.fill(0, 32); p.noStroke();
         // p.ellipse(0, 0, size, size);
         p.fill(colF); p.stroke(colS); p.strokeWeight(1.1);

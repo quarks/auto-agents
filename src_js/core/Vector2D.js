@@ -234,9 +234,9 @@ class Vector2D {
     //     return this;
     // }
     /**
-     *
+     * =============   MUTATES VECTOR    ====================
      * @param position change the coordinates to match position
-     * @returns
+     * @returns the changed vetor
      */
     set(position) {
         if (position instanceof Array) {

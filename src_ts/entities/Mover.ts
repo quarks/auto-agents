@@ -21,12 +21,8 @@ class Mover extends Entity {
     _maxSpeed: number = 50;
     // The maximum force this entity can use to power itself 
     _maxForce: number = 10000;
-    // The maximum rate (radians per second) this vehicle can rotate         
-    _maxTurnRate: number = 1;
     // The current rate of turn (radians per second)         
-    _currTurnRate = 0.5;
-    // The previous rate of turn i.e. on last update (radians per second)         
-    _prevTurnRate = 0;
+    _turnRate = 8;
     // The distance that the entity can see another moving entity
     _viewDistance = 50;
     // Field of view (radians)
@@ -44,7 +40,6 @@ class Mover extends Entity {
     /** Speed */
     get speed(): number { return this._vel.length() }
     get speedSq(): number { return this._vel.lengthSq() }
-
     /** Heading / facing */
     set heading(v: Vector2D) { this._heading = v; }
     get heading(): Vector2D { return this._heading; }
@@ -68,27 +63,25 @@ class Mover extends Entity {
     /** Max force */
     set maxForce(n: number) { this._maxForce = n; }
     get maxForce(): number { return this._maxForce; }
-    /** Max turn rate */
-    set maxTurnRate(n: number) { this._maxTurnRate = n; }
-    get maxTurnRate(): number { return this._maxTurnRate; }
     /** Current turn rate */
-    set currTurnRate(n: number) { this._currTurnRate = n; }
-    get currTurnRate(): number { return this._currTurnRate; }
-    /** Previous turn rate */
-    set prevTurnRate(n: number) { this._prevTurnRate = n; }
-    get prevTurnRate(): number { return this._prevTurnRate; }
+    set turnRate(n: number) { this._turnRate = Math.min(Math.max(n, 0), MAX_TURN_RATE); }
+    get turnRate(): number { return this._turnRate; }
     /** View distance */
     set viewDistance(n: number) { this._viewDistance = n; }
     get viewDistance(): number { return this._viewDistance; }
     /** View distance */
     set viewFOV(n: number) { this._viewFOV = n; }
     get viewFOV(): number { return this._viewFOV; }
+    /** Domain */
+    set domain(d: Domain) { this._domain = d.copy(); }
+    get domain(): Domain { return this._domain.copy(); }
 
     constructor(position: Array<number> | Vector2D, colRadius = 0) {
         super(position, colRadius);
         this._prevPos.set(this._pos);
-        this._mass = this._colRad * this._colRad;
+        this._mass = this._colRad * this._colRad * 0.01;
         this._side = this._heading.getPerp();
+        console.log(`Mass:  ${this._mass}`);
     }
 
     /**
@@ -234,7 +227,7 @@ class Mover extends Entity {
         if (Math.abs(angleBetween) < EPSILON) return true;
 
         // Calculate the amount of turn possible in time allowed
-        let angleToTurn = this._currTurnRate * deltaTime;
+        let angleToTurn = this._turnRate * deltaTime;
 
         // Prevent over steer by clamping the amount to turn to the angle angle 
         // between the heading vector and the target

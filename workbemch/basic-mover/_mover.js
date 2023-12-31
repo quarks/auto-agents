@@ -9,6 +9,9 @@ function setup() {
     world = new World(wx, wy, depth);
     world._domain.constraint = REBOUND;
     makeMovers();
+    let art = new Artefact({ x: 190, y: 210 }, 80, 45);
+    world.birth(art);
+
 }
 
 function makeMovers() {
@@ -19,7 +22,7 @@ function makeMovers() {
     painters[4] = personPainter(color(200, 200, 255), color(20, 20, 160));
 
     let data = [
-        [280, 125, 10, painters[1]],
+        [380, 125, 10, painters[1]],
         [70, 85, 12, painters[1]],
         [175, 210, 14, painters[1]],
         [250, 175, 16, painters[1]],
@@ -32,6 +35,7 @@ function makeMovers() {
         movers[i].vel = v.copy();
         world.birth(movers[i]);
     }
+    movers[0].domain = new Domain(340, 110, 560, 190, REBOUND);
 }
 
 

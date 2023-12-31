@@ -14,8 +14,6 @@ class Artefact extends Entity {
             && (this._lowY >= lowY) && (this._highY <= highY);
         return fits;
     }
-    update(elapsedTime) {
-        throw new Error("Method not implemented.");
-    }
+    render() { }
 }
 //# sourceMappingURL=artefact.js.map

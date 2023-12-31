@@ -32,6 +32,10 @@ class Domain {
         if (c == REBOUND || c == WRAP || c == PASS_THROUGH)
             this._constraint = c;
     }
+    /** returns a copy of this domain object */
+    copy() {
+        return new Domain(this._lowX, this._lowY, this._highX, this._highY, this._constraint);
+    }
     /**
      * Create a Domain that is a copy of another one.
      * @param d domain to be copied
@@ -48,15 +52,7 @@ class Domain {
         this._constraint = d._constraint;
     }
     /**
-     *
-     * @returns a copy of this domain object
-     */
-    copy() {
-        return new Domain(this._lowX, this._lowY, this._highX, this._highY, this._constraint);
-    }
-    /**
      * Set the domain size.
-     *
      * @param lowX top-left x coordinate
      * @param lowY top-left y coordinate
      * @param width domain width
@@ -90,18 +86,14 @@ class Domain {
      * @param wx world x position
      */
     move_centre_x_to(wx) {
-        this._cX = wx;
-        this._lowX = this._cX - this._width / 2;
-        this._highX = this._lowX + this._width;
+        this.move_centre_xy_to(wx, this._cY);
     }
     /**
      * Centre the domain about the given vertical position.
      * @param wy world y position
      */
     move_centre_y_to(wy) {
-        this._cY = wy;
-        this._lowY = this._cY - this._height / 2;
-        this._highY = this._lowY + this._height;
+        this.move_centre_xy_to(this._cX, wy);
     }
     /**
      * Centre the domain about the given position.
@@ -121,18 +113,14 @@ class Domain {
      * @param wx world x centre position
      */
     move_centre_x_by(wx) {
-        this._cX -= wx;
-        this._lowX -= wx;
-        this._highX = this._lowX + this._width;
+        this.move_centre_xy_by(wx, 0);
     }
     /**
      * Move the domain centre vertically by the world distance given.
      * @param wy world y centre position
      */
     move_centre_y_by(wy) {
-        this._cY -= wy;
-        this._lowY -= wy;
-        this._highY = this._lowY + this._height;
+        this.move_centre_xy_by(0, wy);
     }
     /**
      * See if this point is within the domain

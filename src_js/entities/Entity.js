@@ -1,5 +1,5 @@
 class Entity {
-    constructor(position, colRadius = 0) {
+    constructor(position, colRadius = 1) {
         this._type = ENTITY;
         this._visible = true;
         this._pos = new Vector2D();
@@ -7,7 +7,7 @@ class Entity {
         this._colRad = 0;
         this._id = Entity.NEXT_ID++;
         this._pos = Vector2D.from(position);
-        this.colRad = colRadius;
+        this._colRad = colRadius;
     }
     /** Position coordinates */
     get x() { return this._pos.x; }
@@ -48,8 +48,7 @@ class Entity {
         let p = this._pos, cr = this._colRad;
         return p.x - cr >= lowX && p.x + cr <= highX && p.y - cr >= lowY && p.y + cr <= highY;
     }
-    update(elapsedTime, world) {
-    }
+    update(elapsedTime, world) { }
     changeState(newState) {
         this._fsm?.changeState(newState);
     }

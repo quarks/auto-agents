@@ -105,11 +105,10 @@ class QPart {
         }
         return findPartition(this.getRoot(), entity);
     }
-    correctPatritionContents() {
+    correctPartitionContents() {
         function processPartition(part, root) {
             // Only need to consider entiies that can move i.e. has a velocity attribute
             let me = [...part._entities].filter(x => x['_vel']);
-            //if (me.length > 0) console.log(`Part: ${part.toString()}  Nbr movers: ${me.length}`);
             for (let e of me) {
                 if (e.fitsInside(part.lowX, part.lowY, part.highX, part.highY)) {
                     // Fits inside this partition attempt to move down as far as possible

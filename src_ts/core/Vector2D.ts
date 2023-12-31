@@ -282,9 +282,9 @@ class Vector2D implements Position {
     // }
 
     /**
-     * 
+     * =============   MUTATES VECTOR    ====================
      * @param position change the coordinates to match position
-     * @returns 
+     * @returns the changed vetor
      */
     set(position: Array<number> | Position): Vector2D {
         if (position instanceof Array) {

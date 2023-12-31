@@ -1,5 +1,3 @@
-
-
 class QPart {
     _entities: Set<Entity>;
     _parent: QPart;
@@ -39,13 +37,10 @@ class QPart {
     get highX(): number { return this._highX; }
     get lowY(): number { return this._lowY; }
     get highY(): number { return this._highY; }
-
     get cX(): number { return this._cX; }
     get cY(): number { return this._cY; }
-
     get width(): number { return this.highX - this._lowX; }
     get height(): number { return this.highY - this._lowY; }
-
 
     get isLeaf(): boolean { return !this._children; }
     get isRoot(): boolean { return !this._parent; }
@@ -132,11 +127,10 @@ class QPart {
         return findPartition(this.getRoot(), entity);
     }
 
-    correctPatritionContents() {
+    correctPartitionContents() {
         function processPartition(part: QPart, root: QPart) {
             // Only need to consider entiies that can move i.e. has a velocity attribute
             let me = [...part._entities].filter(x => x['_vel']);
-            //if (me.length > 0) console.log(`Part: ${part.toString()}  Nbr movers: ${me.length}`);
             for (let e of me) {
                 if (e.fitsInside(part.lowX, part.lowY, part.highX, part.highY)) {
                     // Fits inside this partition attempt to move down as far as possible
@@ -162,7 +156,6 @@ class QPart {
         let root = this.getRoot();
         processPartition(root, root);
     }
-
 
     colorizeEntities(painters) {
         function colourize(part) {
