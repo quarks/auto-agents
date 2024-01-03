@@ -3,30 +3,6 @@ class Vehicle extends Mover {
         super(position, radius);
         this._type = VEHICLE;
         /**
-         * Dump the force recorder on for this Vehicle. Any collected
-         * data will be lost.<br>
-         */
-        // public Vehicle forceRecorderOff(){
-        // 	forceRecorder = null;
-        // 	return this;
-        // }
-        /**
-         * Get the force recorder if this vehicle has one. This is used by the World class
-         * when displaying all force logs
-         * @return the force logger or null if it doesn't exist
-         */
-        // public ForceRecorder forceRecorder(){
-        // 	return forceRecorder;
-        // }
-        /**
-         * See if this vehicle has a force recorder.
-         *
-         * @return true if force logger exists
-         */
-        // public boolean hasForceRecorder(){
-        // 	return forceRecorder != null;
-        // }
-        /**
          * Display the steering force data for this Vehicle. If there is no
          * recorder or no data has been collected for this Vehicle then
          * nothing is displayed.
@@ -78,7 +54,7 @@ class Vehicle extends Mover {
         // Accumulator for forces
         this._force.set([0, 0]);
         this._accel.set([0, 0]);
-        if (this._autopilot != null) {
+        if (this._autopilot) {
             this._force.set(this._autopilot.calculateForce(elapsedTime, world));
             this._force.truncate(this._maxForce);
             this._accel = this._force.div(this._mass).mult(elapsedTime);
@@ -95,7 +71,8 @@ class Vehicle extends Mover {
         // Apply domain constraints
         this.applyDomainConstraint(this._domain ? this._domain : world._domain);
         // Update heading
-        if (this._vel.lengthSq() > 0.01 / this._mass)
+        //console.log(this._vel.lengthSq());
+        if (this._vel.length() > 1.5)
             this.rotateHeadingToAlignWith(elapsedTime, this._vel);
         else {
             this._vel.set([0, 0]);

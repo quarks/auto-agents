@@ -210,29 +210,27 @@ class Vector2D {
      * Normalise this vector
      */
     normalize() {
-        let nv = this.copy();
-        let mag = Math.sqrt(nv._p[0] * nv._p[0] + nv._p[1] * nv._p[1]);
+        let mag = this.length();
         if (!Number.isFinite(mag) || mag == 0)
             throw new Error('Cannot normalise a vector of zero or infinite length');
-        nv._p[0] /= mag;
-        nv._p[1] /= mag;
-        return nv;
+        return new Vector2D(this._p[0] / mag, this._p[1] / mag);
     }
-    /**
-     * Invalid parameters will leave the vector unchanged.
-     * @param x x value or a Vector2D
-     * @param y y value
-     * @returns this vector
-     */
-    // set(x: number | Vector2D, y?: number): Vector2D {
-    //     if (typeof x === "object") {
-    //         this.p[0] = x.p[0]; this.p[1] = x.p[1];
-    //     }
-    //     else if (Number.isFinite(x) && Number.isFinite(y)) {
-    //         this.p[0] = x; this.p[1] = y;
-    //     }
-    //     return this;
+    // normalize(): Vector2D {
+    //     let nv = this.copy();
+    //     let mag = Math.sqrt(nv._p[0] * nv._p[0] + nv._p[1] * nv._p[1]);
+    //     if (!Number.isFinite(mag) || mag == 0)
+    //         throw new Error('Cannot normalise a vector of zero or infinite length');
+    //     nv._p[0] /= mag;
+    //     nv._p[1] /= mag;
+    //     return nv;
     // }
+    resize(size) {
+        let mag = this.length();
+        if (!Number.isFinite(mag) || mag == 0)
+            throw new Error('Cannot resize a vector of zero or infinite length');
+        let ratio = size / mag;
+        return new Vector2D(this._p[0] * ratio, this._p[1] * ratio);
+    }
     /**
      * =============   MUTATES VECTOR    ====================
      * @param position change the coordinates to match position

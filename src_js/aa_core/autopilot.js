@@ -31,7 +31,7 @@ class AutoPilot {
         this._gotoTarget = new Vector2D();
         // Deceleration rate for arrive
         this._arriveRate = NORMAL;
-        this._arriveDist = 0.5;
+        this._arriveDist = 1;
         this._fleeTarget = new Vector2D();
         // Panic distance squared for flee to be effective
         this._fleeRadius = 100;
@@ -47,16 +47,14 @@ class AutoPilot {
          */
         this._agents = new Array(NBR_AGENT_ARRAY);
         this._pursueOffset = new Vector2D();
-        // the current angle to target on the wander circle
-        this._wanderAngle = 0;
-        // the maximum amount of angular displacement per second
-        this._wanderAngleJitter = 60;
-        //  radius of the constraining circle for the wander behaviour
-        this._wanderRadius = 20.0;
+        // radius of the constraining circle for the wander behaviour
+        this._wanderRadius = 50.0;
         // distance the wander circle is projected in front of the agent
-        this._wanderDist = 60.0;
-        // The maximum angular displacement in this frame.
-        this._wanderAngleDelta = 0;
+        this._wanderDist = 70.0;
+        // The target lies on the circumference of the wander circle
+        this._wanderTarget = new Vector2D();
+        // Maximum jitter per second
+        this._maxWanderJitter = 900;
         // Cats whiskers used for wall avoidance
         this._nbrWhiskers = 5;
         this._whiskerFOV = Math.PI; // radians
@@ -96,6 +94,13 @@ class AutoPilot {
         this._flags = 0;
         return this;
     }
+    /** Get current distance to the seek target position. */
+    targetDist(target) {
+        if (target)
+            return Vector2D.dist(this._owner._pos, target);
+        else
+            return Vector2D.dist(this._owner._pos, this._gotoTarget);
+    }
     /*
      * ======================================================================
      * SEEK
@@ -116,10 +121,6 @@ class AutoPilot {
             this._gotoTarget.set(target);
         return this;
     }
-    /** Get current distance to the seek target position. */
-    seekDistance() {
-        return Vector2D.dist(this._owner._pos, this._gotoTarget);
-    }
     /**
      * Set the weight for this behaviour
      *
@@ -138,6 +139,176 @@ class AutoPilot {
     isSeekOn() {
         return (this._flags & SEEK) != 0;
     }
+    seek(owner, target) {
+        let desiredVelocity = target.sub(this._owner._pos);
+        desiredVelocity = desiredVelocity.normalize();
+        desiredVelocity = desiredVelocity.mult(owner.maxSpeed);
+        return desiredVelocity.sub(owner.vel);
+    }
+    /*
+     * ======================================================================
+     * ARRIVE
+     * ======================================================================
+     */
+    /** Switch off arrive  */
+    arriveOff() {
+        this._flags &= (ALL_SB_MASK - ARRIVE);
+        return this;
+    }
+    /**
+     *
+     * @param target the position to arrive at
+     * @param rate rate of approach (SLOW, NORMAL or FAST)
+     * @returns this auto-pilot object
+     */
+    arriveOn(target, rate) {
+        this._flags |= ARRIVE;
+        if (target)
+            this._gotoTarget.set(target);
+        if (rate)
+            this.arriveRate(rate);
+        return this;
+    }
+    /**
+     * Define the rate of approach. This should be SLOW, NORMAL or FAST any
+     * other value will default to NORMAL
+     * @param rate the approach rate
+     * @return this auto-pilot object
+     */
+    arriveRate(rate) {
+        switch (rate) {
+            case SLOW:
+            case FAST:
+                this._arriveRate = rate;
+                break;
+            default: this._arriveRate = NORMAL;
+        }
+        return this;
+    }
+    /** Get current distance to the arrive target position. */
+    arriveDistance() {
+        return Vector2D.dist(this._owner.pos, this._gotoTarget);
+    }
+    /**
+     * Set the weight for this behaviour
+     *
+     * @param weight the weighting to be applied to this behaviour.
+     * @return this auto-pilot object
+     */
+    arriveWeight(weight) {
+        this._weightings[BIT_ARRIVE] = weight;
+        return this;
+    }
+    /**
+     * Get the weighting for this behaviour
+     */
+    getArriveWeight() {
+        return this._weightings[BIT_ARRIVE];
+    }
+    /**
+     * Is arrive switched on?
+     */
+    isArriveOn() {
+        return (this._flags & ARRIVE) != 0;
+    }
+    arrive(owner, target) {
+        let toTarget = target.sub(owner.pos), dist = toTarget.length();
+        if (dist > this._arriveDist) {
+            let rate = dist / DECEL_TWEEK[this._arriveRate];
+            let speed = Math.min(owner.maxSpeed, rate);
+            let desiredVelocity = toTarget.mult(speed / dist);
+            //console.log(`Dist: ${dist}   Rate: ${rate}  Speed: ${speed}`);
+            return desiredVelocity.sub(owner.vel);
+        }
+        return new Vector2D();
+    }
+    /*
+     * ======================================================================
+     * WANDER
+     * ======================================================================
+     */
+    /**
+     * Switch off wander
+     *
+     * @return this auto-pilot object
+     */
+    wanderOff() {
+        this._flags &= (ALL_SB_MASK - WANDER);
+        return this;
+    }
+    /**
+     * Switch on wander
+     *
+     * @return this auto-pilot object
+     */
+    wanderOn() {
+        // Calculate iniitial wander target to directly ahead of of owner
+        this._wanderTarget = this._owner.heading.resize(this._wanderRadius);
+        this._flags |= WANDER;
+        return this;
+    }
+    /**
+     * Set the weight for this behaviour
+     *
+     * @param weight the weighting to be applied to this behaviour.
+     * @return this auto-pilot object
+     */
+    wanderWeight(weight) {
+        this._weightings[BIT_WANDER] = weight;
+        return this;
+    }
+    /**
+     * Is wander switched on?
+     */
+    isWanderOn() {
+        return (this._flags & WANDER) != 0;
+    }
+    wander(owner, elapsedTime) {
+        function rnd(n) {
+            return (Math.random() - Math.random()) * n;
+        }
+        let delta = this._maxWanderJitter * elapsedTime;
+        // Add small displacement to wander target
+        this._wanderTarget = this._wanderTarget.add(rnd(delta), rnd(delta));
+        // Project target on to wander circle
+        this._wanderTarget = this._wanderTarget.resize(this._wanderRadius);
+        // Get local target position
+        let targetLocal = this._wanderTarget.add(this._wanderDist, 0);
+        // Calculate the world position based on owner
+        let targetWorld = Transformations.pointToWorldSpace(targetLocal, owner.heading.normalize(), owner.side.normalize(), owner.pos);
+        return targetWorld.sub(owner.pos);
+    }
+    /**
+     * Set some or all of the factors used for wander behaviour. <br>
+     * Only provide values for the factors you want to set, pass 'null'
+     * for any factor that is to be unchanged. <br>
+     * Where appropriate validation will be applied to the value passed
+     * and if invalid (eg out of permitted range) will be silently ignored
+     * (no warning message) and the factor will remain unchanged.
+     *
+     * @param dist
+     * @param radius
+     * @param jitter
+     * @return this auto-pilot object
+     */
+    wanderFactors(factors) {
+        if (factors) {
+            if (factors['wanderDist'])
+                this._wanderDist = factors['wanderDist'];
+            if (factors['wanderRadius'])
+                this._wanderRadius = factors['wanderRadius'];
+            if (factors['maxWanderJitter'])
+                this._maxWanderJitter = factors['maxWanderJitter'];
+        }
+        return this;
+    }
+    /** gets the wanderRadius */
+    get wanderRadius() { return this._wanderRadius; }
+    /** gets the wanderDist */
+    get wanderDist() { return this._wanderDist; }
+    /** Gets the maximum amount of jitter allowed per second  */
+    get wanderJitter() { return this._maxWanderJitter; }
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     calculateForce(elapsedTime, world) {
         let sf = new Vector2D();
         if (this._flags != 0) {
@@ -156,9 +327,21 @@ class AutoPilot {
         let maxForce = owner.maxForce;
         let recorder = owner.recorder;
         let accumulator = new Vector2D();
-        if (this.isSeekOn) {
+        if (this.isSeekOn()) {
             let f = this.seek(owner, this._gotoTarget);
             recorder?.addData(BIT_SEEK, f);
+            if (!this.accumulateForce(accumulator, f, maxForce))
+                return accumulator;
+        }
+        if (this.isArriveOn()) {
+            let f = this.arrive(owner, this._gotoTarget);
+            recorder?.addData(BIT_ARRIVE, f);
+            if (!this.accumulateForce(accumulator, f, maxForce))
+                return accumulator;
+        }
+        if (this.isWanderOn()) {
+            let f = this.wander(owner, elapsedTime);
+            recorder?.addData(BIT_WANDER, f);
             if (!this.accumulateForce(accumulator, f, maxForce))
                 return accumulator;
         }
@@ -196,13 +379,6 @@ class AutoPilot {
             totalForceSoFar.set([totalForceSoFar.x + forceToAdd.x, totalForceSoFar.y + forceToAdd.y]);
             return false;
         }
-    }
-    seek(owner, target) {
-        let desiredVelocity = target.sub(this._owner._pos);
-        desiredVelocity = desiredVelocity.normalize();
-        desiredVelocity = desiredVelocity.mult(owner.maxSpeed);
-        desiredVelocity = desiredVelocity.sub(owner.vel);
-        return desiredVelocity;
     }
 }
 //# sourceMappingURL=autopilot.js.map

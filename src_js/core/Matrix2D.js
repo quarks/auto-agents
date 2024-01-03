@@ -21,12 +21,15 @@ class Matrix2D {
      * @return a list of transformed vectors.
      */
     transformVectors(vList) {
-        return vList.map((v) => {
-            let x = (this.matrix._11 * v.x) + (this.matrix._21 * v.y) + (this.matrix._31);
-            let y = (this.matrix._12 * v.x) + (this.matrix._22 * v.y) + (this.matrix._32);
-            return new Vector2D(x, y);
-        });
+        return vList.map((v) => { return this.transformVector(v); });
     }
+    // transformVectors(vList: Array<Vector2D>): Array<Vector2D> {
+    //     return vList.map((v) => {
+    //         let x = (this.matrix._11 * v.x) + (this.matrix._21 * v.y) + (this.matrix._31);
+    //         let y = (this.matrix._12 * v.x) + (this.matrix._22 * v.y) + (this.matrix._32);
+    //         return new Vector2D(x, y);
+    //     });
+    // }
     /**
      * Create a new vector from the provided vector after being transformed
      * by the matrix.

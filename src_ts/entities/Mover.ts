@@ -16,30 +16,31 @@ class Mover extends Entity {
     _side: Vector2D;
 
     // The mass of the entity
-    _mass: number;
+    _mass: number = 1;
     // The maximum speed this entity may travel at.
     _maxSpeed: number = 50;
     // The maximum force this entity can use to power itself 
     _maxForce: number = 10000;
     // The current rate of turn (radians per second)         
-    _turnRate = 8;
+    _turnRate = 2;
     // The distance that the entity can see another moving entity
     _viewDistance = 50;
     // Field of view (radians)
     _viewFOV = 1.047; // Default is 60 degrees
 
     /** Position */
-    set pos(v: Vector2D) { this._pos = v; };
-    get pos(): Vector2D { return this._pos };
+    set pos(v: Vector2D) { this._pos = v; }
+    get pos(): Vector2D { return this._pos }
     /** Prev position */
-    set prevPos(v: Vector2D) { this._prevPos = v; };
-    get prevPos(): Vector2D { return this._prevPos };
+    set prevPos(v: Vector2D) { this._prevPos = v; }
+    get prevPos(): Vector2D { return this._prevPos }
     /** Velocity */
-    set vel(v: Vector2D) { this._vel = v; };
-    get vel(): Vector2D { return this._vel };
+    set vel(v: Vector2D) { this._vel = v; }
+    get vel(): Vector2D { return this._vel; }
+    get velAngle(): number { return this._vel.angle; }
     /** Speed */
-    get speed(): number { return this._vel.length() }
-    get speedSq(): number { return this._vel.lengthSq() }
+    get speed(): number { return this._vel.length(); }
+    get speedSq(): number { return this._vel.lengthSq(); }
     /** Heading / facing */
     set heading(v: Vector2D) { this._heading = v; }
     get heading(): Vector2D { return this._heading; }
@@ -79,9 +80,8 @@ class Mover extends Entity {
     constructor(position: Array<number> | Vector2D, colRadius = 0) {
         super(position, colRadius);
         this._prevPos.set(this._pos);
-        this._mass = this._colRad * this._colRad * 0.01;
+        this._mass = 1;
         this._side = this._heading.getPerp();
-        console.log(`Mass:  ${this._mass}`);
     }
 
     /**
@@ -215,11 +215,11 @@ class Mover extends Entity {
 
     /**
      * Rotate this entities heading to align with a vector over a given time period
-     * @param deltaTime time (seconds) to turn entity
+     * @param elapsedTime time (seconds) to turn entity
      * @param alignTo vector to align entities heading with
      * @return true if facing alignment vector
      */
-    rotateHeadingToAlignWith(deltaTime: number, alignTo: Vector2D): boolean {
+    rotateHeadingToAlignWith(elapsedTime: number, alignTo: Vector2D): boolean {
         // Calculate the angle between the heading vector and the target
         let angleBetween = this._heading.angleBetween(alignTo);
 
@@ -227,7 +227,7 @@ class Mover extends Entity {
         if (Math.abs(angleBetween) < EPSILON) return true;
 
         // Calculate the amount of turn possible in time allowed
-        let angleToTurn = this._turnRate * deltaTime;
+        let angleToTurn = this._turnRate * elapsedTime;
 
         // Prevent over steer by clamping the amount to turn to the angle angle 
         // between the heading vector and the target

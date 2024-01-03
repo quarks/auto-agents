@@ -73,9 +73,9 @@ const NBR_AGENT_ARRAY = 4;
 
 const MAX_TURN_RATE = 25;
 
-const PASS_THROUGH = Symbol.for('Pass through');;
-const WRAP = Symbol.for('Wrap');;
-const REBOUND = Symbol.for('Rebound');;
+const PASS_THROUGH = Symbol.for('Pass through');
+const WRAP = Symbol.for('Wrap');
+const REBOUND = Symbol.for('Rebound');
 
 const SAFE_TIME_INTERVAL = 250;
 

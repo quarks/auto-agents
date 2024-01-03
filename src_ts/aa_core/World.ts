@@ -2,6 +2,7 @@ class World {
     _domain: Domain;
     _painter: Function;
     _tree: QPart;
+    _treeSize: number;
     _population: Map<number, Entity>;
     _births: Array<Entity>;
     _deaths: Array<Entity>;
@@ -12,13 +13,20 @@ class World {
 
     set painter(painter: Function) { this._painter = painter; }
 
+    get oX(): number { return this._domain.lowX }
+    get oY(): number { return this._domain.lowY }
+    get width(): number { return this._domain.width }
+    get height(): number { return this._domain.height }
+
+
     constructor(wsizeX: number, wsizeY: number, depth: number = 1) {
         this._postman = new Dispatcher(this);
         this._population = new Map<number, Entity>();
         this._births = [];
         this._deaths = [];
         this._domain = new Domain(0, 0, wsizeX, wsizeY);
-        this._tree = QPart.makeTree(0, 0, wsizeX, wsizeY, depth);
+        this._treeSize = Math.max(wsizeX, wsizeY);
+        this._tree = QPart.makeTree(0, 0, this._treeSize, this._treeSize, depth);
     }
 
     birth(entity: Entity) {

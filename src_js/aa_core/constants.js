@@ -65,11 +65,8 @@ const AGENT_TO_EVADE = 3;
 const NBR_AGENT_ARRAY = 4;
 const MAX_TURN_RATE = 25;
 const PASS_THROUGH = Symbol.for('Pass through');
-;
 const WRAP = Symbol.for('Wrap');
-;
 const REBOUND = Symbol.for('Rebound');
-;
 const SAFE_TIME_INTERVAL = 250;
 const EPSILON = 1E-10;
 //# sourceMappingURL=constants.js.map

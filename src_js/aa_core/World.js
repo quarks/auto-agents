@@ -5,10 +5,15 @@ class World {
         this._births = [];
         this._deaths = [];
         this._domain = new Domain(0, 0, wsizeX, wsizeY);
-        this._tree = QPart.makeTree(0, 0, wsizeX, wsizeY, depth);
+        this._treeSize = Math.max(wsizeX, wsizeY);
+        this._tree = QPart.makeTree(0, 0, this._treeSize, this._treeSize, depth);
     }
     get postman() { return this._postman; }
     set painter(painter) { this._painter = painter; }
+    get oX() { return this._domain.lowX; }
+    get oY() { return this._domain.lowY; }
+    get width() { return this._domain.width; }
+    get height() { return this._domain.height; }
     birth(entity) {
         if (entity)
             this._births.push(entity);

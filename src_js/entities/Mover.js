@@ -10,36 +10,32 @@ class Mover extends Entity {
         this._heading = new Vector2D(1, 0); // facing East;
         // a normalised vector pointing in the entity's rest heading. 
         this._headingAtRest = new Vector2D(1, 0); // facing East;
+        // The mass of the entity
+        this._mass = 1;
         // The maximum speed this entity may travel at.
         this._maxSpeed = 50;
         // The maximum force this entity can use to power itself 
         this._maxForce = 10000;
         // The current rate of turn (radians per second)         
-        this._turnRate = 8;
+        this._turnRate = 2;
         // The distance that the entity can see another moving entity
         this._viewDistance = 50;
         // Field of view (radians)
         this._viewFOV = 1.047; // Default is 60 degrees
         this._prevPos.set(this._pos);
-        this._mass = this._colRad * this._colRad * 0.01;
+        this._mass = 1;
         this._side = this._heading.getPerp();
-        console.log(`Mass:  ${this._mass}`);
     }
     /** Position */
     set pos(v) { this._pos = v; }
-    ;
     get pos() { return this._pos; }
-    ;
     /** Prev position */
     set prevPos(v) { this._prevPos = v; }
-    ;
     get prevPos() { return this._prevPos; }
-    ;
     /** Velocity */
     set vel(v) { this._vel = v; }
-    ;
     get vel() { return this._vel; }
-    ;
+    get velAngle() { return this._vel.angle; }
     /** Speed */
     get speed() { return this._vel.length(); }
     get speedSq() { return this._vel.lengthSq(); }
@@ -203,18 +199,18 @@ class Mover extends Entity {
     }
     /**
      * Rotate this entities heading to align with a vector over a given time period
-     * @param deltaTime time (seconds) to turn entity
+     * @param elapsedTime time (seconds) to turn entity
      * @param alignTo vector to align entities heading with
      * @return true if facing alignment vector
      */
-    rotateHeadingToAlignWith(deltaTime, alignTo) {
+    rotateHeadingToAlignWith(elapsedTime, alignTo) {
         // Calculate the angle between the heading vector and the target
         let angleBetween = this._heading.angleBetween(alignTo);
         // Return true if the player is virtually facing the target
         if (Math.abs(angleBetween) < EPSILON)
             return true;
         // Calculate the amount of turn possible in time allowed
-        let angleToTurn = this._turnRate * deltaTime;
+        let angleToTurn = this._turnRate * elapsedTime;
         // Prevent over steer by clamping the amount to turn to the angle angle 
         // between the heading vector and the target
         if (angleToTurn > angleBetween)
