@@ -3,7 +3,6 @@ let wanderdemo = function (p) {
     let showTrail = true, showCircle = true, allowLooping = true;
     let wanderer, trail, gui;
 
-
     p.setup = function () {
         console.clear();
         let p5canvas = p.createCanvas(640, 400, p);
@@ -15,8 +14,8 @@ let wanderdemo = function (p) {
 
         wanderer.pilot.setDetails({ 'wanderDist': 75, 'wanderRadius': 65, 'xxx': 123, 'wanderJitter': 35 });
 
-        gui = GUI.getNamed('WanderDemo', p5canvas, p);
-        p.createGUI(gui);
+        //gui = GUI.getNamed('WanderDemo', p5canvas, p);
+        //p.createGUI(gui);
     }
 
     p.createGUI = function (gui) {
@@ -80,7 +79,7 @@ let wanderdemo = function (p) {
         if (showTrail) trail.render();
         p.stroke(128, 0, 128); p.strokeWeight(4); p.fill(255, 220);
         p.rect(410, 10, 220, 380, 10);
-        gui.draw();
+        gui?.draw();
     }
 
     p.keyTyped = function () {

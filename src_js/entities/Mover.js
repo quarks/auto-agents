@@ -13,7 +13,7 @@ class Mover extends Entity {
         // The mass of the entity
         this._mass = 1;
         // The maximum speed this entity may travel at.
-        this._maxSpeed = 50;
+        this._maxSpeed = 100;
         // The maximum force this entity can use to power itself 
         this._maxForce = 10000;
         // The current rate of turn (radians per second)         
