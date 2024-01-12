@@ -1,5 +1,5 @@
 class Mover extends Entity {
-    _type = MOVER;
+
     // The domain the entity is constrained to (if any)
     _domain: Domain;
 
@@ -20,17 +20,17 @@ class Mover extends Entity {
     // The maximum speed this entity may travel at.
     _maxSpeed: number = 100;
     // The maximum force this entity can use to power itself 
-    _maxForce: number = 10000;
+    _maxForce: number = 1000;
     // The current rate of turn (radians per second)         
-    _turnRate = 2;
+    _turnRate = 1;
     // The distance that the entity can see another moving entity
     _viewDistance = 50;
     // Field of view (radians)
     _viewFOV = 1.047; // Default is 60 degrees
 
-    /** Position */
-    set pos(v: Vector2D) { this._pos = v; }
-    get pos(): Vector2D { return this._pos }
+    // /** Position */
+    // set pos(v: Vector2D) { this._pos = v; }
+    // get pos(): Vector2D { return this._pos }
     /** Prev position */
     set prevPos(v: Vector2D) { this._prevPos = v; }
     get prevPos(): Vector2D { return this._prevPos }
@@ -78,7 +78,7 @@ class Mover extends Entity {
     get domain(): Domain { return this._domain.copy(); }
 
     constructor(position: Array<number> | Vector2D, colRadius = 0) {
-        super(position, colRadius);
+        super(position, colRadius); this._type = MOVER;
         this._prevPos.set(this._pos);
         this._mass = 1;
         this._side = this._heading.getPerp();

@@ -45,15 +45,15 @@ class QPart {
     getRoot() {
         return this.isRoot ? this : this._parent.getRoot();
     }
-    getEntitiesInPartition(part) {
-        function getEntities(part, ents) {
-            ents.push(...part._entities);
-            part._children?.forEach(value => getEntities(value, ents));
-        }
-        let entities = [];
-        getEntities(part, entities);
-        return entities;
-    }
+    // getEntitiesInPartition(part: QPart): Array<Entity> {
+    //     function getEntities(part: QPart, ents: Array<Entity>) {
+    //         ents.push(...part._entities);
+    //         part._children?.forEach(value => getEntities(value, ents));
+    //     }
+    //     let entities = [];
+    //     getEntities(part, entities);
+    //     return entities;
+    // }
     // Find the partition that encompasses the specifies region. The specified region will be 
     // trimmed to fit inside the root if necessary.
     getEnclosingPartition(lowX, lowY, highX, highY) {
@@ -75,8 +75,50 @@ class QPart {
             [lowX, lowY, highX, highY] = a;
             return findPartition(root, lowX, lowY, highX, highY);
         }
-        return undefined;
+        return root;
     }
+    getItemsInRegion(lowX, lowY, highX, highY) {
+        function getParent(part) {
+            if (!part)
+                return;
+            parts.push(part);
+            ents.push(...part._entities);
+            getParent(part._parent);
+        }
+        function getChildren(part) {
+            parts.push(part);
+            ents.push(...part._entities);
+            if (part.hasChildren)
+                for (let child of part._children)
+                    if (Geom2D.box_box(lowX, lowY, highX, highY, child.lowX, child.lowY, child.highX, child.highY))
+                        getChildren(child);
+            return;
+        }
+        let parts = [], ents = [];
+        let encPart = this.getEnclosingPartition(lowX, lowY, highX, highY);
+        getParent(encPart._parent);
+        getChildren(encPart);
+        return { partitions: parts, entities: ents, enc_partition: encPart };
+    }
+    // getItemsOfInterest(lowX: number, lowY: number, highX: number, highY: number) {
+    //     function getParent(part) {
+    //         if (!part) return;
+    //         parts.push(part); ents.push(...part._entities);
+    //         getParent(part._parent);
+    //     }
+    //     function getChildren(part) {
+    //         parts.push(part); ents.push(...part._entities);
+    //         if (part.hasChildren)
+    //             for (let child of part._children)
+    //                 getChildren(child);
+    //         return;
+    //     }
+    //     let parts: Array<QPart> = [], ents: Array<Entity> = [];
+    //     let encPart = this.getEnclosingPartition(lowX, lowY, highX, highY);
+    //     getParent(encPart._parent);
+    //     getChildren(encPart);
+    //     return { 'partitions': parts, 'entities': ents, 'enc_partition': encPart };
+    // }
     _childAt(part, entity) {
         let q = ((entity.pos.x < part._cX) ? 0 : 1) + ((entity.pos.y < part._cY) ? 0 : 2);
         return part._children[q];
@@ -134,14 +176,14 @@ class QPart {
         let root = this.getRoot();
         processPartition(root, root);
     }
-    colorizeEntities(painters) {
-        function colourize(part) {
-            part._entities.forEach(e => { e.painter = painters[part._level]; });
-            part._children?.forEach(p => colourize(p));
-        }
-        colourize(this.getRoot());
+    $$(len = 5) {
+        console.log(this.$(len));
+        return this.toString(len);
     }
-    toString() {
+    $(len = 5) {
+        return this.toString(len);
+    }
+    toString(len = 5) {
         function fmt(n, nd, bufferLength) {
             let s = n.toFixed(nd).toString();
             while (s.length < bufferLength)
@@ -151,6 +193,7 @@ class QPart {
         let p = this, t = '', s = `Partition Lvl: ${fmt(p._level, 0, 2)}`;
         s += `    @ [${fmt(p.lowX, 0, 5)}, ${fmt(p.lowY, 0, 5)}]`;
         s += ` to [${fmt(p.highX, 0, 5)}, ${fmt(p.highY, 0, 5)}]`;
+        s += ` contains ${this._entities.size}  entities`;
         if (p._entities.size > 0)
             t = [...p._entities].map(x => x.id).reduce((x, y) => x + ' ' + y, '  ### ');
         return s + t;

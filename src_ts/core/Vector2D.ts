@@ -176,7 +176,7 @@ class Vector2D implements Position {
     }
 
     /**
-     * This vector is considered equal to v if  their x and y positions are 
+     * This vector is considered equal to v if their x and y positions are 
      * closer than Vecor2D.EPSILON.
      * 
      * @param v the other vector
@@ -429,7 +429,7 @@ class Vector2D implements Position {
      * @param colRadius 
      * @returns 
      */
-    static from(position: Array<number> | Position, colRadius = 0): Vector2D {
+    static from(position: Array<number> | Position): Vector2D {
         if (position instanceof Array)
             return new Vector2D(position[0], position[1]);
         else

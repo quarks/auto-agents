@@ -16,11 +16,11 @@ function setup() {
 
 function makevehicles() {
     let vehicles = [];
-    painters[1] = personPainter(color(255, 200, 200), color(160, 20, 20));
-    painters[2] = personPainter(color(200, 255, 255), color(20, 200, 200));
-    painters[3] = personPainter(color(255, 120, 255), color(200, 20, 200));
-    painters[4] = personPainter(color(200, 200, 255), color(20, 20, 160));
-    wanderer = wanderPainter(color(255, 200, 200), color(160, 20, 20));
+    painters[1] = vcePerson(color(255, 200, 200), color(160, 20, 20));
+    painters[2] = vcePerson(color(200, 255, 255), color(20, 200, 200));
+    painters[3] = vcePerson(color(255, 120, 255), color(200, 20, 200));
+    painters[4] = vcePerson(color(200, 200, 255), color(20, 20, 160));
+    wanderer = vcePerson(color(255, 200, 200), color(160, 20, 20));
     let data = [
         [35, 375, 6, painters[1]],
         [190, 185, 10, painters[1]],
@@ -36,8 +36,9 @@ function makevehicles() {
         world.birth(vehicles[i]);
     }
     // console.log(`Col Radius: ${vehicles[0]._colRad}     Mass: ${vehicles[0]._mass}    Rest factor: ${0.1 / vehicles[0]._mass}`);
-    // vehicles[0].addAutoPilot(world);
-    // vehicles[0].pilot.arriveOn([220, 130], FAST);
+    vehicles[0].addAutoPilot(world);
+    vehicles[0].pilot.wanderOn();
+    vehicles[0].painter = wanderer;
     vehicles[1].addAutoPilot(world);
     vehicles[1].pilot.wanderOn();
     vehicles[1].painter = wanderer;
@@ -72,62 +73,6 @@ function keyTyped() {
         allowLooping = !allowLooping;
         if (allowLooping) loop(); else noLoop();
     }
-}
-
-function personPainter(colF, colS, p = p5.instance) {
-    let body = [
-        0.15, -0.5,
-        0.15, 0.5,
-        -0.18, 0.3,
-        -0.18, -0.3
-    ];
-    return (function () {
-        p.push();
-        p.translate(this._pos.x, this._pos.y);
-        p.rotate(this.headingAngle)
-        let size = 2 * this.colRad;
-        // p.fill(0, 32); p.noStroke();
-        // p.ellipse(0, 0, size, size);
-        p.fill(colF); p.stroke(colS); p.strokeWeight(1.1);
-        p.beginShape();
-        for (let idx = 0; idx < body.length; idx += 2)
-            p.vertex(body[idx] * size, body[idx + 1] * size);
-        p.endShape(CLOSE);
-        p.fill(colS); p.noStroke();
-        p.ellipse(0, 0, 0.6 * size, 0.56 * size)
-        p.pop();
-    });
-}
-
-function wanderPainter(colF, colS, p = p5.instance) {
-    let body = [
-        0.15, -0.5,
-        0.15, 0.5,
-        -0.18, 0.3,
-        -0.18, -0.3
-    ];
-    return (function () {
-        p.push();
-        p.translate(this._pos.x, this._pos.y);
-        p.rotate(this.headingAngle);
-        // Draw wander stuff
-        p.noFill(); p.strokeWeight(1); p.stroke(0, 128);
-
-        p.line(0, 0, this.pilot._wanderDist, 0);
-        p.line(this.pilot._wanderDist, 0, this.pilot._wanderDist + this.pilot._wanderTarget.x, this.pilot._wanderTarget.y);
-        p.ellipse(this.pilot._wanderDist, 0, 2 * this.pilot._wanderRadius, 2 * this.pilot._wanderRadius);
-        let size = 2 * this.colRad;
-        // p.fill(0, 32); p.noStroke();
-        // p.ellipse(0, 0, size, size);
-        p.fill(colF); p.stroke(colS); p.strokeWeight(1.1);
-        p.beginShape();
-        for (let idx = 0; idx < body.length; idx += 2)
-            p.vertex(body[idx] * size, body[idx + 1] * size);
-        p.endShape(CLOSE);
-        p.fill(colS); p.noStroke();
-        p.ellipse(0, 0, 0.6 * size, 0.56 * size)
-        p.pop();
-    });
 }
 
 function printTree(tree) {

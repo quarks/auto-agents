@@ -1,4 +1,4 @@
-let wx = 400, wy = 400, depth = 2;
+let wx = 400, wy = 400, depth = 4;
 let intParts = [], intEnts = [];
 
 function setup() {
@@ -7,30 +7,25 @@ function setup() {
     let p5canvas = createCanvas(800, 440);
     p5canvas.parent('sketch');
     world = new World(wx, wy, depth);
-    makeEntities();
-    world.update(0);  // Allow for birth of entities
-
     // Test area
     //testInterestingPartiions(240, 310, 50, 40);
-    testInterestingPartiions(310, 260, 35, 36);
+    testInterestingPartiions(190, 210, 35, 36);
 }
 
 function testInterestingPartiions(x, y, w, h) {
     x0 = x; y0 = y; x1 = x + w; y1 = y + h;
-    let encPart = world._tree.getEnclosingPartition(x0, y0, x1, y1);
-    encPart.$$();
+    // let encPart = world._tree.getEnclosingPartition(x0, y0, x1, y1);
+    // encPart.$$();
     console.log('---------------------------------------------------------------');
-    let results = world._tree?.getItemsOfInterest(x0, y0, x1, y1);
-    intParts = results.partitions;
+    of_interest = world._tree?.getItemsInRegion(x0, y0, x1, y1);
+    intParts = of_interest.partitions;
+    encPart = of_interest.enc_partition;
     for (let part of intParts) part.$$();
-    intEnts = results.entities;
-    console.log(`Found ${intEnts.length} entities`);
-    intEnts.forEach((x) => { x.painter = ppRed; x.$$(); });
 }
 
 function drawEnclosingPartition(part) {
     if (part) {
-        stroke(255, 200, 200, 160); strokeWeight(6); noFill();
+        stroke(0, 90); strokeWeight(6); noFill();
         rect(part.lowX, part.lowY, part.width, part.height);
         fill(0, 30); noStroke();
         rect(x0, y0, x1 - x0, y1 - y0);
@@ -47,8 +42,10 @@ function draw() {
     // world.render();
     fill(0, 64);
     rect(x0, y0, x1 - x0, y1 - y0);
-    fill(255, 200, 200, 48); stroke(255, 0, 0); strokeWeight(1.1);
+    stroke(255, 0, 0); strokeWeight(1.1); noFill();
+    fill(255, 200, 200, 48);
     for (let part of intParts) rect(part.lowX, part.lowY, part.width, part.height);
+    drawEnclosingPartition(encPart);
     world.render();
 }
 

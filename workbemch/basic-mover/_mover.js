@@ -1,4 +1,4 @@
-let wx = 400, wy = 400, depth = 4;
+let wx = 400, wy = 400, depth = 3;
 let painters = [];
 
 function setup() {
@@ -16,10 +16,10 @@ function setup() {
 
 function makeMovers() {
     let movers = [];
-    painters[1] = personPainter(color(255, 200, 200), color(160, 20, 20));
-    painters[2] = personPainter(color(200, 255, 255), color(20, 200, 200));
-    painters[3] = personPainter(color(255, 120, 255), color(200, 20, 200));
-    painters[4] = personPainter(color(200, 200, 255), color(20, 20, 160));
+    painters[1] = mvrPerson(color(255, 200, 200), color(160, 20, 20));
+    painters[2] = mvrPerson(color(200, 255, 255), color(20, 200, 200));
+    painters[3] = mvrPerson(color(255, 120, 255), color(200, 20, 200));
+    painters[4] = mvrPerson(color(200, 200, 255), color(20, 20, 160));
 
     let data = [
         [380, 125, 10, painters[1]],
@@ -31,17 +31,17 @@ function makeMovers() {
         let d = data[i];
         movers.push(new Mover({ x: d[0], y: d[1] }, d[2]));
         movers[i].painter = d[3];
-        let v = Vector2D.fromRandom(20, 40);
+        let v = Vector2D.fromRandom(60, 90);
         movers[i].vel = v.copy();
         world.birth(movers[i]);
     }
-    movers[0].domain = new Domain(340, 110, 560, 190, REBOUND);
 }
 
 
 function draw() {
     world.update(deltaTime / 1000);
-    world._tree.colorizeEntities(painters);
+    //world._tree.colorizeEntities(painters);
+    colorizeEntities(world._tree, painters);
     background(220);
     noStroke(); fill(220, 255, 220);
     let d = world._domain; rect(d.lowX, d.lowY, d.width, d.height);
@@ -52,12 +52,13 @@ function draw() {
 function renderTreeGrid() {
     function renderPart(level) {
         level = (2 ** (level - 1));
-        let dx = d.width / level, dy = d.height / level;
-        for (let i = d.lowX; i < d.highX; i += dx) line(i, d.lowY, i, d.highY);
-        for (let i = d.lowY; i < d.highY; i += dy) line(d.lowX, i, d.highX, i);
+        let dx = r.width / level, dy = r.height / level;
+        for (let i = r.lowX; i <= highX; i += dx) line(i, r.lowY, i, highY);
+        for (let i = r.lowY; i <= highY; i += dy) line(r.lowX, i, highX, i);
     }
-    let d = world._domain;
-    stroke(0); strokeWeight(1.2);
+    let r = world._tree, d = world._domain;
+    let highX = Math.min(r.highX, d.highX), highY = Math.min(r.highY, d.highY);
+    stroke(0, 16); strokeWeight(1.1);
     for (let i = 1; i <= depth; i++) renderPart(i);
 }
 
@@ -65,30 +66,30 @@ function keyTyped() {
     if (key == 't') printTree(world._tree);
 }
 
-function personPainter(colF, colS, p = p5.instance) {
-    let body = [
-        0.15, -0.5,
-        0.15, 0.5,
-        -0.18, 0.3,
-        -0.18, -0.3
-    ];
-    return (function () {
-        p.push();
-        p.translate(this._pos.x, this._pos.y);
-        p.rotate(this.headingAngle)
-        let size = 2 * this.colRad;
-        // p.fill(0, 32); p.noStroke();
-        // p.ellipse(0, 0, size, size);
-        p.fill(colF); p.stroke(colS); p.strokeWeight(1.1);
-        p.beginShape();
-        for (let idx = 0; idx < body.length; idx += 2)
-            p.vertex(body[idx] * size, body[idx + 1] * size);
-        p.endShape(CLOSE);
-        p.fill(colS); p.noStroke();
-        p.ellipse(0, 0, 0.6 * size, 0.56 * size)
-        p.pop();
-    });
-}
+// function personPainter(colF, colS, p = p5.instance) {
+//     let body = [
+//         0.15, -0.5,
+//         0.15, 0.5,
+//         -0.18, 0.3,
+//         -0.18, -0.3
+//     ];
+//     return (function () {
+//         p.push();
+//         p.translate(this._pos.x, this._pos.y);
+//         p.rotate(this.headingAngle)
+//         let size = 2 * this.colRad;
+//         // p.fill(0, 32); p.noStroke();
+//         // p.ellipse(0, 0, size, size);
+//         p.fill(colF); p.stroke(colS); p.strokeWeight(1.1);
+//         p.beginShape();
+//         for (let idx = 0; idx < body.length; idx += 2)
+//             p.vertex(body[idx] * size, body[idx + 1] * size);
+//         p.endShape(CLOSE);
+//         p.fill(colS); p.noStroke();
+//         p.ellipse(0, 0, 0.6 * size, 0.56 * size)
+//         p.pop();
+//     });
+// }
 
 function printTree(tree) {
     function pt(tree) {

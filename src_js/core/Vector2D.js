@@ -137,7 +137,7 @@ class Vector2D {
         return (this._p[0] * v._p[0] + this._p[1] * v._p[1]) / denom;
     }
     /**
-     * This vector is considered equal to v if  their x and y positions are
+     * This vector is considered equal to v if their x and y positions are
      * closer than Vecor2D.EPSILON.
      *
      * @param v the other vector
@@ -371,7 +371,7 @@ class Vector2D {
      * @param colRadius
      * @returns
      */
-    static from(position, colRadius = 0) {
+    static from(position) {
         if (position instanceof Array)
             return new Vector2D(position[0], position[1]);
         else

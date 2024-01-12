@@ -1,8 +1,8 @@
-let wx = 400, wy = 400, depth = 2;
+let wx = 400, wy = 400, depth = 4;
 let intParts = [], intEnts = [];
 
 function setup() {
-    //console.clear();
+    console.clear();
     console.log('GLOBAL mode');
     let p5canvas = createCanvas(800, 440);
     p5canvas.parent('sketch');
@@ -12,20 +12,23 @@ function setup() {
 
     // Test area
     //testInterestingPartiions(240, 310, 50, 40);
-    testInterestingPartiions(310, 260, 35, 36);
+    testInterestingPartiions(190, 300, 35, 40);
 }
 
 function testInterestingPartiions(x, y, w, h) {
     x0 = x; y0 = y; x1 = x + w; y1 = y + h;
-    let encPart = world._tree.getEnclosingPartition(x0, y0, x1, y1);
-    encPart.$$();
-    console.log('---------------------------------------------------------------');
-    let results = world._tree?.getItemsOfInterest(x0, y0, x1, y1);
+
+    // encPart.$$();
+    console.log('-------------  Items of Interest   ------------------------');
+    let results = world._tree?.getItemsInRegion(x0, y0, x1, y1);
     intParts = results.partitions;
+    console.log(`Found ${intParts.length} partitions`);
     for (let part of intParts) part.$$();
     intEnts = results.entities;
     console.log(`Found ${intEnts.length} entities`);
-    intEnts.forEach((x) => { x.painter = ppRed; x.$$(); });
+    intEnts.forEach((ent) => { ent.painter = ppRed; ent.$$() });
+    encPart = results.enc_partition;
+    console.log('-----------------------------------------------------------');
 }
 
 function drawEnclosingPartition(part) {
@@ -49,6 +52,8 @@ function draw() {
     rect(x0, y0, x1 - x0, y1 - y0);
     fill(255, 200, 200, 48); stroke(255, 0, 0); strokeWeight(1.1);
     for (let part of intParts) rect(part.lowX, part.lowY, part.width, part.height);
+    noFill(); stroke(0, 48); strokeWeight(6);
+    rect(encPart.lowX, encPart.lowY, encPart.width, encPart.height);
     world.render();
 }
 
@@ -82,22 +87,22 @@ function keyTyped() {
 
 function makeEntities() {
     entities = [];
-    ppRed = enyBasic(color(255, 200, 200), color(160, 20, 20));
-    ppPurple = enyBasic(color(255, 200, 255), color(160, 20, 160));
-    ppBlue = enyBasic(color(200, 200, 255), color(20, 20, 160));
-    ppCyan = enyBasic(color(200, 255, 255), color(20, 200, 200));
+    ppRed = wallBarrier(color(255, 200, 200), 4);
+    ppPurple = wallBarrier(color(255, 200, 255), 4);
+    ppBlue = wallBarrier(color(200, 200, 255), 4);
+    ppCyan = wallBarrier(color(200, 255, 255), 4);
     let data = [
-        [280, 125, 8, ppCyan],
-        [70, 120, 8, ppCyan],
-        [225, 320, 8, ppCyan],
-        [250, 175, 8, ppCyan],
-        [75, 50, 8, ppCyan],
-        [150, 200, 8, ppCyan],
+        [125, 75, 60, 280, ppPurple],
+        [75, 340, 120, 310, ppPurple],
+        [270, 66, 375, 80, ppPurple],
+        [290, 105, 260, 145, ppPurple],
+        [330, 310, 380, 340, ppPurple],
+
     ]
     for (let i = 0; i < data.length; i++) {
         let d = data[i];
-        entities.push(new Vehicle({ x: d[0], y: d[1] }, d[2]));
-        entities[i].painter = d[3];
+        entities.push(new Wall({ x: d[0], y: d[1] }, { x: d[2], y: d[3] }));
+        entities[i].painter = d[4];
         world.birth(entities[i]);
     }
 }
@@ -105,8 +110,8 @@ function makeEntities() {
 
 function printTree(tree) {
     function pt(tree) {
-        if (tree._entities.size > 0)
-            tree.$$();
+        //if (tree._entities.size > 0)
+        tree.$$();
         //console.log(tree.toString());
         if (tree._children)
             for (let child of tree._children)
@@ -115,8 +120,9 @@ function printTree(tree) {
     console.log('=====================================================================================');
     pt(tree);
     console.log(`World population        ( Size = ${world._population.size} )`)
-    if (world._population.size > 0) {
-        let pop = [...world._population.values()].map(x => x.id).reduce((x, y) => x + ' ' + y, '{ ') + '  }';
-        console.log(pop);
-    }
+    // console.log([...world._population.values()]);
+    // if (world._population.size > 0) {
+    // let pop = [...world._population.values()].map(x => x.id).reduce((x, y) => x + ' ' + y, '{ ') + '  }';
+    // console.log(pop);
+    // }
 }

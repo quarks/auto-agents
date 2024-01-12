@@ -1,21 +1,24 @@
 abstract class Entity {
-
     static NEXT_ID = 0;
 
-    _type = ENTITY;
+    _type: symbol;
+    get type(): symbol { return this._type };
+    get type$(): string { return Symbol.keyFor(this.type) };
+
     _id: number;
     _tag: string | number
     _world: World;
 
+    _pos: Vector2D = new Vector2D();
     _fsm: FiniteStateMachine;
     _painter: Function;
     _visible = true;
-    _pos: Vector2D = new Vector2D();
 
     _zorder: number = 0;
     _colRad: number = 0;
 
     constructor(position: Array<number> | Position, colRadius = 1) {
+        this._type = ENTITY;
         this._id = Entity.NEXT_ID++;
         this._pos = Vector2D.from(position);
         this._colRad = colRadius;
@@ -24,7 +27,9 @@ abstract class Entity {
     /** Position coordinates */
     get x(): number { return this._pos.x; }
     get y(): number { return this._pos.y; }
-    get pos(): Vector2D { return this._pos };
+    /** Position */
+    set pos(v: Vector2D) { this._pos = v; }
+    get pos(): Vector2D { return this._pos }
 
     /** The colision radius */
     get world(): World { return this._world; }
@@ -37,9 +42,6 @@ abstract class Entity {
     /** Get the id property */
     get id(): number { return this._id; }
 
-    /** Get the entity type  */
-    get type(): symbol { return this._type; }
-
     /** The tag property */
     get tag(): string | number { return this._tag; }
     set tag(value) { this._tag = value; }
@@ -51,19 +53,9 @@ abstract class Entity {
     /** Set the renderer */
     set painter(painter: Function) { this._painter = painter; }
 
-    /** Get the z-order property */
+    /** The z-order display order property */
     get Z(): number { return this._zorder; }
-    /** Set the z-order property */
     set Z(value) { this._zorder = value; }
-
-    isInDomain(d: Domain, inclusive = true) {
-        if (this.x >= d.lowX && this.y >= d.lowY) {
-            return inclusive ?
-                (this.x <= d.highX && this.y <= d.highY) :
-                (this.x < d.highX && this.y < d.highY);
-        }
-        return false;
-    }
 
     fitsInside(lowX: number, lowY: number, highX: number, highY: number): boolean {
         let p = this._pos, cr = this._colRad;
@@ -72,24 +64,32 @@ abstract class Entity {
 
     update(elapsedTime: number, world: World): void { }
 
-    changeState(newState: State) {
-        this._fsm?.changeState(newState);
+    changeState(newState: State) { this._fsm?.changeState(newState); }
+
+    revertToPreviousState() { this._fsm?.revertToPreviousState(); }
+
+    hasFSM() { return this._fsm ? true : false; }
+
+    render() { this._painter?.call(this); }
+
+    $$(len: number = 5) {
+        console.log(this.$(len));
+        return this.toString(len);
     }
 
-    revertToPreviousState() {
-        this._fsm?.revertToPreviousState();
+    $(len: number = 5): string {
+        return this.toString(len);
     }
 
-    render() {
-        this._painter?.call(this);
+    toString(len: number = 5): string {
+        function fmt(n: number, nd: number, bufferLength: number) {
+            let s = n.toFixed(nd).toString();
+            while (s.length < bufferLength) s = ' ' + s;
+            return s;
+        }
+        let s = `Entity ID: ${fmt(this.id, 0, 2)}`;
+        s += ` @ [${fmt(this.x, 0, 5)}, ${fmt(this.y, 0, 5)}]`;
+        return s;
     }
-
-
-    /** See if entity has FSM */
-    hasFSM() {
-        return this._fsm ? true : false;
-    }
-
-    colDetect(e, elist) { return false; }
 }
 

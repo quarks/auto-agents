@@ -5,35 +5,37 @@ class ForceRecorder {
 
     _nbrReadings = 0;
 
-    constructor(owner: Vehicle) {
+    constructor(owner: Vehicle, weights: Array<number>) {
         this._owner = owner;
-        console.log(FORCE_NAME.map((v, i) => new Force(this, i, v)));
-        this._forces = FORCE_NAME.map((v, i) => new Force(this, i, v));
+        this._forces = FORCE_NAME.map((v, i) => new Force(this, i, v, weights[i]));
     }
 
     addData(type: number, force: Vector2D) {
-        if (type >= 0 && type < this._forces.length) {
-            let mag = force.length();
-            if (mag > 1) {
-                this._nbrReadings++;
-                this._forces[type].addData(mag);
-            }
+        if (type >= 0 && type < NBR_BEHAVIOURS) {
+            //let mag = force.length();
+            //if (mag > 0) {
+            this._nbrReadings++;
+            this._forces[type].addData(force.length());
+            //}
         }
     }
 
-    hasData(): boolean {
-        return (this._nbrReadings > 0);
+    clearData() {
+        this._nbrReadings = 0;
+        for (let f of this._forces) f.clearData();
     }
 
+    hasData(): boolean { return (this._nbrReadings > 1); }
+
     toString() {
-        let s = `------------------------------------------------------------------------------------------------`;
+        let s = `----------------------------------------------------------------------------------------\n`;
         s += `Owner ID: ${this._owner.id} \n`;
         s += `Force calculator:  ${Symbol.keyFor(this._owner.pilot._forceCalcMethod)} \n`;
         s += `Max force:  ${this._owner.maxForce} \n`;
-        s += '                       Min        Max        Avg    Std Dev  Count     Weight \n';
+        s += '                           Min         Max         Avg     Std Dev   Count   Weighting\n';
         for (let force of this._forces)
-            if (force.hasData()) s += `   ${force.toString()}`;
-        s += `------------------------------------------------------------------------------------------------`;
+            if (force.hasData()) s += `   ${force.toString()} \n`;
+        s += `----------------------------------------------------------------------------------------\n`;
         return s;
     }
 
@@ -48,11 +50,21 @@ class Force {
     _s1 = 0;
     _s2 = 0;
     _n = 0;
+    _weight: number;
 
-    constructor(recorder: ForceRecorder, forceID: number, forceName: string) {
+    constructor(recorder: ForceRecorder, forceID: number, forceName: string, weighting: number) {
         this._recorder = recorder;
         this._forceID = forceID;
         this._forceName = forceName;
+        this._weight = weighting;
+    }
+
+    clearData() {
+        this._min = Number.MAX_VALUE;
+        this._max = 0;
+        this._s1 = 0;
+        this._s2 = 0;
+        this._n = 0;
     }
 
     addData(forceMagnitude: number) {
@@ -63,22 +75,16 @@ class Force {
         this._n++;
     }
 
-    hasData() {
-        return (this._n > 0);
-    }
+    hasData() { return (this._n > 0); }
 
     getAverage() {
-        if (this._n > 0)
-            return this._s1 / this._n;
-        else
-            return 0;
+        if (this._n > 0) return this._s1 / this._n;
+        return 0;
     }
 
     getStdDev() {
-        if (this._n > 0)
-            return Math.sqrt(this._n * this._s2 - this._s1 * this._s1) / this._n;
-        else
-            return 0;
+        if (this._n > 0) return Math.sqrt(this._n * this._s2 - this._s1 * this._s1) / this._n;
+        return 0;
     }
 
     toString() {
@@ -92,14 +98,8 @@ class Force {
         s += `${fmt(this._max, 2, 12)}`
         s += `${fmt(this.getAverage(), 2, 12)}`;
         s += `${fmt(this.getStdDev(), 2, 12)}`;
-        s += `${fmt(this._n, 0, 6)}`;
-
-        // s.append(getString(min, "  #####0.00"));
-        // s.append(getString(max, "  #####0.00"));
-        // s.append(getString(getAverage(), "  #####0.00"));
-        // s.append(getString(getStdDev(), "  #####0.00"));
-        // s.append(getString(n, "  #####"));
-        //s.append(getString(owner.AP().getWeight(forceID), "  #####0.00"));
+        s += `${fmt(this._n, 0, 8)}`;
+        s += `${fmt(this._weight, 2, 12)}`;
         return s;
     }
 

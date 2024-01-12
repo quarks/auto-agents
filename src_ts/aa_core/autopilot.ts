@@ -1,55 +1,27 @@
 class AutoPilot {
     _owner: Vehicle;
-    _world: World;
+    get owner(): Vehicle { return this._owner; }
+    set owner(owner: Vehicle) { this._owner = owner; }
 
+    _world: World;
     _flags = 0;
-    _forceCalcMethod: symbol = WEIGHTED_PRIORITIZED;
+    _forceCalcMethod: symbol;
 
     constructor(owner: Vehicle, world: World) {
         this._owner = owner;
         this._world = world;
+        this.forceCalculator = WEIGHTED_PRIORITIZED;
     }
 
-    // These are used during force calculations so do not need to be cloned
-    // Set<Obstacle> obstacles = null;
-    // Set<Wall> walls = null;
-    // Set<MovingEntity> movers = null;
+    // ########################################################################
+    //                            PROPERTIES
+    // ########################################################################
 
-    // these values are passed as parameters and are stored at the start
-    // of the calculateForce method so do not need to be cloned
-    // deltaTime = 0;
-
-
-    // ======================================================================
-    // The following variables need to be cloned as they are unique
-    // to the particular behaviour.
-    // ======================================================================
-    // flags = 0;
-
-    // accum = new Vector2D();
-    // f = new Vector2D();
-    // steeringForce = new Vector2D();
-
-    /*
-     * **********************************************************************
-     * **********************************************************************
-     * 
-     * The following section has all the methods to switch on/off and get/set
-     * the tweak factors for the various behaviours.
-     * 
-     * **********************************************************************
-     * **********************************************************************
-     */
-
-
+    // ************    SEEK / ARRIVVE    ********************
     _target = new Vector2D();   // Target for both arrive and seek behaviours
-    setSeekTarget(t: Vector2D): AutoPilot { this._target.set(t); return this; }
-    set seekTarget(t: Vector2D) { this._target.set(t); }
-    get seekTarget(): Vector2D { return this._target; }
-
-    setArriveTarget(t: Vector2D): AutoPilot { this._target.set(t); return this; }
-    set arriveTarget(t: Vector2D) { this._target.set(t); }
-    get arriveTarget(): Vector2D { return this._target; }
+    setTarget(t: Vector2D): AutoPilot { this._target.set(t); return this; }
+    set target(t: Vector2D) { this._target.set(t); }
+    get target(): Vector2D { return this._target; }
 
     // Deceleration rate for arrive
     _arriveRate: number = NORMAL;
@@ -64,28 +36,30 @@ class AutoPilot {
     set arriveDist(n: number) { this._arriveDist = n; }
     get arriveDist(): number { return this._arriveDist; }
 
-    _fleeTarget = new Vector2D();
-    setFleeTarget(t: Vector2D): AutoPilot { this._fleeTarget.set(t); return this; }
-    set fleeTarget(t: Vector2D) { this._fleeTarget.set(t); }
-    get fleeTarget(): Vector2D { return this._fleeTarget; }
+    // ****************      FLEE      **********************
+    __fleeTarget = new Vector2D();
+    setFleeTarget(t: Vector2D): AutoPilot { this.__fleeTarget.set(t); return this; }
+    set fleeTarget(t: Vector2D) { this.__fleeTarget.set(t); }
+    get fleeTarget(): Vector2D { return this.__fleeTarget; }
 
     // Panic distance squared for flee to be effective
-    _fleeRadius = 100;
-    set fleeRadius(n: number) { this._fleeRadius = n; }
-    get fleeRadius(): number { return this._fleeRadius; }
+    __fleeRadius = 100;
+    get fleeRadius(): number { return this.__fleeRadius; }
+    set fleeRadius(n: number) { this.__fleeRadius = n; }
 
+    // ****************  PATH FINDING  **********************
     // Used in path following
     // LinkedList<GraphNode> path = new LinkedList<GraphNode>();
     _pathSeekDist = 20;
     _pathArriveDist = 0.5;
 
-
+    // ****************     PURSUE / EVADE    **********************
     // [AGENT0, AGENT1, AGENT_TO_PURSUE, AGENT_TO_EVADE]
     _agents: Array<Mover> = new Array(NBR_AGENT_ARRAY);
 
     setAgent0(a: Mover): AutoPilot { this._agents[0] = a; return this; }
-    set agent0(a: Mover) { this._agents[0] = a; }
     get agent0(): Mover { return this._agents[0]; }
+    set agent0(a: Mover) { this._agents[0] = a; }
 
     setAgent1(a: Mover): AutoPilot { this._agents[1] = a; return this; }
     set agent1(a: Mover) { this._agents[1] = a; }
@@ -104,46 +78,62 @@ class AutoPilot {
     set pursueOffset(v: Vector2D) { this._pursueOffset.set(v); }
     get pursueOffset(): Vector2D { return this._pursueOffset; }
 
+    // *******************    WANDER    **********************
     // radius of the constraining circle for the wander behaviour
-    _wanderRadius = 50.0;
-    setWanderRadius(n: number): AutoPilot { this._wanderRadius = n; return this; }
-    set wanderRadius(n: number) { this._wanderRadius = n; }
-    get wanderRadius() { return this._wanderRadius; }
+    __wanderRadius = 50.0;
+    get wanderRadius() { return this.__wanderRadius; }
+    set wanderRadius(n: number) { this.__wanderRadius = n; }
+    setWanderRadius(n: number): AutoPilot { this.__wanderRadius = n; return this; }
+
     // distance the wander circle is projected in front of the agent
-    _wanderDist = 70.0;
-    setWanderDist(n: number): AutoPilot { this._wanderDist = n; return this; }
-    set wanderDist(n: number) { this._wanderDist = n; }
-    get wanderDist() { return this._wanderDist; }
+    __wanderDist = 70.0;
+    get wanderDist() { return this.__wanderDist; }
+    set wanderDist(n: number) { this.__wanderDist = n; }
+    setWanderDist(n: number): AutoPilot { this.__wanderDist = n; return this; }
+
     // Maximum jitter per update
-    _wanderJitter = 20;
-    setWanderJitter(n: number): AutoPilot { this._wanderJitter = n; return this; }
-    set wanderJitter(n: number) { this._wanderJitter = n; }
-    get wanderJitter() { return this._wanderJitter; }
+    __wanderJitter = 20;
+    get wanderJitter() { return this.__wanderJitter; }
+    set wanderJitter(n: number) { this.__wanderJitter = n; }
+    setWanderJitter(n: number): AutoPilot { this.__wanderJitter = n; return this; }
+
     // The target lies on the circumference of the wander circle
-    __wanderTarget: Vector2D = new Vector2D();
-    get wanderTarget(): Vector2D { return this.__wanderTarget; }
+    _wanderTarget: Vector2D = new Vector2D();
+    get wanderTarget(): Vector2D { return this._wanderTarget; }
 
+
+    // ########################################################################
+    //                            BEHAVIOURS
+    // ########################################################################
+
+    // *******************    WALL AVOID    *******************
     // Cats whiskers used for wall avoidance
-    _nbrWhiskers = 5;
-    _whiskerFOV = Math.PI; // radians
-    _whiskerLength = 30;
-    _ovalEnvelope = false;
+    __nbrWhiskers = 5;
+    __whiskerFOV = Math.PI; // radians
+    __whiskerLength = 30;
+    __ovalEnvelope = false;
 
+    // ****************    OBSTACLE AVOID    *****************
     // Obstacle avoidance
-    _detectBoxLength = 20.0;
+    __detectBoxLength = 20.0;
 
     // The maximum distance between moving entities for them to be considered
     // as neighbours. Used for group behaviours
-    _neighbourDist = 100.0;
+    __neighbourDist = 100.0;
 
-    setDetails(d: object): AutoPilot {
-        if (!d || typeof d !== 'object') return this;
-        for (let p in d) {
-            let pname = '_' + p;
+    /**
+     * Set any of the properties 
+     * @param props 
+     * @returns 
+     */
+    setProperties(props: object): AutoPilot {
+        if (!props || typeof props !== 'object') return this;
+        for (let p in props) {
+            let pname = '__' + p;
             if (this.hasOwnProperty(pname))
-                this[pname] = d[p];
+                this[pname] = props[p];
             else
-                console.error(`"${p} " is not a valid detail name for a pilot.`);
+                console.error(`"${p} " is not a valid property name for a pilot.`);
         }
         return this;
     }
@@ -156,15 +146,6 @@ class AutoPilot {
     allOff(): AutoPilot {
         this._flags = 0;
         return this;
-    }
-
-
-    /** Get current distance to the seek / arrive target position. */
-    targetDist(target?: Vector2D) {
-        if (target)
-            return Vector2D.dist(this._owner._pos, target);
-        else
-            return Vector2D.dist(this._owner._pos, this._target);
     }
 
     /*
@@ -186,17 +167,15 @@ class AutoPilot {
     seekOn(target?: Array<number> | Position): AutoPilot {
         this._flags |= SEEK;
         if (target)
-            this._target.set(target);
+            this.target.set(target);
         return this;
     }
 
     /** Is seek switched on? */
-    isSeekOn(): boolean {
-        return (this._flags & SEEK) != 0;
-    }
+    get isSeekOn(): boolean { return (this._flags & SEEK) != 0; }
 
     seek(owner: Vehicle, target: Vector2D) {
-        let desiredVelocity = target.sub(this._owner._pos);
+        let desiredVelocity = target.sub(this.owner.pos);
         desiredVelocity = desiredVelocity.normalize();
         desiredVelocity = desiredVelocity.mult(owner.maxSpeed);
         return desiredVelocity.sub(owner.vel);
@@ -210,7 +189,7 @@ class AutoPilot {
 
     /** Switch off seek */
     fleeOff(): AutoPilot {
-        this._flags &= (ALL_SB_MASK - SEEK);
+        this._flags &= (ALL_SB_MASK - FLEE);
         return this;
     }
 
@@ -219,22 +198,20 @@ class AutoPilot {
      * @return this auto-pilot object
      */
     fleeOn(target?: Array<number> | Position): AutoPilot {
-        this._flags |= SEEK;
+        this._flags |= FLEE;
         if (target)
-            this._fleeTarget.set(target);
+            this.__fleeTarget.set(target);
         return this;
     }
 
     /** Is seek switched on? */
-    isFleeOn(): boolean {
-        return (this._flags & SEEK) != 0;
-    }
+    get isFleeOn(): boolean { return (this._flags & FLEE) != 0; }
 
     flee(owner: Vehicle, target: Vector2D) {
         let panicDist = Vector2D.dist(owner.pos, target);
-        if (panicDist >= this._fleeRadius)
+        if (panicDist >= this.__fleeRadius)
             return Vector2D.ZERO;
-        let desiredVelocity = this._owner._pos.sub(target); // target.sub(this._owner._pos);
+        let desiredVelocity = this.owner.pos.sub(target);
         desiredVelocity = desiredVelocity.normalize();
         desiredVelocity = desiredVelocity.mult(owner.maxSpeed);
         return desiredVelocity.sub(owner.vel);
@@ -259,15 +236,13 @@ class AutoPilot {
      */
     arriveOn(target?: Array<number>, rate?: number): AutoPilot {
         this._flags |= ARRIVE;
-        if (target) this._target.set(target);
+        if (target) this.target.set(target);
         if (rate) this._arriveRate = rate;
         return this;
     }
 
-    /**
-     * Is arrive switched on?
-     */
-    isArriveOn(): boolean { return (this._flags & ARRIVE) != 0; }
+    /** Is arrive switched on?   */
+    get isArriveOn(): boolean { return (this._flags & ARRIVE) != 0; }
 
     arrive(owner: Vehicle, target: Vector2D) {
         let toTarget = target.sub(owner.pos), dist = toTarget.length();
@@ -275,12 +250,78 @@ class AutoPilot {
             let rate = dist / DECEL_TWEEK[this._arriveRate];
             let speed = Math.min(owner.maxSpeed, rate);
             let desiredVelocity = toTarget.mult(speed / dist);
-            //console.log(`Dist: ${dist}   Rate: ${rate}  Speed: ${speed}`);
             return desiredVelocity.sub(owner.vel);
         }
         return new Vector2D();
     }
 
+    /*
+     * ======================================================================
+     * EVADE
+     * ======================================================================
+     */
+
+    /** Switch off evade  */
+    evadeOff(): AutoPilot {
+        this._flags &= (ALL_SB_MASK - EVADE); return this;
+    }
+
+    /**
+     * @param agent the agent to evade
+     * @returns this auto-pilot object
+     */
+    evadeOn(agent: Mover): AutoPilot {
+        this._flags |= EVADE;
+        this.evadeAgent = agent;
+        return this;
+    }
+
+    /** Is evade switched on?   */
+    get isEvadeOn(): boolean { return (this._flags & EVADE) != 0; }
+
+    evade(owner: Vehicle, pursuer: Mover) {
+        let fromAgent = pursuer.pos.sub(owner.pos);
+        let lookAheadTime = fromAgent.length() / (owner.maxSpeed + pursuer.vel.length());
+        let target = pursuer.pos.add(pursuer.vel.mult(lookAheadTime));
+        return this.flee(owner, target);
+    }
+
+
+    /*
+     * ======================================================================
+     * PURSUIT
+     * ======================================================================
+     */
+
+    /** Switch off pursuit  */
+    pursuitOff(): AutoPilot {
+        this._flags &= (ALL_SB_MASK - PURSUIT); return this;
+    }
+
+    /**
+     * @param agent the agent to pursue
+     * @returns this auto-pilot object
+     */
+    pursuitOn(agent: Mover): AutoPilot {
+        this._flags |= PURSUIT;
+        this.pursueAgent = agent;
+        return this;
+    }
+
+    /** Is pursuit switched off? */
+    get isPusuitOn(): boolean { return (this._flags & PURSUIT) != 0; }
+
+    pursuit(owner: Vehicle, toPursue: Mover) {
+        let toAgent = toPursue.pos.sub(owner.pos);
+        let relativeHeading = owner.heading.dot(toPursue.heading);
+
+        if (toAgent.dot(owner.heading) > 0 && relativeHeading > -0.95) // acos(0.95)=18 degs
+            return this.seek(owner, toPursue.pos);
+
+        let lookAheadTime = toAgent.length() / (owner.maxSpeed + toPursue.vel.length());
+        let target = toPursue.pos.add(toPursue.vel.mult(lookAheadTime));
+        return this.seek(owner, target);
+    }
 
     /*
      * ======================================================================
@@ -289,8 +330,6 @@ class AutoPilot {
      */
 
     /**
-     * Switch off wander
-     * 
      * @return this auto-pilot object
      */
     wanderOff(): AutoPilot {
@@ -299,122 +338,103 @@ class AutoPilot {
     }
 
     /**
-     * Switch on wander
-     * 
      * @return this auto-pilot object
      */
     wanderOn(): AutoPilot {
         // Calculate iniitial wander target to directly ahead of of owner
-        this.__wanderTarget = this._owner.heading.resize(this._wanderRadius);
+        this._wanderTarget = this.owner.heading.resize(this.__wanderRadius);
         this._flags |= WANDER;
         return this;
     }
 
-    /**
-     * Set the weight for this behaviour
-     * 
-     * @param weight the weighting to be applied to this behaviour.
-     * @return this auto-pilot object
-     */
-    wanderWeight(weight: number) {
-        this._weight[BIT_WANDER] = weight;
-        return this;
-    }
-
-    /**
-     * Is wander switched on?
-     */
-    isWanderOn(): boolean {
-        return (this._flags & WANDER) != 0;
-    }
+    /** Is wander switched on?    */
+    get isWanderOn(): boolean { return (this._flags & WANDER) != 0; }
 
     wander(owner: Vehicle, elapsedTime: number) {
         function rnd(n: number) {
             return (Math.random() - Math.random()) * n;
         }
-        let delta = this._wanderJitter;
+        let delta = this.__wanderJitter;
         // Add small displacement to wander target
-        this.__wanderTarget = this.__wanderTarget.add(rnd(delta), rnd(delta));
+        this._wanderTarget = this._wanderTarget.add(rnd(delta), rnd(delta));
         // Project target on to wander circle
-        this.__wanderTarget = this.__wanderTarget.resize(this._wanderRadius);
+        this._wanderTarget = this._wanderTarget.resize(this.__wanderRadius);
         // Get local target position
-        let targetLocal = this.__wanderTarget.add(this._wanderDist, 0);
+        let targetLocal = this._wanderTarget.add(this.__wanderDist, 0);
         // Calculate the world position based on owner
         let targetWorld = Transformations.pointToWorldSpace(targetLocal, owner.heading.normalize(), owner.side.normalize(), owner.pos);
         return targetWorld.sub(owner.pos);
     }
 
-    /**
-     * Set some or all of the factors used for wander behaviour. <br>
-     * Only provide values for the factors you want to set, pass 'null'
-     * for any factor that is to be unchanged. <br>
-     * Where appropriate validation will be applied to the value passed
-     * and if invalid (eg out of permitted range) will be silently ignored
-     * (no warning message) and the factor will remain unchanged.
-     * 
-     * @param dist
-     * @param radius
-     * @param jitter
-     * @return this auto-pilot object
-     */
-    // wanderFactors(factors: Object) {
-    //     if (factors) {
-    //         if (factors['wanderDist']) this._wanderDist = factors['wanderDist'];
-    //         if (factors['wanderRadius']) this._wanderRadius = factors['wanderRadius'];
-    //         if (factors['maxWanderJitter']) this._wanderJitter = factors['maxWanderJitter'];
-    //     }
-    //     return this;
-    // }
+    // ########################################################################
+    //                          FORCE CALCULATOR TYPES
+    // ########################################################################
 
+    calculateForce: Function;
 
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-    calculateForce(elapsedTime: number, world: World): Vector2D {
-        let sf = new Vector2D();
-        if (this._flags != 0) {
-            switch (this._forceCalcMethod) {
-                case WEIGHTED:
-                    break;
-                case WEIGHTED_PRIORITIZED:
-                    sf = this.calculatePrioritized(elapsedTime, world);
-                    break;
-            }
+    set forceCalculator(type: Symbol) {
+        switch (type) {
+            case WEIGHTED:
+                this._forceCalcMethod = WEIGHTED;
+                break;
+            case WEIGHTED_PRIORITIZED:
+                this._forceCalcMethod = WEIGHTED_PRIORITIZED;
+                this.calculateForce = this.calculatePrioritized;
+                break;
+            case PRIORITIZED_DITHERING:
+                this._forceCalcMethod = PRIORITIZED_DITHERING;
+                break;
+            default:
+                console.error(`Invalid force calculator`);
         }
-        return sf;
-
     }
 
     calculatePrioritized(elapsedTime: number, world: World): Vector2D {
-        let owner: Vehicle = this._owner;
+        let owner: Vehicle = this.owner;
         let maxForce = owner.maxForce;
         let recorder: ForceRecorder = owner.recorder;
         let accumulator = new Vector2D();
 
-        if (this.isFleeOn()) {
-            let f = this.seek(owner, this._target);
+        if (this.isEvadeOn) {
+            let f = this.evade(owner, this.evadeAgent);
+            f = f.mult(this._weight[BIT_EVADE]);
+            recorder?.addData(BIT_EVADE, f);
+            if (!this.accumulateForce(accumulator, f, maxForce))
+                return accumulator;
+        }
+        if (this.isFleeOn) {
+            let f = this.flee(owner, this.fleeTarget);
             f = f.mult(this._weight[BIT_FLEE]);
             recorder?.addData(BIT_FLEE, f);
             if (!this.accumulateForce(accumulator, f, maxForce))
                 return accumulator;
         }
-        if (this.isSeekOn()) {
-            let f = this.seek(owner, this._target);
+
+        if (this.isSeekOn) {
+            let f = this.seek(owner, this.target);
             f = f.mult(this._weight[BIT_SEEK]);
             recorder?.addData(BIT_SEEK, f);
             if (!this.accumulateForce(accumulator, f, maxForce))
                 return accumulator;
         }
-        if (this.isArriveOn()) {
-            let f = this.arrive(owner, this._target);
+        if (this.isArriveOn) {
+            let f = this.arrive(owner, this.target);
             f = f.mult(this._weight[BIT_ARRIVE]);
             recorder?.addData(BIT_ARRIVE, f);
             if (!this.accumulateForce(accumulator, f, maxForce))
                 return accumulator;
         }
-        if (this.isWanderOn()) {
+        if (this.isWanderOn) {
             let f = this.wander(owner, elapsedTime);
             f = f.mult(this._weight[BIT_WANDER]);
             recorder?.addData(BIT_WANDER, f);
+            if (!this.accumulateForce(accumulator, f, maxForce))
+                return accumulator;
+        }
+        if (this.isPusuitOn) {
+            let f = this.pursuit(owner, this.pursueAgent);
+            f = f.mult(this._weight[BIT_PURSUIT]);
+            recorder?.addData(BIT_PURSUIT, f);
             if (!this.accumulateForce(accumulator, f, maxForce))
                 return accumulator;
         }
@@ -454,6 +474,16 @@ class AutoPilot {
         }
     }
 
+    off(behaviours: number) {
+        this._flags &= (ALL_SB_MASK - behaviours);
+        return this;
+    }
+
+    on(behaviours: number) {
+        this._flags |= (ALL_SB_MASK & behaviours);
+        return this;
+    }
+
     setWeighting(bhvr: number, weight: number): AutoPilot {
         if (Number.isFinite(bhvr) && Number.isFinite(weight)) {
             if (bhvr > 0 && bhvr < NBR_BEHAVIOURS)
@@ -475,21 +505,40 @@ class AutoPilot {
     _weight: Array<number> = [
         220.0, // wall avoidance weight
         80.0, // obstacle avoidance weight
-        1.0, // evade weight
-        20.0, // flee weight
+        5.0, // evade weight
+        0.5, // flee weight
         1.0, // separation weight
         4.0, // alignment weight
         15.0, // cohesion weight
-        20.0, // seek weight
-        20.0, // arrive weight
-        5.0, // wander weight
-        100.0, // pursuit weight
+        0.5, // seek weight
+        1.0, // arrive weight
+        1.0, // wander weight
+        20.0, // pursuit weight
         10.0, // offset pursuit weight
         10.0, // interpose weight
         10.0, // hide weight
         20.0, // follow path weight
         1.0 // flock weight
     ];
+
+    // _weight: Array<number> = [
+    //     220.0, // wall avoidance weight
+    //     80.0, // obstacle avoidance weight
+    //     1.0, // evade weight
+    //     20.0, // flee weight
+    //     1.0, // separation weight
+    //     4.0, // alignment weight
+    //     15.0, // cohesion weight
+    //     20.0, // seek weight
+    //     20.0, // arrive weight
+    //     5.0, // wander weight
+    //     100.0, // pursuit weight
+    //     10.0, // offset pursuit weight
+    //     10.0, // interpose weight
+    //     10.0, // hide weight
+    //     20.0, // follow path weight
+    //     1.0 // flock weight
+    // ];
 
 
 }

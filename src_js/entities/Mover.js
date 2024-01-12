@@ -1,7 +1,6 @@
 class Mover extends Entity {
     constructor(position, colRadius = 0) {
         super(position, colRadius);
-        this._type = MOVER;
         // World position after last update
         this._prevPos = new Vector2D();
         // Current velocity vector (controls speed and direction of travel)
@@ -15,20 +14,21 @@ class Mover extends Entity {
         // The maximum speed this entity may travel at.
         this._maxSpeed = 100;
         // The maximum force this entity can use to power itself 
-        this._maxForce = 10000;
+        this._maxForce = 1000;
         // The current rate of turn (radians per second)         
-        this._turnRate = 2;
+        this._turnRate = 1;
         // The distance that the entity can see another moving entity
         this._viewDistance = 50;
         // Field of view (radians)
         this._viewFOV = 1.047; // Default is 60 degrees
+        this._type = MOVER;
         this._prevPos.set(this._pos);
         this._mass = 1;
         this._side = this._heading.getPerp();
     }
-    /** Position */
-    set pos(v) { this._pos = v; }
-    get pos() { return this._pos; }
+    // /** Position */
+    // set pos(v: Vector2D) { this._pos = v; }
+    // get pos(): Vector2D { return this._pos }
     /** Prev position */
     set prevPos(v) { this._prevPos = v; }
     get prevPos() { return this._prevPos; }

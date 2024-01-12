@@ -1,10 +1,8 @@
 let allowLooping = true, showTrail = true;
 
 let demo = function (p) {
-
-    let vEntity, trail, gui;
+    let prey, predator, trail, gui;
     let sampleForces = false, sampleEnd;
-
 
     p.setup = function () {
         console.clear();
@@ -12,25 +10,13 @@ let demo = function (p) {
         p5canvas.parent('sketch');
         world = new World(400, 400, 1);
         world._domain.constraint = WRAP;
-        //p.makeSeek();
-        //p.makeArrive();
-        p.makeFlee();
-        //p.makeWanderer();
-
+        p.makeAgents();
         trail = new Trail(600, p.color(0, 180, 0), 0.95);
-
-        // wanderer.pilot.setProperties({ 'wanderDist': 75, 'wanderRadius': 65, 'xxx': 123, 'wanderJitter': 35 });
-
-        //gui = GUI.getNamed('WanderDemo', p5canvas, p);
-        //p.createGUI(gui); 
-        console.log(Symbol.keyFor(vEntity.type));
-        console.log(vEntity.type$);
-        console.log(vEntity.hasOwnProperty('_visible'))
     }
 
     p.draw = function () {
         world.update(p.deltaTime / 1000);
-        trail.add(vEntity.pos);
+        trail.add(predator.pos);
         p.background(220, 160, 220);
         p.noStroke(); p.fill(200, 255, 200);
         let d = world._domain;
@@ -40,14 +26,13 @@ let demo = function (p) {
         p.stroke(128, 0, 128); p.strokeWeight(4); p.fill(255, 220);
         p.rect(410, 10, 220, 380, 10);
 
-        p.fill(0, 160, 0); p.noStroke();
-        p.ellipse(world._domain.cX, world._domain.cY, 10, 10);
+
         gui?.draw();
 
         if (sampleForces && p.frameCount >= sampleEnd) {
             sampleForces = false;
             console.log(`Sampling stopped on frame ${p.frameCount}  @ ${p.millis()}`);
-            console.log(vEntity.recorder.toString());
+            console.log(predator.recorder.toString());
         }
 
     }
@@ -61,59 +46,30 @@ let demo = function (p) {
             console.log(`Sampling started on frame ${p.frameCount}  @ ${p.millis()}`);
             sampleForces = true;
             sampleEnd = p.frameCount + 100;
-            vEntity.recorder.clearData();
+            predator.recorder.clearData();
         }
     }
 
-    p.makeSeek = function () {
-        vEntity = new Vehicle([0.19 * world.width, 0.91 * world.height], 12);
-        vEntity.vel = new Vector2D(20, 30);
-        vEntity.heading = vEntity.vel.normalize();
-        vEntity.painter = vcePerson(p.color(200, 200, 255), p.color(20, 20, 160), p);
-        vEntity.maxSpeed = 60;
-        vEntity.addAutoPilot(world);
-        vEntity.pilot.seekOn(new Vector2D(0.79 * world.width, 0.23 * world.height));
-        vEntity.forceRecorderOn();
-        world.birth(vEntity);
-    }
+    p.makeAgents = function () {
+        prey = new Vehicle([world.width / 2, world.height / 2], 15);
+        prey.vel = Vector2D.fromRandom(10, 20);
+        prey.painter = vcePerson(p.color(200, 200, 255), p.color(20, 20, 160), p);
+        prey.maxSpeed = 50;
+        prey.addAutoPilot(world);
+        prey.pilot.wanderOn();
+        prey.pilot.wanderDist = 70;
+        prey.pilot.wanderRadius = 20;
+        prey.pilot.wanderJitter = 20;
+        world.birth(prey);
 
-    p.makeFlee = function () {
-        vEntity = new Vehicle([0.19 * world.width, 0.91 * world.height], 12);
-        vEntity.vel = new Vector2D(60, 80);
-        vEntity.heading = vEntity.vel.normalize();
-        vEntity.painter = vcePerson(p.color(200, 200, 255), p.color(20, 20, 160), p);
-        vEntity.maxSpeed = 100;
-        vEntity.addAutoPilot(world);
-        vEntity.pilot.fleeOn(new Vector2D(0.5 * world.width, 0.5 * world.height));
-        vEntity.forceRecorderOn();
-        world._domain.constraint = REBOUND;
-        world.birth(vEntity);
-    }
-
-    p.makeArrive = function () {
-        vEntity = new Vehicle([0.19 * world.width, 0.91 * world.height], 12);
-        vEntity.vel = new Vector2D(20, 30);
-        vEntity.heading = vEntity.vel.normalize();
-        vEntity.painter = vcePerson(p.color(200, 200, 255), p.color(20, 20, 160), p);
-        vEntity.maxSpeed = 60;
-        vEntity.addAutoPilot(world);
-        vEntity.pilot.arriveOn(new Vector2D(0.79 * world.width, 0.23 * world.height));
-        vEntity.forceRecorderOn();
-        world.birth(vEntity);
-    }
-
-    p.makeWanderer = function () {
-        vEntity = new Vehicle([world.width / 2, world.height / 2], 12);
-        vEntity.vel = Vector2D.fromRandom(10, 20);
-        vEntity.painter = wanderPainter(p.color(200, 200, 255), p.color(20, 20, 160), p);
-        vEntity.maxSpeed = 50;
-        vEntity.addAutoPilot(world);
-        vEntity.pilot.wanderOn();
-        vEntity.pilot.wanderDist = 70;
-        vEntity.pilot.wanderRadius = 50;
-        vEntity.pilot.wanderJitter = 20;
-        vEntity.forceRecorderOn();
-        world.birth(vEntity);
+        predator = new Vehicle([0.19 * world.width, 0.91 * world.height], 12);
+        predator.vel = new Vector2D(20, 30);
+        predator.painter = vcePerson(p.color(255, 200, 255), p.color(160, 20, 160), p);
+        predator.maxSpeed = 55;
+        predator.addAutoPilot(world);
+        predator.pilot.pursuitOn(prey);
+        predator.forceRecorderOn();
+        world.birth(predator);
     }
 
     p.createGUI = function (gui) {
@@ -192,8 +148,6 @@ let demo = function (p) {
     }
 }
 
-let wanderdemosketch = new p5(wanderdemo);
+let demosketch = new p5(demo);
 
-function classOf(o) {
-    return Object.prototype.toString.call(o)
-}
+
