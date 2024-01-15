@@ -17,24 +17,30 @@ class Entity {
     get x() { return this._pos.x; }
     get y() { return this._pos.y; }
     /** Position */
-    set pos(v) { this._pos = v; }
     get pos() { return this._pos; }
+    set pos(v) { this._pos = v; }
+    setPos(v) { this._pos = v; return this; }
     /** The colision radius */
     get world() { return this._world; }
     set world(world) { this._world = world; }
+    setWorld(world) { this._world = world; return this; }
     /** The colision radius */
     get colRad() { return this._colRad; }
     set colRad(value) { this._colRad = value; }
+    setColRad(value) { this._colRad = value; return this; }
     /** Get the id property */
     get id() { return this._id; }
     /** The tag property */
     get tag() { return this._tag; }
     set tag(value) { this._tag = value; }
+    setTag(value) { this._tag = value; return this; }
     /** The finite state machine */
     get fsm() { return this._fsm; }
     set fsm(value) { this._fsm = value; }
+    setFsm(value) { this._fsm = value; return this; }
     /** Set the renderer */
     set painter(painter) { this._painter = painter; }
+    setPainter(painter) { this._painter = painter; return this; }
     /** The z-order display order property */
     get Z() { return this._zorder; }
     set Z(value) { this._zorder = value; }
@@ -61,8 +67,8 @@ class Entity {
                 s = ' ' + s;
             return s;
         }
-        let s = `Entity ID: ${fmt(this.id, 0, 2)}`;
-        s += ` @ [${fmt(this.x, 0, 5)}, ${fmt(this.y, 0, 5)}]`;
+        let s = `${this.type$} ID: ${fmt(this.id, 0, 2)}`;
+        s += ` @ [${fmt(this.x, 0, len)}, ${fmt(this.y, 0, len)}]`;
         return s;
     }
 }

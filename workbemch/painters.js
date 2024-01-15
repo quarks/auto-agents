@@ -1,5 +1,8 @@
 let hintHeading = true, hintVelocity = true, hintForce = true;
 let hintTrail = true, hintCircle = true, hintFleeCircle = true;
+let hintObsDetect = true;
+
+let showColCircle = true;
 
 function enyBasic(colF, colS, p = p5.instance) {
     return (function () {
@@ -30,18 +33,21 @@ function enyPerson(colF, colS, p = p5.instance) {
 }
 
 function obsAnim(p = p5.instance) {
+    let col = [p.color(255, 0, 0), p.color(255, 255, 0), p.color(0, 255, 0), p.color(0, 0, 255)];
     let a = Math.PI * Math.random();
-    let pi2 = Math.PI / 2;
+    let pi2 = Math.PI / 4;
+
     return (function () {
         let size = 2 * this.colRad;
-        a += 0.02;
+        a += 0.01;
         p.push();
-        p.translate(this._pos.x, this._pos.y);
+        p.translate(this._pos.x, this._pos.y); p.rotate(a);
         p.noStroke();
-        p.rotate(a); p.fill(255, 0, 0); p.arc(0, 0, size, size, 0, pi2, PIE);
-        p.rotate(pi2); p.fill(255, 255, 0); p.arc(0, 0, size, size, 0, pi2, PIE);
-        p.rotate(pi2); p.fill(0, 255, 0); p.arc(0, 0, size, size, 0, pi2, PIE);
-        p.rotate(pi2); p.fill(0, 0, 255); p.arc(0, 0, size, size, 0, pi2, PIE);
+        for (let i = 0; i < 8; i++) {
+            p.fill(col[i % 4]);
+            p.arc(0, 0, size, size, 0, pi2, PIE);
+            p.rotate(pi2);
+        }
         p.stroke(0, 0, 0); p.strokeWeight(1.1); p.noFill();;
         p.ellipse(0, 0, size, size);
         p.pop();
@@ -69,13 +75,18 @@ function vcePerson(colF, colS, p = p5.instance) {
             if (hintVelocity) showVelocity.call(this, p);
             if (hintCircle) showWanderCircle.call(this, p);
             if (hintForce) showWanderForce.call(this, p);
+            if (hintObsDetect) showObstacleDetectBox.call(this, p);
         }
         if (this.pilot.isFleeOn) { // Draw flee hints?
             if (hintFleeCircle)
                 showFleeCircle.call(this, p);
         }
         let size = 2 * this.colRad;
-        p.rotate(this.headingAngle)
+        p.rotate(this.headingAngle);
+        if (showColCircle) {
+            p.fill(0, 32); p.noStroke();
+            p.ellipse(0, 0, 2 * this.colRad, 2 * this.colRad);
+        }
         p.fill(colF); p.stroke(colS); p.strokeWeight(1.1);
         p.beginShape();
         for (let idx = 0; idx < body.length; idx += 2)
@@ -94,6 +105,10 @@ function mvrPerson(colF, colS, p = p5.instance) {
         p.translate(this._pos.x, this._pos.y);
         p.rotate(this.headingAngle)
         let size = 2 * this.colRad;
+        if (showColCircle) {
+            p.fill(0, 32); p.noStroke();
+            p.ellipse(0, 0, 2 * this.colRad, 2 * this.colRad);
+        }
         p.fill(colF); p.stroke(colS); p.strokeWeight(1.1);
         p.beginShape();
         for (let idx = 0; idx < body.length; idx += 2)
@@ -101,6 +116,26 @@ function mvrPerson(colF, colS, p = p5.instance) {
         p.endShape(CLOSE);
         p.fill(colS); p.noStroke();
         p.ellipse(0, 0, 0.6 * size, 0.56 * size)
+        p.pop();
+    });
+}
+
+function mvrArrow(colF, colS, p = p5.instance) {
+    let body = [-0.7, -0.45, -0.7, 0.45, 0.85, 0];
+    return (function () {
+        p.push();
+        p.translate(this._pos.x, this._pos.y);
+        p.rotate(this.headingAngle)
+        let size = this.colRad;
+        if (showColCircle) {
+            p.fill(0, 32); p.noStroke();
+            p.ellipse(0, 0, 2 * this.colRad, 2 * this.colRad);
+        }
+        p.fill(colF); p.stroke(colS); p.strokeWeight(1.1);
+        p.beginShape();
+        for (let idx = 0; idx < body.length; idx += 2)
+            p.vertex(body[idx] * size, body[idx + 1] * size);
+        p.endShape(CLOSE);
         p.pop();
     });
 }
@@ -117,6 +152,15 @@ function showHeading(p = p5.instance) {
     p.line(0, 0, wd2, 0);
     p.noStroke(); p.fill(163, 163, 255);
     p.triangle(wd2, -6, wd2, 6, wd2 + 10, 0);
+    p.pop();
+}
+function showObstacleDetectBox(p = p5.instance) {
+    let w = this.colRad;
+    let len = 2 * this.speed;
+    p.push();
+    p.rotate(this.velAngle);
+    p.noFill(); p.strokeWeight(1.2); p.stroke(180, 160, 10);
+    p.rect(0, -this.colRad, this.pilot.boxLength, 2 * this.colRad);
     p.pop();
 }
 

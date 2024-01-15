@@ -31,18 +31,15 @@ class AutoPilot {
         this.__wanderJitter = 20;
         // The target lies on the circumference of the wander circle
         this._wanderTarget = new Vector2D();
-        // ########################################################################
-        //                            BEHAVIOURS
-        // ########################################################################
+        // **************    OBSTACLE AVOIDANCE    ******************
+        this.__detectBoxLength = 20;
+        this._boxLength = 0;
         // *******************    WALL AVOID    *******************
         // Cats whiskers used for wall avoidance
         this.__nbrWhiskers = 5;
         this.__whiskerFOV = Math.PI; // radians
         this.__whiskerLength = 30;
         this.__ovalEnvelope = false;
-        // ****************    OBSTACLE AVOID    *****************
-        // Obstacle avoidance
-        this.__detectBoxLength = 20.0;
         // The maximum distance between moving entities for them to be considered
         // as neighbours. Used for group behaviours
         this.__neighbourDist = 100.0;
@@ -105,16 +102,21 @@ class AutoPilot {
     setPursueOffset(v) { this._pursueOffset.set(v); return this; }
     set pursueOffset(v) { this._pursueOffset.set(v); }
     get pursueOffset() { return this._pursueOffset; }
-    get wanderRadius() { return this.__wanderRadius; }
-    set wanderRadius(n) { this.__wanderRadius = n; }
     setWanderRadius(n) { this.__wanderRadius = n; return this; }
-    get wanderDist() { return this.__wanderDist; }
-    set wanderDist(n) { this.__wanderDist = n; }
+    set wanderRadius(n) { this.__wanderRadius = n; }
+    get wanderRadius() { return this.__wanderRadius; }
     setWanderDist(n) { this.__wanderDist = n; return this; }
-    get wanderJitter() { return this.__wanderJitter; }
-    set wanderJitter(n) { this.__wanderJitter = n; }
+    set wanderDist(n) { this.__wanderDist = n; }
+    get wanderDist() { return this.__wanderDist; }
     setWanderJitter(n) { this.__wanderJitter = n; return this; }
+    set wanderJitter(n) { this.__wanderJitter = n; }
+    get wanderJitter() { return this.__wanderJitter; }
     get wanderTarget() { return this._wanderTarget; }
+    setDetectBoxLength(n) { this.__detectBoxLength = n; return this; }
+    set detectBoxLength(n) { this.__detectBoxLength = n; }
+    get detectBoxLength() { return this.__detectBoxLength; }
+    set boxLength(n) { this._boxLength = n; }
+    get boxLength() { return this._boxLength; }
     /**
      * Set any of the properties
      * @param props
@@ -141,6 +143,9 @@ class AutoPilot {
         this._flags = 0;
         return this;
     }
+    // ########################################################################
+    //                            BEHAVIOURS
+    // ########################################################################
     /*
      * ======================================================================
      * SEEK
@@ -331,6 +336,37 @@ class AutoPilot {
         let targetWorld = Transformations.pointToWorldSpace(targetLocal, owner.heading.normalize(), owner.side.normalize(), owner.pos);
         return targetWorld.sub(owner.pos);
     }
+    /*
+     * ======================================================================
+     * OBSTACLE AVOIDANCE
+     * ======================================================================
+     */
+    /**
+     * @return this auto-pilot object
+     */
+    obsAvoidOff() {
+        this._flags &= (ALL_SB_MASK - OBSTACLE_AVOID);
+        return this;
+    }
+    /**
+     * @return this auto-pilot object
+     */
+    obsAvoidOn() {
+        this._flags |= OBSTACLE_AVOID;
+        return this;
+    }
+    /** Is obstacle avoidance switched on?    */
+    get isObsAvoidOn() { return (this._flags & OBSTACLE_AVOID) != 0; }
+    obstacleAvoidance(owner, world, elapsedTime) {
+        this.boxLength = this.detectBoxLength * (1 + owner.speed / owner.maxSpeed);
+        // Search distance for obstacles
+        let sd = this.boxLength + world._biggestObsColRad;
+        let p = owner.pos;
+        let result = world.tree.getItemsInRegion(p.x - sd, p.y - sd, p.x + sd, p.y + sd);
+        let obs = result.entities.filter(x => x.type == OBSTACLE);
+        console.log(sd, obs.length);
+        return Vector2D.ZERO;
+    }
     set forceCalculator(type) {
         switch (type) {
             case WEIGHTED:
@@ -352,6 +388,10 @@ class AutoPilot {
         let maxForce = owner.maxForce;
         let recorder = owner.recorder;
         let accumulator = new Vector2D();
+        if (this.isObsAvoidOn) {
+            let f = this.obstacleAvoidance(owner, world, elapsedTime);
+            f = f.mult(this._weight[BIT_OBSTACLE_AVOID]);
+        }
         if (this.isEvadeOn) {
             let f = this.evade(owner, this.evadeAgent);
             f = f.mult(this._weight[BIT_EVADE]);

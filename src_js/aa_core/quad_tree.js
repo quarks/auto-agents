@@ -1,5 +1,11 @@
 class QPart {
-    constructor(parent, lowX, lowY, highX, highY, level) {
+    /**
+     * Creates a single partition in a quadtree structure.
+     *
+     * To create a quadtree data structure use the QPart.makeTree(...)
+     * function.
+     */
+    constructor(parent, lowX, lowY, highX, highY, level, depth) {
         this._parent = parent;
         this._lowX = lowX;
         this._lowY = lowY;
@@ -8,6 +14,7 @@ class QPart {
         this._cX = (this._lowX + this._highX) / 2;
         this._cY = (this._lowY + this._highY) / 2;
         this._level = level;
+        this._depth = depth;
         this._entities = new Set();
     }
     static makeTree(lowX, lowY, highX, highY, depth) {
@@ -17,17 +24,18 @@ class QPart {
                 let y0 = parent._lowY, y2 = parent._highY, y1 = (y0 + y2) / 2;
                 parent._children = [];
                 let a = parent._children;
-                a[0] = new QPart(parent, x0, y0, x1, y1, level);
-                a[1] = new QPart(parent, x1, y0, x2, y1, level);
-                a[2] = new QPart(parent, x0, y1, x1, y2, level);
-                a[3] = new QPart(parent, x1, y1, x2, y2, level);
+                a[0] = new QPart(parent, x0, y0, x1, y1, level, depth);
+                a[1] = new QPart(parent, x1, y0, x2, y1, level, depth);
+                a[2] = new QPart(parent, x0, y1, x1, y2, level, depth);
+                a[3] = new QPart(parent, x1, y1, x2, y2, level, depth);
                 buildSubTree(a[0], level + 1, depth);
                 buildSubTree(a[1], level + 1, depth);
                 buildSubTree(a[2], level + 1, depth);
                 buildSubTree(a[3], level + 1, depth);
             }
         }
-        let level = 1, root = new QPart(undefined, lowX, lowY, highX, highY, level);
+        console.assert((highX - lowX == highY - lowY), `Quadtree must be square for consistant behaviour.  Requested size (${highX - lowX} x ${highY - lowY}) is invalid.`);
+        let level = 1, root = new QPart(undefined, lowX, lowY, highX, highY, level, depth);
         buildSubTree(root, level + 1, depth);
         return root;
     }
@@ -39,9 +47,18 @@ class QPart {
     get cY() { return this._cY; }
     get width() { return this.highX - this._lowX; }
     get height() { return this.highY - this._lowY; }
+    get level() { return this._level; }
+    get depth() { return this._depth; }
+    get leafSize() {
+        let r = this.getRoot();
+        while (r._children)
+            r = r._children[0];
+        return r.width;
+    }
     get isLeaf() { return !this._children; }
     get isRoot() { return !this._parent; }
     get hasChildren() { return Boolean(this._children); }
+    get entities() { return [...this._entities]; }
     getRoot() {
         return this.isRoot ? this : this._parent.getRoot();
     }

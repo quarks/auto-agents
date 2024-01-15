@@ -97,15 +97,14 @@ let wanderdemo = function (p) {
     }
 
     p.makeWanderer = function () {
-        wanderer = new Vehicle([world.width / 2, world.height / 2], 12);
+        wanderer = new Vehicle([world.width / 2, world.height / 2], 12, world);
         wanderer.vel = Vector2D.fromRandom(30, 60);
         wanderer.painter = vcePerson(p.color(200, 200, 255), p.color(20, 20, 160), p);
         wanderer.maxSpeed = 50;
-        wanderer.addAutoPilot(world);
         wanderer.pilot.wanderOn();
-        wanderer.pilot.wanderDist = 70;
-        wanderer.pilot.wanderRadius = 50;
-        wanderer.pilot.wanderJitter = 20;
+        // wanderer.pilot.wanderDist = 70;
+        // wanderer.pilot.wanderRadius = 50;
+        // wanderer.pilot.wanderJitter = 20;
         world.birth(wanderer);
     }
 

@@ -1,5 +1,6 @@
 class World {
     constructor(wsizeX, wsizeY, depth = 1) {
+        this._biggestObsColRad = 0;
         this._postman = new Dispatcher(this);
         this._population = new Map();
         this._births = [];
@@ -8,13 +9,17 @@ class World {
         this._treeSize = Math.max(wsizeX, wsizeY);
         this._tree = QPart.makeTree(0, 0, this._treeSize, this._treeSize, depth);
     }
+    get population() { return [...this._population.values()]; }
     get postman() { return this._postman; }
     set painter(painter) { this._painter = painter; }
     get oX() { return this._domain.lowX; }
     get oY() { return this._domain.lowY; }
     get width() { return this._domain.width; }
     get height() { return this._domain.height; }
+    get tree() { return this._tree; }
     birth(entity) {
+        if (entity.type == OBSTACLE)
+            this._biggestObsColRad = Math.max(this._biggestObsColRad, entity.colRad);
         if (entity)
             this._births.push(entity);
     }

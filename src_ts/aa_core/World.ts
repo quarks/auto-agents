@@ -1,16 +1,20 @@
 class World {
     _domain: Domain;
-    _painter: Function;
-    _tree: QPart;
-    _treeSize: number;
-    _population: Map<number, Entity>;
+
+    // Internal collection of entites to be added or removed
+    // during world.update
     _births: Array<Entity>;
     _deaths: Array<Entity>;
 
-    _postman: Dispatcher;
+    _biggestObsColRad = 0;
 
+    _population: Map<number, Entity>;
+    get population(): Array<Entity> { return [...this._population.values()]; }
+
+    _postman: Dispatcher;
     get postman(): Dispatcher { return this._postman; }
 
+    _painter: Function;
     set painter(painter: Function) { this._painter = painter; }
 
     get oX(): number { return this._domain.lowX }
@@ -18,6 +22,11 @@ class World {
     get width(): number { return this._domain.width }
     get height(): number { return this._domain.height }
 
+    _tree: QPart;
+    get tree(): QPart { return this._tree }
+
+    /** Size of top layer */
+    _treeSize: number;
 
     constructor(wsizeX: number, wsizeY: number, depth: number = 1) {
         this._postman = new Dispatcher(this);
@@ -30,6 +39,8 @@ class World {
     }
 
     birth(entity: Entity) {
+        if (entity.type == OBSTACLE)
+            this._biggestObsColRad = Math.max(this._biggestObsColRad, entity.colRad);
         if (entity) this._births.push(entity);
     }
 
@@ -39,7 +50,6 @@ class World {
         if (entity instanceof Entity)
             this._deaths.push(entity);
     }
-
 
 
     update(elapsedTime: number): void {

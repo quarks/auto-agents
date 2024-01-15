@@ -1,49 +1,49 @@
-// Find the partition that encompasses the specifies region. The specified region will be 
-// trimmed to fit inside the root if necessary.
-getEnclosingPartition(lowX: number, lowY: number, highX: number, highY: number): QPart {
-    function findPartition(p: QPart, x0: number, y0: number, x1: number, y1: number) {
-        if ((x0 >= p.lowX && x1 <= p.highX && y0 >= p.lowY && y1 <= p.highY)) {
-            if (p.hasChildren) {
-                let q = ((x0 < p._cX) ? 0 : 1) + ((y0 < p._cY) ? 0 : 2);
-                return findPartition(p._children[q], x0, y0, x1, y1);
+protected Vector2D obstacleAvoidance(MovingEntity me) {
+    // Vector2D desiredVelocity = new Vector2D();
+    Vector2D desiredVelocity = Vector2D.ZERO;
+
+    // This maybe required by other behaviours
+    if (obstacles == null)
+        obstacles = world.getObstacles(me);
+    if (obstacles == null || obstacles.isEmpty())
+        return desiredVelocity;
+
+    Obstacle closestIO = null;
+    double distToClosestIP = Double.MAX_VALUE;
+    Vector2D localPosOfClosestIO = null;
+    double dboxLength = detectBoxLength * (1.0 + me.speed() / me.maxSpeed());
+
+    Vector2D velocity = Vector2D.normalize(me.velocity());
+    Vector2D vside = velocity.getPerp();
+
+    for (Obstacle ob : obstacles) {
+        Vector2D localPos = Transformations.pointToLocalSpace(ob.pos(), velocity, vside, me.pos());
+        double expandedRadius = ob.colRadius() + me.colRadius();
+        if (localPos.x >= 0 && localPos.x < dboxLength + expandedRadius) {
+            if (FastMath.abs(localPos.y) < expandedRadius) {
+                double cX = localPos.x;
+                double cY = localPos.y;
+                double sqrtPart = FastMath.sqrt(expandedRadius * expandedRadius - cY * cY);
+
+                double ip = cX - sqrtPart;
+                if (ip <= 0)
+                    ip = cX + sqrtPart;
+
+                if (ip < distToClosestIP) {
+                    distToClosestIP = ip;
+                    closestIO = ob;
+                    localPosOfClosestIO = localPos;
+                }
             }
-            else
-                return p;
         }
-        else
-            return (p.isRoot ? p : p._parent);
+    } // end of for loop
+    Vector2D sForce = new Vector2D();
+    if (closestIO != null) {
+        double multiplier = 1.0 + (dboxLength - localPosOfClosestIO.x) / dboxLength;
+        sForce.y = (closestIO.colRadius() - localPosOfClosestIO.y) * multiplier;
+        double breakingWeight = 0.01;
+        sForce.x = (closestIO.colRadius() - localPosOfClosestIO.x) * breakingWeight;
+        desiredVelocity = Transformations.vectorToWorldSpace(sForce, velocity, vside);
     }
-    let root = this.getRoot();
-    let a = Geom2D.box_box_p(lowX, lowY, highX, highY,
-        root.lowX, root.lowY, root.highX, root.highY);
-    if (a.length > 0) {
-        [lowX, lowY, highX, highY] = a;
-        return findPartition(root, lowX, lowY, highX, highY);
-    }
-    return root;
-}
-
-getItemsOfInterest(lowX: number, lowY: number, highX: number, highY: number) {
-    function getParent(part) {
-        if (!part) return;
-        parts.push(part); ents.push(...part._entities);
-        getParent(part._parent);
-    }
-    function getChildren(part) {
-        parts.push(part); ents.push(...part._entities);
-        if (part.hasChildren)
-            for (let child of part._children)
-                getChildren(child);
-        return;
-    }
-    let parts: Array<QPart> = [], ents: Array<Entity> = [];
-    let encPart = this.getEnclosingPartition(lowX, lowY, highX, highY);
-    getParent(encPart._parent);
-    getChildren(encPart);
-    return { 'partitions': parts, 'entities': ents };
-}
-
-_childAt(part: QPart, entity: Entity): QPart {
-    let q = ((entity.pos.x < part._cX) ? 0 : 1) + ((entity.pos.y < part._cY) ? 0 : 2);
-    return part._children[q];
+    return desiredVelocity;
 }

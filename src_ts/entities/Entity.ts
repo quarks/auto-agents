@@ -28,16 +28,19 @@ abstract class Entity {
     get x(): number { return this._pos.x; }
     get y(): number { return this._pos.y; }
     /** Position */
-    set pos(v: Vector2D) { this._pos = v; }
     get pos(): Vector2D { return this._pos }
+    set pos(v: Vector2D) { this._pos = v; }
+    setPos(v: Vector2D) { this._pos = v; return this; }
 
     /** The colision radius */
     get world(): World { return this._world; }
     set world(world: World) { this._world = world; }
+    setWorld(world: World): Entity { this._world = world; return this; }
 
     /** The colision radius */
     get colRad(): number { return this._colRad; }
     set colRad(value) { this._colRad = value; }
+    setColRad(value: number): Entity { this._colRad = value; return this; }
 
     /** Get the id property */
     get id(): number { return this._id; }
@@ -45,13 +48,16 @@ abstract class Entity {
     /** The tag property */
     get tag(): string | number { return this._tag; }
     set tag(value) { this._tag = value; }
+    setTag(value: number | number): Entity { this._tag = value; return this; }
 
     /** The finite state machine */
     get fsm(): FiniteStateMachine { return this._fsm; }
     set fsm(value) { this._fsm = value; }
+    setFsm(value: FiniteStateMachine): Entity { this._fsm = value; return this; }
 
     /** Set the renderer */
     set painter(painter: Function) { this._painter = painter; }
+    setPainter(painter: Function): Entity { this._painter = painter; return this; }
 
     /** The z-order display order property */
     get Z(): number { return this._zorder; }
@@ -87,8 +93,8 @@ abstract class Entity {
             while (s.length < bufferLength) s = ' ' + s;
             return s;
         }
-        let s = `Entity ID: ${fmt(this.id, 0, 2)}`;
-        s += ` @ [${fmt(this.x, 0, 5)}, ${fmt(this.y, 0, 5)}]`;
+        let s = `${this.type$} ID: ${fmt(this.id, 0, 2)}`;
+        s += ` @ [${fmt(this.x, 0, len)}, ${fmt(this.y, 0, len)}]`;
         return s;
     }
 }

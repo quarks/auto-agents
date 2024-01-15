@@ -17,8 +17,6 @@ function setup() {
 
 function testInterestingPartiions(x, y, w, h) {
     x0 = x; y0 = y; x1 = x + w; y1 = y + h;
-
-    // encPart.$$();
     console.log('-------------  Items of Interest   ------------------------');
     let results = world._tree?.getItemsInRegion(x0, y0, x1, y1);
     intParts = results.partitions;
@@ -43,14 +41,15 @@ function drawEnclosingPartition(part) {
 function draw() {
     world.update(deltaTime);
     background(220);
-    noStroke(); fill(255, 255, 255);
+    noStroke(); fill(250);
     let d = world._domain;
     rect(d.lowX, d.lowY, d.width, d.height);
     renderTreeGrid();
     // world.render();
     fill(0, 64);
     rect(x0, y0, x1 - x0, y1 - y0);
-    fill(255, 200, 200, 48); stroke(255, 0, 0); strokeWeight(1.1);
+    fill(255, 200, 200, 48);
+    noFill(); stroke(255, 0, 0); strokeWeight(1.1);
     for (let part of intParts) rect(part.lowX, part.lowY, part.width, part.height);
     noFill(); stroke(0, 48); strokeWeight(6);
     rect(encPart.lowX, encPart.lowY, encPart.width, encPart.height);

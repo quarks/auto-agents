@@ -7,20 +7,16 @@ class Transform {
     //------------------------------------------------------------------------
 
     static worldTransform(points: Array<Vector2D>,
-        pos: Vector2D,
-        forward: Vector2D,
-        side: Vector2D,
+        pos: Vector2D, forward: Vector2D, side: Vector2D,
         scale: Vector2D = Vector2D.ONE): Array<Vector2D> {
 
-        //create a transformation matrix
+        // create a transformation matrix
         let matTransform = new Matrix2D();
-
-        //scale
-        if ((scale.x != 1.0) || (scale.y != 1.0))
-            matTransform.scale(scale.x, scale.y);
-        //rotate
+        // scale
+        if ((scale.x != 1.0) || (scale.y != 1.0)) matTransform.scale(scale.x, scale.y);
+        // rotate
         matTransform.rotate(forward, side);
-        //and translate
+        // and translate
         matTransform.translate(pos.x, pos.y);
 
         //now transform the object's vertices
@@ -28,7 +24,7 @@ class Transform {
     }
 
     //--------------------- PointToWorldSpace --------------------------------
-    // agentHeading and agentSide should be normalised first
+    // AgentHeading and AgentSide should be normalised first
     // Transforms a point from the agent's local space into world space
     //------------------------------------------------------------------------
     static pointToWorldSpace(point: Vector2D,
@@ -38,11 +34,8 @@ class Transform {
 
         //create a transformation matrix
         let matTransform = new Matrix2D();
-
         //rotate
         matTransform.rotate(AgentHeading, AgentSide);
-        //matTransform.rotate(Vector2D.normalize(AgentHeading), Vector2D.normalize(AgentSide));
-
         //and translate
         matTransform.translate(AgentPosition.x, AgentPosition.y);
 
@@ -51,20 +44,19 @@ class Transform {
     }
 
 
-    //--------------------- VectorToWorldSpace --------------------------------
-    //
-    //Transforms a vector from the agent's local space into world space
+    //--------------------- VectorToWorldSpace -------------------------------
+    // Transforms a vector from the agent's local space into world space
     //------------------------------------------------------------------------
     static vectorToWorldSpace(vec: Vector2D,
         AgentHeading: Vector2D,
         AgentSide: Vector2D): Vector2D {
-        //create a transformation matrix
-        let matTransform = new Matrix2D();
 
-        //rotate
+        // create a transformation matrix
+        let matTransform = new Matrix2D();
+        // rotate
         matTransform.rotate(AgentHeading, AgentSide);
 
-        //now transform and return the vertices
+        // now transform and return the vertices
         return matTransform.transformVector(vec);
     }
 
@@ -73,39 +65,37 @@ class Transform {
     // agentHeading and agentSide should be normalised
     //------------------------------------------------------------------------
     public static pointToLocalSpace(point: Vector2D,
-        agentHeading: Vector2D,
-        agentSide: Vector2D,
-        agentPosition: Vector2D): Vector2D {
-        //create a transformation matrix
+        AgentHeading: Vector2D,
+        AgentSide: Vector2D,
+        AgentPosition: Vector2D): Vector2D {
+
+        // create a transformation matrix
         let matTransform = new Matrix2D();
-
-        let tx = -agentPosition.dot(agentHeading);
-        let ty = -agentPosition.dot(agentSide);
-
-        //create the transformation matrix
-        matTransform._11(agentHeading.x); matTransform._12(agentSide.x);
-        matTransform._21(agentHeading.y); matTransform._22(agentSide.y);
+        // initialize the transformation matrix
+        let tx = -AgentPosition.dot(AgentHeading);
+        let ty = -AgentPosition.dot(AgentSide);
+        matTransform._11(AgentHeading.x); matTransform._12(AgentSide.x);
+        matTransform._21(AgentHeading.y); matTransform._22(AgentSide.y);
         matTransform._31(tx); matTransform._32(ty);
 
-        //now transform the vertices
+        // now transform the vertices
         return matTransform.transformVector(point);
     }
 
-    //--------------------- VectorToLocalSpace --------------------------------
-    //
+    //--------------------- VectorToLocalSpace -------------------------------
+    // AgentHeading and AgentSide should be normalised
     //------------------------------------------------------------------------
     public static vectorToLocalSpace(vec: Vector2D,
         AgentHeading: Vector2D,
         AgentSide: Vector2D): Vector2D {
 
-        //create a transformation matrix
+        // create a transformation matrix
         let matTransform = new Matrix2D();
-
-        //create the transformation matrix
+        // initialize the transformation matrix
         matTransform._11(AgentHeading.x); matTransform._12(AgentSide.x);
         matTransform._21(AgentHeading.y); matTransform._22(AgentSide.y);
 
-        //now transform the vertices
+        // now transform the vertices
         return matTransform.transformVector(vec);
     }
 
@@ -114,10 +104,10 @@ class Transform {
     // rotates a vector ang radians around the origin
     //-----------------------------------------------------------------------------
     public static vec2DRotateAroundOrigin(v: Vector2D, ang: number): Vector2D {
-        //create a transformation matrix
+        // create a transformation matrix
         let mat = new Matrix2D();
 
-        //rotate
+        // initialize the rotation matrix
         mat.rotate(ang);
 
         //now transform the object's vertices
