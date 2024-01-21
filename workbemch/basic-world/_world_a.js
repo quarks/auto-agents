@@ -91,8 +91,8 @@ function makeEntities() {
     walls = [], movers = [], vehicles = [], data = [];
 
     // Wall data
-    ppWall[0] = wallBarrier(color(160, 255, 160, 80), 8);  // Green
-    ppWall[1] = wallBarrier(color(200, 200, 255), 8);  // Blue
+    ppWall[0] = entWall(color(160, 255, 160, 80), 8);  // Green
+    ppWall[1] = entWall(color(200, 200, 255), 8);  // Blue
     data = [
         [125, 75, 60, 280],
         [75, 340, 120, 310],

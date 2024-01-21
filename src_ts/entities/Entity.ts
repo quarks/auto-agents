@@ -68,6 +68,11 @@ abstract class Entity {
         return p.x - cr >= lowX && p.x + cr <= highX && p.y - cr >= lowY && p.y + cr <= highY;
     }
 
+    isEitherSide(p0: Vector2D, p1: Vector2D): boolean {
+        return Geom2D.line_circle(p0.x, p0.y, p1.x, p1.y,
+            this.pos.x, this.pos.y, this.colRad);
+    }
+
     update(elapsedTime: number, world: World): void { }
 
     changeState(newState: State) { this._fsm?.changeState(newState); }

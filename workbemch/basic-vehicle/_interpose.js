@@ -1,4 +1,4 @@
-let wx = 400, wy = 400, depth = 3;
+let wx = 400, wy = 400, depth = 1;
 let intParts = [], intEnts = [];
 
 function setup() {
@@ -6,12 +6,12 @@ function setup() {
     console.log('GLOBAL mode');
     hintHeading = hintVelocity = hintForce = false;
     hintTrail = hintCircle = hintFleeCircle = false;
+    hintObsDetect = false;
     showColCircle = false;
     let p5canvas = createCanvas(800, 440);
     p5canvas.parent('sketch');
     world = new World(wx, wy, depth);
     makeEntities();
-    world.update(0);
     world._domain._constraint = WRAP;
 }
 
@@ -22,12 +22,8 @@ function draw() {
     // World background and tree grid
     noStroke(); fill(255, 240, 255); rect(wd.lowX, wd.lowY, wd.width, wd.height);
     renderTreeGrid();
-
-    // Colourize obstacles
-    obstacles.forEach(x => x.painter = ppObs[0]);
-    vehicles[0].pilot.testObstaclesFound?.forEach(x => x.painter = ppObs[1]);
-    vehicles[0].pilot.testClosestObstacle?.setPainter(ppObs[2]);
-
+    stroke(200, 0, 200); strokeWeight(1.5); fill(200, 0, 200, 64);
+    ellipse(200, 200, 5, 5);
     world.render();
 }
 
@@ -35,58 +31,55 @@ function makeEntities() {
     ppObs = [], ppWall = [], ppMover = [], ppVehicle = [];
     obstacles = [], walls = [], movers = [], vehicles = [], data = [];
 
-    // Obstacle Data
-    ppObs[0] = entBasic(color(160, 255, 160), color(20, 200, 20)); // Green
-    ppObs[1] = entBasic(color(180, 180, 255), color(20, 20, 160));  // Blue
-    ppObs[2] = entBasic(color(255, 180, 180), color(160, 20, 20));  // Red
-    data = [
-        [90, 90, 35],
-        [75, 200, 10],
-        [160, 110, 14],
-        [125, 310, 40],
-        [330, 280, 20],
-        [260, 70, 10],
-        [330, 82, 10],
-        [355, 135, 13],
-        [370, 189, 10],
-        [286, 150, 25],
-        [225, 233, 15],
-    ]
-    for (let i = 0; i < data.length; i++) {
-        let d = data[i];
-        obstacles.push(new Obstacle({ x: d[0], y: d[1] }, d[2]));
-        obstacles[i].painter = ppObs[0];
-        world.birth(obstacles[i]);
-    }
-    // for (let i = 0; i < data.length; i++) {
-    //     let d = data[i];
-    //     walls.push(new Wall({ x: d[0], y: d[1] }, { x: d[2], y: d[3] }));
-    //     walls[i].painter = ppWall[0];
-    //     world.birth(walls[i]);
-    // }
     // Wander data
-    ppVehicle[0] = vcePerson(color(160, 255, 160, 48), color(20, 200, 20, 48)); // Green
+    ppVehicle[0] = vcePerson(color(160, 255, 160), color(20, 200, 20)); // Green
     ppVehicle[1] = vcePerson(color(180, 180, 255), color(20, 20, 200)); // Blue
+    ppVehicle[2] = vcePerson(color(255, 180, 180), color(200, 20, 20)); // Red
     data = [
-        [200, 200, 10],
-        // [222, 333, 10],
-        // [111, 85, 10],
-        // [300, 233, 10],
-        // [40, 155, 10],
+        [200, 200, 8],
+        [222, 333, 8],
+        [200, 200, 6],
+        [230, 230, 6],
     ]
     for (let i = 0; i < data.length; i++) {
         let d = data[i];
-        vehicles.push(new Vehicle([d[0], d[1]], d[2], world));
-        vehicles[i].vel = Vector2D.fromRandom(20, 30);
-        vehicles[i].painter = ppVehicle[1];
-        vehicles[i].maxSpeed = 60;
-        vehicles[i].pilot.wanderOn();
-        // vehicles[i].pilot.wanderRadius = 40;
-        // vehicles[i].pilot.wanderDist = 100;
-        vehicles[i].pilot.wanderJitter = 3;
-        vehicles[i].pilot.obsAvoidOn();
-        world.birth(vehicles[i]);
+        let v = new Vehicle([d[0], d[1]], d[2], world);
+        v.vel = Vector2D.fromRandom(30, 40);
+        v.maxSpeed = 40;
+        vehicles.push(v);
+        world.birth(v);
     }
+
+    let v = vehicles[0];
+    v.painter = ppVehicle[1];
+    v.pilot.wanderOn();
+    v.pilot.wanderDist = 200;
+    v.pilot.jitter = 3;
+
+    v = vehicles[1];
+    v.painter = ppVehicle[1];
+    v.pilot.wanderOn();
+    v.pilot.wanderDist = 200;
+    v.pilot.jitter = 3;
+
+    v = vehicles[2];
+    v.painter = ppVehicle[2];
+    v.maxSpeed = 70;
+    v.pilot.interposeOn(vehicles[0], vehicles[1]);
+
+    v = vehicles[3];
+    v.painter = ppVehicle[0];
+    v.maxSpeed = 70;
+    v.pilot.interposeOn(vehicles[2], [200, 200]);
+
+    console.log(`Vehicle is instance of Entity ${v instanceof Entity}`);
+    console.log(`Vehicle is instance of Mover ${v instanceof Mover}`);
+    console.log(`Vehicle is instance of Vehicle ${v instanceof Vehicle}`);
+    console.log(`Vehicle is instance of Artefact ${v instanceof Artefact}`);
+    console.log(`Vehicle is instance of Wall ${v instanceof Wall}`);
+    console.log(`Vehicle is instance of Building ${v instanceof Building}`);
+    console.log(`Vehicle is instance of Obstacle ${v instanceof Obstacle}`);
+
 }
 
 function renderTreeGrid() {
@@ -104,6 +97,8 @@ function renderTreeGrid() {
 
 function keyTyped() {
     if (key == 't') printTree(world._tree);
+    if (key == 'c') console.log(`Population: ${world._population.size}   Tree: ${world.tree.countEntities()}`);
+    if (key == 'd') { world.death(2); }
 }
 
 function printTree(tree) {

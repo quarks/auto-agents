@@ -192,7 +192,7 @@ let demo = function (p) {
     }
 }
 
-let wanderdemosketch = new p5(wanderdemo);
+let fleeDemoSketch = new p5(demo);
 
 function classOf(o) {
     return Object.prototype.toString.call(o)

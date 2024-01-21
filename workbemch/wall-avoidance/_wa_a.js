@@ -6,6 +6,7 @@ function setup() {
     console.log('GLOBAL mode');
     hintHeading = hintVelocity = hintForce = false;
     hintTrail = hintCircle = hintFleeCircle = false;
+    hintObsDetect = false;
     showColCircle = false;
     let p5canvas = createCanvas(800, 440);
     p5canvas.parent('sketch');
@@ -24,9 +25,8 @@ function draw() {
     renderTreeGrid();
 
     // Colourize obstacles
-    obstacles.forEach(x => x.painter = ppObs[0]);
-    vehicles[0].pilot.testObstaclesFound?.forEach(x => x.painter = ppObs[1]);
-    vehicles[0].pilot.testClosestObstacle?.setPainter(ppObs[2]);
+    walls.forEach(x => x.painter = ppWall[0]);
+    vehicles[0].pilot.testWallsFound?.forEach(x => x.painter = ppWall[1]);
 
     world.render();
 }
@@ -34,36 +34,23 @@ function draw() {
 function makeEntities() {
     ppObs = [], ppWall = [], ppMover = [], ppVehicle = [];
     obstacles = [], walls = [], movers = [], vehicles = [], data = [];
-
-    // Obstacle Data
-    ppObs[0] = entBasic(color(160, 255, 160), color(20, 200, 20)); // Green
-    ppObs[1] = entBasic(color(180, 180, 255), color(20, 20, 160));  // Blue
-    ppObs[2] = entBasic(color(255, 180, 180), color(160, 20, 20));  // Red
+    //Wall data
+    ppWall[0] = entWall(color(180, 240, 180), 10); // Green
+    ppWall[1] = entWall(color(180, 180, 240), 10); // Blue
+    ppWall[2] = entWall(color(240, 180, 180), 10); // Red
     data = [
-        [90, 90, 35],
-        [75, 200, 10],
-        [160, 110, 14],
-        [125, 310, 40],
-        [330, 280, 20],
-        [260, 70, 10],
-        [330, 82, 10],
-        [355, 135, 13],
-        [370, 189, 10],
-        [286, 150, 25],
-        [225, 233, 15],
+        [25, 175, 175, 125],
+        [350, 190, 320, 120],
+        [360, 350, 130, 315],
     ]
     for (let i = 0; i < data.length; i++) {
         let d = data[i];
-        obstacles.push(new Obstacle({ x: d[0], y: d[1] }, d[2]));
-        obstacles[i].painter = ppObs[0];
-        world.birth(obstacles[i]);
+        walls.push(new Wall({ x: d[0], y: d[1] }, { x: d[2], y: d[3] }, OUTSIDE));
+        walls[i].painter = ppWall[0];
+        world.birth(walls[i]);
     }
-    // for (let i = 0; i < data.length; i++) {
-    //     let d = data[i];
-    //     walls.push(new Wall({ x: d[0], y: d[1] }, { x: d[2], y: d[3] }));
-    //     walls[i].painter = ppWall[0];
-    //     world.birth(walls[i]);
-    // }
+    walls[0].repelSide = BOTH_SIDES;
+
     // Wander data
     ppVehicle[0] = vcePerson(color(160, 255, 160, 48), color(20, 200, 20, 48)); // Green
     ppVehicle[1] = vcePerson(color(180, 180, 255), color(20, 20, 200)); // Blue
@@ -76,16 +63,27 @@ function makeEntities() {
     ]
     for (let i = 0; i < data.length; i++) {
         let d = data[i];
-        vehicles.push(new Vehicle([d[0], d[1]], d[2], world));
-        vehicles[i].vel = Vector2D.fromRandom(20, 30);
-        vehicles[i].painter = ppVehicle[1];
-        vehicles[i].maxSpeed = 60;
-        vehicles[i].pilot.wanderOn();
-        // vehicles[i].pilot.wanderRadius = 40;
-        // vehicles[i].pilot.wanderDist = 100;
-        vehicles[i].pilot.wanderJitter = 3;
-        vehicles[i].pilot.obsAvoidOn();
-        world.birth(vehicles[i]);
+        v = new Vehicle([d[0], d[1]], d[2], world);
+        let pilot = v.pilot;
+        vehicles.push(v);
+        v.vel = Vector2D.fromRandom(20, 30);
+        v.painter = ppVehicle[1];
+        v.maxSpeed = 60;
+
+        // pilot.interposeOn(undefined, [21.3, 87.91]);
+        // pilot.interposeOn(undefined, { x: 123.9, y: 56.7 });
+        // pilot.interposeOn(undefined, new Vector2D(31.422, 229.99));
+        // pilot.interposeOn(undefined, v);
+
+        pilot.wanderOn();
+        pilot.wanderJitter = 3;
+
+        pilot.wallAvoidOn();
+        pilot.ovalEnvelope = true;
+        pilot.feelerLength = 25;
+        pilot.feelerFOV = Math.PI * 0.75
+        pilot.nbrFeelers = 5;
+        world.birth(v);
     }
 }
 
@@ -104,6 +102,8 @@ function renderTreeGrid() {
 
 function keyTyped() {
     if (key == 't') printTree(world._tree);
+    if (key == 'c') console.log(`Population: ${world._population.size}   Tree: ${world.tree.countEntities()}`);
+    if (key == 'd') { world.death(2); }
 }
 
 function printTree(tree) {

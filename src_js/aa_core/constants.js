@@ -34,9 +34,9 @@ const WALL_AVOID = 1 << BIT_WALL_AVOID;
 const OBSTACLE_AVOID = 1 << BIT_OBSTACLE_AVOID;
 const EVADE = 1 << BIT_EVADE;
 const FLEE = 1 << BIT_FLEE;
-const SEPARATION = 1 << BIT_SEPARATION; // These three
-const ALIGNMENT = 1 << BIT_ALIGNMENT; // together for
-const COHESION = 1 << BIT_COHESION; // flocking
+const SEPARATION = 1 << BIT_SEPARATION; //  These three
+const ALIGNMENT = 1 << BIT_ALIGNMENT; //  together for
+const COHESION = 1 << BIT_COHESION; //      flocking
 const SEEK = 1 << BIT_SEEK;
 const ARRIVE = 1 << BIT_ARRIVE;
 const WANDER = 1 << BIT_WANDER;
@@ -49,23 +49,26 @@ const FLOCK = 1 << BIT_FLOCK;
 const NBR_BEHAVIOURS = 16;
 // All behaviours mask used when switching off a behaviour
 const ALL_SB_MASK = 0x0000ffff;
+// Force calculator
 const WEIGHTED = Symbol.for('Weighted Truncated Sum');
 const WEIGHTED_PRIORITIZED = Symbol.for('Weighted Truncated Running Sum with Prioritization');
 const PRIORITIZED_DITHERING = Symbol.for('Prioritized Dithering');
+// Arrive
 const DECEL_TWEEK = [0.0, 0.3, 0.6, 0.9];
 const FAST = 1;
 const NORMAL = 2;
 const SLOW = 3;
+// Wander
 const WANDER_MIN_ANGLE = -Math.PI;
 const WANDER_MAX_ANGLE = Math.PI;
 const WANDER_ANGLE_RANGE = WANDER_MAX_ANGLE - WANDER_MIN_ANGLE;
-// These refer to array index values so don't change them.
-const AGENT0 = 0;
-const AGENT1 = 1;
-const AGENT_TO_PURSUE = 2;
-const AGENT_TO_EVADE = 3;
-const NBR_AGENT_ARRAY = 4;
+// Wall avoid
+const NO_SIDE = Symbol.for('Ignore wall');
+const INSIDE = Symbol.for('Rebound from inside plane');
+const OUTSIDE = Symbol.for('Rebound from outside plane');
+const BOTH_SIDES = Symbol.for('Rebound from boths sides');
 const MAX_TURN_RATE = 25;
+// Domain
 const PASS_THROUGH = Symbol.for('Pass through');
 const WRAP = Symbol.for('Wrap');
 const REBOUND = Symbol.for('Rebound');

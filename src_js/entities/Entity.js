@@ -48,6 +48,9 @@ class Entity {
         let p = this._pos, cr = this._colRad;
         return p.x - cr >= lowX && p.x + cr <= highX && p.y - cr >= lowY && p.y + cr <= highY;
     }
+    isEitherSide(p0, p1) {
+        return Geom2D.line_circle(p0.x, p0.y, p1.x, p1.y, this.pos.x, this.pos.y, this.colRad);
+    }
     update(elapsedTime, world) { }
     changeState(newState) { this._fsm?.changeState(newState); }
     revertToPreviousState() { this._fsm?.revertToPreviousState(); }

@@ -1,10 +1,10 @@
 let hintHeading = true, hintVelocity = true, hintForce = true;
 let hintTrail = true, hintCircle = true, hintFleeCircle = true;
-let hintObsDetect = true;
+let hintObsDetect = true, hintFeelers = true, hintInterpose = true;
 
 let showColCircle = true;
 
-function enyBasic(colF, colS, p = p5.instance) {
+function entBasic(colF, colS, p = p5.instance) {
     return (function () {
         p.push();
         p.translate(this._pos.x, this._pos.y);
@@ -15,7 +15,7 @@ function enyBasic(colF, colS, p = p5.instance) {
     });
 }
 
-function enyPerson(colF, colS, p = p5.instance) {
+function entPerson(colF, colS, p = p5.instance) {
     let body = [0.15, -0.5, 0.15, 0.5, -0.18, 0.3, -0.18, -0.3];
     return (function () {
         p.push();
@@ -32,7 +32,7 @@ function enyPerson(colF, colS, p = p5.instance) {
     });
 }
 
-function obsAnim(p = p5.instance) {
+function entObsAnim(p = p5.instance) {
     let col = [p.color(255, 0, 0), p.color(255, 255, 0), p.color(0, 255, 0), p.color(0, 0, 255)];
     let a = Math.PI * Math.random();
     let pi2 = Math.PI / 4;
@@ -54,11 +54,24 @@ function obsAnim(p = p5.instance) {
     });
 }
 
-function wallBarrier(col, weight, p = p5.instance) {
+function entWall(col, weight, p = p5.instance) {
     return (function () {
         p.push();
         p.stroke(col); p.strokeWeight(weight);
         p.line(this._pos.x, this._pos.y, this._end.x, this._end.y);
+        p.stroke(120); p.strokeWeight(weight / 4);
+        if (this.repelSide == OUTSIDE || this.repelSide == BOTH_SIDES) {
+            p.push();
+            p.translate(this.norm.x * 3, this.norm.y * 3);
+            p.line(this._pos.x, this._pos.y, this._end.x, this._end.y);
+            p.pop();
+        }
+        if (this.repelSide == INSIDE || this.repelSide == BOTH_SIDES) {
+            p.push();
+            p.translate(this.norm.x * -3, this.norm.y * -3);
+            p.line(this._pos.x, this._pos.y, this._end.x, this._end.y);
+            p.pop();
+        }
         p.pop();
     });
 }
@@ -75,11 +88,20 @@ function vcePerson(colF, colS, p = p5.instance) {
             if (hintVelocity) showVelocity.call(this, p);
             if (hintCircle) showWanderCircle.call(this, p);
             if (hintForce) showWanderForce.call(this, p);
+        }
+        if (this.pilot.isObsAvoidOn) {
             if (hintObsDetect) showObstacleDetectBox.call(this, p);
+            if (hintHeading) showHeading.call(this, p);
+            if (hintVelocity) showVelocity.call(this, p);
         }
         if (this.pilot.isFleeOn) { // Draw flee hints?
-            if (hintFleeCircle)
-                showFleeCircle.call(this, p);
+            if (hintFleeCircle) showFleeCircle.call(this, p);
+        }
+        if (this.pilot.isWallAvoidOn) {
+            if (hintFeelers) showFeelers.call(this, p);
+        }
+        if (this.pilot.isInterposeOn) {
+            if (hintInterpose) showInterpose.call(this, p);
         }
         let size = 2 * this.colRad;
         p.rotate(this.headingAngle);
@@ -144,6 +166,30 @@ function mvrArrow(colF, colS, p = p5.instance) {
 //  RENDERING HINTS
 // ###################################################################################
 
+function showInterpose(p = p5.instance) {
+    let p0 = this.pilot.agent0.pos.sub(this.pos);
+    let p1 = this.pilot.agent1.pos.sub(this.pos);
+    let mid = p0.add(p1).div(2);
+    p.push();
+    // p.translate(p0.x, p0.y);
+    p.stroke(0, 64); p.strokeWeight(1);
+    p.line(p0.x, p0.y, p1.x, p1.y);
+    p.fill(0, 32); p.noStroke();
+    p.ellipse(mid.x, mid.y, 10, 10);
+    p.pop();
+}
+
+
+function showFeelers(p = p5.instance) {
+    let feelers = this.pilot.getFeelers();
+    let pos = this.pos;
+    p.push();
+    p.stroke(0, 128); p.strokeWeight(1);
+    feelers.forEach((f) => p.line(0, 0, f.x - pos.x, f.y - pos.y));
+    p.pop();
+}
+
+
 function showHeading(p = p5.instance) {
     let wd2 = this.pilot.wanderDist / 2;
     p.push();
@@ -154,6 +200,7 @@ function showHeading(p = p5.instance) {
     p.triangle(wd2, -6, wd2, 6, wd2 + 10, 0);
     p.pop();
 }
+
 function showObstacleDetectBox(p = p5.instance) {
     let w = this.colRad;
     let len = 2 * this.speed;

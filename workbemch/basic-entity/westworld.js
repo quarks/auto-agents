@@ -4,7 +4,7 @@ function setup() {
     //console.clear();
     let p5canvas = createCanvas(400, 400);
     p5canvas.parent('sketch');
-    world = new World(300);
+    world = new World(300, 300);
     miner = new Miner('Sam');
     world.birth(miner);
     stateDigForGold = new DigForNugget();

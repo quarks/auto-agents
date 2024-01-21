@@ -1,49 +1,30 @@
-protected Vector2D obstacleAvoidance(MovingEntity me) {
-    // Vector2D desiredVelocity = new Vector2D();
-    Vector2D desiredVelocity = Vector2D.ZERO;
+protected Vector2D hide(MovingEntity me, MovingEntity from) {
+	double distToNearest = Double.MAX_VALUE;
+	Vector2D bestHidingSpot = null;
+	// Obstacle closest = null;
 
-    // This maybe required by other behaviours
-    if (obstacles == null)
-        obstacles = world.getObstacles(me);
-    if (obstacles == null || obstacles.isEmpty())
-        return desiredVelocity;
+	// This maybe required by other behaviours
+	if (obstacles == null)
+		obstacles = world.getObstacles(me);
+	if (obstacles == null || obstacles.size() < 2)
+		return Vector2D.ZERO;
 
-    Obstacle closestIO = null;
-    double distToClosestIP = Double.MAX_VALUE;
-    Vector2D localPosOfClosestIO = null;
-    double dboxLength = detectBoxLength * (1.0 + me.speed() / me.maxSpeed());
+	for (Obstacle ob : obstacles) {
+		// calculate the position of the hiding spot for this obstacle
+		Vector2D hidingSpot = getHidingPosition(me, ob, from);
 
-    Vector2D velocity = Vector2D.normalize(me.velocity());
-    Vector2D vside = velocity.getPerp();
+		// work in distance-squared space to find the closest hiding
+		// spot to the agent
+		double dist = Vector2D.distSq(hidingSpot, me.pos());
 
-    for (Obstacle ob : obstacles) {
-        Vector2D localPos = Transformations.pointToLocalSpace(ob.pos(), velocity, vside, me.pos());
-        double expandedRadius = ob.colRadius() + me.colRadius();
-        if (localPos.x >= 0 && localPos.x < dboxLength + expandedRadius) {
-            if (FastMath.abs(localPos.y) < expandedRadius) {
-                double cX = localPos.x;
-                double cY = localPos.y;
-                double sqrtPart = FastMath.sqrt(expandedRadius * expandedRadius - cY * cY);
-
-                double ip = cX - sqrtPart;
-                if (ip <= 0)
-                    ip = cX + sqrtPart;
-
-                if (ip < distToClosestIP) {
-                    distToClosestIP = ip;
-                    closestIO = ob;
-                    localPosOfClosestIO = localPos;
-                }
-            }
-        }
-    } // end of for loop
-    Vector2D sForce = new Vector2D();
-    if (closestIO != null) {
-        double multiplier = 1.0 + (dboxLength - localPosOfClosestIO.x) / dboxLength;
-        sForce.y = (closestIO.colRadius() - localPosOfClosestIO.y) * multiplier;
-        double breakingWeight = 0.01;
-        sForce.x = (closestIO.colRadius() - localPosOfClosestIO.x) * breakingWeight;
-        desiredVelocity = Transformations.vectorToWorldSpace(sForce, velocity, vside);
-    }
-    return desiredVelocity;
+		if (dist < distToNearest) {
+			distToNearest = dist;
+			bestHidingSpot = hidingSpot;
+		}
+	}
+	// if no suitable obstacles found then Evade the hunter
+	if (bestHidingSpot == null)
+		return evade(me, from);
+	else // Go to hiding place
+		return arrive(me, bestHidingSpot, FAST);
 }

@@ -3,11 +3,8 @@ class Obstacle extends Entity {
         super(position, colRadius);
         this._type = OBSTACLE;
     }
-    fits_inside(lowX, lowY, highX, highY) {
-        throw new Error("Method not implemented.");
-    }
-    update(elapsedTime) {
-        // Use enity method?
+    isEitherSide(p0, p1) {
+        return Geom2D.line_circle(p0.x, p0.y, p1.x, p1.y, this.pos.x, this.pos.y, this.colRad);
     }
 }
 //# sourceMappingURL=obstacle.js.map

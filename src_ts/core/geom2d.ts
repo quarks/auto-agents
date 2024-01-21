@@ -2,14 +2,14 @@ class Geom2D {
 
 	static ACCY = 1E-30;
 
-	static ON_PLANE = 16;
-	static PLANE_INSIDE = 17;
-	static PLANE_OUTSIDE = 18;
+	static ON_PLANE = 0b10000;
+	static PLANE_INSIDE = 0b10001;
+	static PLANE_OUTSIDE = 0b10010;
 
-	static OUT_LEFT = 1;
-	static OUT_TOP = 2;
-	static OUT_RIGHT = 4;
-	static OUT_BOTTOM = 8;
+	static OUT_LEFT = 0b0001;
+	static OUT_TOP = 0b0010;
+	static OUT_RIGHT = 0b0100;
+	static OUT_BOTTOM = 0b1000;
 
 	static NEARNESS = 1.0;
 
@@ -135,7 +135,7 @@ class Geom2D {
 	}
 
 	/**
-	 * Sees if a line ersects with the circumference of a circle.
+	 * Sees if a line intersects with the circumference of a circle.
 	 * 
 	 * @param x0 
 	 * @param y0
@@ -144,7 +144,7 @@ class Geom2D {
 	 * @param cx centre of circle x position
 	 * @param cy centre of circle y position
 	 * @param r radius of circle
-	 * @return true if the line ersects the circle else false
+	 * @return true if the line intersects the circle else false
 	 */
 	static line_circle(x0: number, y0: number, x1: number, y1: number, cx: number, cy: number, r: number): boolean {
 		let f = (x1 - x0);

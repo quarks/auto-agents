@@ -12,7 +12,7 @@ let wanderdemo = function (p) {
         p.makeWanderer();
         trail = new Trail(300, p.color(0, 180, 0), 0.95);
 
-        wanderer.pilot.setProperties({ 'wanderDist': 75, 'wanderRadius': 65, 'xyz': 123, 'wanderJitter': 35 });
+        wanderer.pilot.setProperties({ 'wanderDist': 75, 'wanderRadius': 65, 'xyz': 123, 'wanderJitter': 2.5 });
 
         let pn = 'toString', exists = wanderer.hasOwnProperty(pn);
 
@@ -58,7 +58,7 @@ let wanderdemo = function (p) {
             });
         y += 58;
         gui.label('lblJitter', x, y, 200, 24).text(`Wander jitter ( ${wanderer.pilot.wanderJitter} )`).opaque();
-        gui.slider('sdrJitter', x, y + 26, 200, 24).limits(10, 50).value(wanderer.pilot.wanderJitter).opaque()
+        gui.slider('sdrJitter', x, y + 26, 200, 24).limits(1, 20).value(wanderer.pilot.wanderJitter).opaque()
             .setAction((info) => {
                 wanderer.pilot.wanderJitter = Math.round(info.value);
                 gui.$('lblJitter').text(`Wander jitter ( ${wanderer.pilot.wanderJitter} )`);

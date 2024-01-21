@@ -116,14 +116,12 @@ class Mover extends Entity {
      * Determines whether two points are either side of this moving entity. If they are
      * then they cannot 'see' each other.
      *
-     * @param x0 x position of first point of interest
-     * @param y0 y position of first point of interest
-     * @param x1 x position of second point of interest
-     * @param y1 y position of second point of interest
+     * @param p0 x position of first point of interest
+     * @param y1 y position of first point of interest
      * @return true if the points are either side else false
      */
-    isEitherSide(x0, y0, x1, y1) {
-        return Geom2D.line_circle(x0, y0, x1, y1, this._pos.x, this._pos.y, this._colRad);
+    isEitherSide(p0, p1) {
+        return Geom2D.line_circle(p0.x, p0.y, p1.x, p1.y, this.pos.x, this.pos.y, this.colRad);
     }
     /**
      * This method determines whether this entity can see a particular location in the world. <br>

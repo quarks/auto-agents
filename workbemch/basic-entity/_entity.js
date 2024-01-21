@@ -20,7 +20,7 @@ function testInterestingPartiions(x, y, w, h) {
     let encPart = world._tree.getEnclosingPartition(x0, y0, x1, y1);
     encPart.$$();
     console.log('---------------------------------------------------------------');
-    let results = world._tree?.getItemsOfInterest(x0, y0, x1, y1);
+    let results = world._tree?.getItemsInRegion(x0, y0, x1, y1);
     intParts = results.partitions;
     for (let part of intParts) part.$$();
     intEnts = results.entities;
@@ -82,10 +82,10 @@ function keyTyped() {
 
 function makeEntities() {
     entities = [];
-    ppRed = enyBasic(color(255, 200, 200), color(160, 20, 20));
-    ppPurple = enyBasic(color(255, 200, 255), color(160, 20, 160));
-    ppBlue = enyBasic(color(200, 200, 255), color(20, 20, 160));
-    ppCyan = enyBasic(color(200, 255, 255), color(20, 200, 200));
+    ppRed = entBasic(color(255, 200, 200), color(160, 20, 20));
+    ppPurple = entBasic(color(255, 200, 255), color(160, 20, 160));
+    ppBlue = entBasic(color(200, 200, 255), color(20, 20, 160));
+    ppCyan = entBasic(color(200, 255, 255), color(20, 200, 200));
     let data = [
         [280, 125, 8, ppCyan],
         [70, 120, 8, ppCyan],

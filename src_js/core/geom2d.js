@@ -116,7 +116,7 @@ class Geom2D {
         return vp;
     }
     /**
-     * Sees if a line ersects with the circumference of a circle.
+     * Sees if a line intersects with the circumference of a circle.
      *
      * @param x0
      * @param y0
@@ -125,7 +125,7 @@ class Geom2D {
      * @param cx centre of circle x position
      * @param cy centre of circle y position
      * @param r radius of circle
-     * @return true if the line ersects the circle else false
+     * @return true if the line intersects the circle else false
      */
     static line_circle(x0, y0, x1, y1, cx, cy, r) {
         let f = (x1 - x0);
@@ -957,12 +957,12 @@ class Geom2D {
     }
 }
 Geom2D.ACCY = 1E-30;
-Geom2D.ON_PLANE = 16;
-Geom2D.PLANE_INSIDE = 17;
-Geom2D.PLANE_OUTSIDE = 18;
-Geom2D.OUT_LEFT = 1;
-Geom2D.OUT_TOP = 2;
-Geom2D.OUT_RIGHT = 4;
-Geom2D.OUT_BOTTOM = 8;
+Geom2D.ON_PLANE = 0b10000;
+Geom2D.PLANE_INSIDE = 0b10001;
+Geom2D.PLANE_OUTSIDE = 0b10010;
+Geom2D.OUT_LEFT = 0b0001;
+Geom2D.OUT_TOP = 0b0010;
+Geom2D.OUT_RIGHT = 0b0100;
+Geom2D.OUT_BOTTOM = 0b1000;
 Geom2D.NEARNESS = 1.0;
 //# sourceMappingURL=geom2d.js.map

@@ -117,25 +117,6 @@ class QPart {
         getChildren(encPart);
         return { partitions: parts, entities: ents, enc_partition: encPart };
     }
-    // getItemsOfInterest(lowX: number, lowY: number, highX: number, highY: number) {
-    //     function getParent(part) {
-    //         if (!part) return;
-    //         parts.push(part); ents.push(...part._entities);
-    //         getParent(part._parent);
-    //     }
-    //     function getChildren(part) {
-    //         parts.push(part); ents.push(...part._entities);
-    //         if (part.hasChildren)
-    //             for (let child of part._children)
-    //                 getChildren(child);
-    //         return;
-    //     }
-    //     let parts: Array<QPart> = [], ents: Array<Entity> = [];
-    //     let encPart = this.getEnclosingPartition(lowX, lowY, highX, highY);
-    //     getParent(encPart._parent);
-    //     getChildren(encPart);
-    //     return { 'partitions': parts, 'entities': ents, 'enc_partition': encPart };
-    // }
     _childAt(part, entity) {
         let q = ((entity.pos.x < part._cX) ? 0 : 1) + ((entity.pos.y < part._cY) ? 0 : 2);
         return part._children[q];
@@ -163,6 +144,17 @@ class QPart {
                 return false;
         }
         return findPartition(this.getRoot(), entity);
+    }
+    countEntities() {
+        function entityCount(part) {
+            count += part._entities.size;
+            if (part.hasChildren)
+                for (let child of part._children)
+                    entityCount(child);
+        }
+        let count = 0;
+        entityCount(this.getRoot());
+        return count;
     }
     correctPartitionContents() {
         function processPartition(part, root) {
