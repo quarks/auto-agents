@@ -4,23 +4,25 @@ class AutoPilot {
         // ########################################################################
         //                            PROPERTIES
         // ########################################################################
-        // ************    SEEK / ARRIVVE    ********************
-        this._target = new Vector2D(); // Target for both arrive and seek behaviours
-        // Deceleration rate for arrive
-        this._arriveRate = NORMAL;
-        this._arriveDist = 1;
-        // ****************      FLEE      **********************
-        this.__fleeTarget = new Vector2D();
-        // Panic distance squared for flee to be effective
-        this.__fleeRadius = 100;
         // ****************  PATH FINDING  **********************
         // Used in path following
         // LinkedList<GraphNode> path = new LinkedList<GraphNode>();
         this._pathSeekDist = 20;
         this._pathArriveDist = 0.5;
-        this._pursueOffset = new Vector2D();
+        // The maximum distance between moving entities for them to be considered
+        // as neighbours. Used for group behaviours
+        this.__neighbourDist = 100.0;
+        // Extra variables needed to draw hints
+        this._boxLength = 0;
+        this._target = new Vector2D(); // Target for both arrive and seek behaviours
+        this.__fleeTarget = new Vector2D();
+        // Panic distance squared for flee to be effective
+        this.__fleeRadius = 100;
+        // Deceleration rate for arrive
+        this._arriveRate = NORMAL;
+        this._arriveDist = 1;
         this.__hideStandoffDist = 20;
-        // *******************    WANDER    **********************
+        this.__pursueOffset = new Vector2D();
         // radius of the constraining circle for the wander behaviour
         this.__wanderRadius = 30.0;
         // distance the wander circle is projected in front of the agent
@@ -29,22 +31,16 @@ class AutoPilot {
         this.__wanderJitter = 2.5;
         // The target lies on the circumference of the wander circle
         this._wanderTarget = new Vector2D();
-        // **************    OBSTACLE AVOIDANCE    ******************
         this.__detectBoxLength = 20;
         // *******************    WALL AVOID    *******************
         this.__nbrFeelers = 5;
         this.__feelerFOV = Math.PI; // radians
         this.__feelerLength = 30;
         this.__ovalEnvelope = false;
-        // The maximum distance between moving entities for them to be considered
-        // as neighbours. Used for group behaviours
-        this.__neighbourDist = 100.0;
-        // Extra variables needed to draw hints
-        this._boxLength = 0;
         /** Default values for steering behaviour objects. */
         this._weight = [
             220.0,
-            10.0,
+            40.0,
             5.0,
             0.5,
             1.0,
@@ -56,7 +52,7 @@ class AutoPilot {
             20.0,
             10.0,
             10.0,
-            10.0,
+            5.0,
             20.0,
             1.0 // flock weight
         ];
@@ -66,75 +62,6 @@ class AutoPilot {
     }
     get owner() { return this._owner; }
     set owner(owner) { this._owner = owner; }
-    setTarget(t) { this._target.set(t); return this; }
-    set target(t) { this._target.set(t); }
-    get target() { return this._target; }
-    setArriveRate(n) {
-        if (n == SLOW || n == FAST)
-            this._arriveRate = n;
-        else
-            this._arriveRate = NORMAL;
-        return this;
-    }
-    set arriveRate(n) { this._arriveRate = n; }
-    get arriveRate() { return this._arriveRate; }
-    set arriveDist(n) { this._arriveDist = n; }
-    get arriveDist() { return this._arriveDist; }
-    setFleeTarget(t) { this.__fleeTarget.set(t); return this; }
-    set fleeTarget(t) { this.__fleeTarget.set(t); }
-    get fleeTarget() { return this.__fleeTarget; }
-    get fleeRadius() { return this.__fleeRadius; }
-    set fleeRadius(n) { this.__fleeRadius = n; }
-    setAgent0(a) { this._agent0 = a; return this; }
-    get agent0() { return this._agent0; }
-    set agent0(a) { this._agent0 = a; }
-    setAgent1(a) { this._agent1 = a; return this; }
-    set agent1(a) { this._agent1 = a; }
-    get agent1() { return this._agent1; }
-    setPursueAgent(a) { this._pursueAgent = a; return this; }
-    set pursueAgent(a) { this._pursueAgent = a; }
-    get pursueAgent() { return this._pursueAgent; }
-    setEvadeAgent(a) { this._evadeAgent = a; return this; }
-    set evadeAgent(a) { this._evadeAgent = a; }
-    get evadeAgent() { return this._evadeAgent; }
-    setPursueOffset(v) { this._pursueOffset.set(v); return this; }
-    set pursueOffset(v) { this._pursueOffset.set(v); }
-    get pursueOffset() { return this._pursueOffset; }
-    setHideFromAgent(m) { this._hideFromAgent = m; return this; }
-    set hideFromAgent(m) { this._hideFromAgent = m; }
-    get hideFromAgent() { return this._hideFromAgent; }
-    setHideSearchRange(n) { this.__hideSearchRange = n; return this; }
-    set hideSearchRange(n) { this.__hideSearchRange = n; }
-    get hideSearchRange() { return this.__hideSearchRange; }
-    setHideStandoffDist(n) { this.__hideStandoffDist = n; return this; }
-    set hideStandoffDist(n) { this.__hideStandoffDist = n; }
-    get hideStandoffDist() { return this.__hideStandoffDist; }
-    setWanderRadius(n) { this.__wanderRadius = n; return this; }
-    set wanderRadius(n) { this.__wanderRadius = n; }
-    get wanderRadius() { return this.__wanderRadius; }
-    setWanderDist(n) { this.__wanderDist = n; return this; }
-    set wanderDist(n) { this.__wanderDist = n; }
-    get wanderDist() { return this.__wanderDist; }
-    setWanderJitter(n) { this.__wanderJitter = n; return this; }
-    set wanderJitter(n) { this.__wanderJitter = n; }
-    get wanderJitter() { return this.__wanderJitter; }
-    get wanderTarget() { return this._wanderTarget; }
-    setDetectBoxLength(n) { this.__detectBoxLength = n; return this; }
-    set detectBoxLength(n) { this.__detectBoxLength = n; }
-    get detectBoxLength() { return this.__detectBoxLength; }
-    setNbrFeelers(n) { this.__nbrFeelers = n; return this; }
-    set nbrFeelers(n) { this.__nbrFeelers = n; }
-    get nbrFeelers() { return this.__nbrFeelers; }
-    setFeelerFOV(n) { this.__feelerFOV = n; return this; }
-    set feelerFOV(n) { this.__feelerFOV = n; }
-    get feelerFOV() { return this.__feelerFOV; }
-    setFeelerLength(n) { this.__feelerLength = n; return this; }
-    set feelerLength(n) { this.__feelerLength = n; }
-    get feelerLength() { return this.__feelerLength; }
-    setOvalEnvelope(b) { this.__ovalEnvelope = b; return this; }
-    set ovalEnvelope(b) { this.__ovalEnvelope = b; }
-    get ovalEnvelope() { return this.__ovalEnvelope; }
-    ;
     set boxLength(n) { this._boxLength = n; }
     get boxLength() { return this._boxLength; }
     /**
@@ -191,6 +118,9 @@ class AutoPilot {
     }
     /** Is seek switched on?   */
     get isSeekOn() { return (this._flags & SEEK) != 0; }
+    setTarget(t) { this._target.set(t); return this; }
+    set target(t) { this._target.set(t); }
+    get target() { return this._target; }
     /*
      * ======================================================================
      * FLEE
@@ -219,6 +149,11 @@ class AutoPilot {
     }
     /** Is seek switched on?   */
     get isFleeOn() { return (this._flags & FLEE) != 0; }
+    setFleeTarget(t) { this.__fleeTarget.set(t); return this; }
+    set fleeTarget(t) { this.__fleeTarget.set(t); }
+    get fleeTarget() { return this.__fleeTarget; }
+    get fleeRadius() { return this.__fleeRadius; }
+    set fleeRadius(n) { this.__fleeRadius = n; }
     /*
      * ======================================================================
      * ARRIVE
@@ -254,6 +189,17 @@ class AutoPilot {
     }
     /** Is arrive switched on?   */
     get isArriveOn() { return (this._flags & ARRIVE) != 0; }
+    setArriveRate(n) {
+        if (n == SLOW || n == FAST)
+            this._arriveRate = n;
+        else
+            this._arriveRate = NORMAL;
+        return this;
+    }
+    set arriveRate(n) { this._arriveRate = n; }
+    get arriveRate() { return this._arriveRate; }
+    set arriveDist(n) { this._arriveDist = n; }
+    get arriveDist() { return this._arriveDist; }
     /*
      * ======================================================================
      * EVADE
@@ -281,6 +227,9 @@ class AutoPilot {
     }
     /** Is evade switched on?   */
     get isEvadeOn() { return (this._flags & EVADE) != 0; }
+    setEvadeAgent(a) { this._evadeAgent = a; return this; }
+    set evadeAgent(a) { this._evadeAgent = a; }
+    get evadeAgent() { return this._evadeAgent; }
     /*
      * ======================================================================
      * HIDE
@@ -292,17 +241,32 @@ class AutoPilot {
         // Get all obstacles inside search distance
         let pos = owner.pos;
         let result = world.tree.getItemsInRegion(pos.x - sd, pos.y - sd, pos.x + sd, pos.y + sd);
-        //let obs = result.entities.filter(e => e.type == OBSTACLE);
         let obs = result.entities.filter(e => e instanceof Obstacle);
+        console.log(`Found ${obs.length} obstacles for hiding behind`);
         let distToNearest = Number.MAX_VALUE;
         let bestHidingSpot;
         for (let ob of obs) {
+            let spot = this.getHidingPosition(owner, hideFrom, ob);
+            let dist = Vector2D.distSq(spot, owner.pos);
+            if (dist < distToNearest) {
+                distToNearest = dist;
+                bestHidingSpot = spot;
+            }
         }
-        return Vector2D.ZERO;
+        // if no suitable obstacles found then Evade the hunter
+        if (bestHidingSpot)
+            return this.arrive(owner, bestHidingSpot, FAST);
+        else
+            return this.evade(owner, hideFrom);
+    }
+    getHidingPosition(owner, hideFrom, ob) {
+        let toOb = ob.pos.sub(hideFrom.pos).normalize();
+        let hidingSpot = toOb.mult(ob.colRad + owner.colRad + this.hideStandoffDist).add(ob.pos);
+        return hidingSpot;
     }
     /** Switch off evade  */
     hideOff() {
-        this._flags &= (ALL_SB_MASK - EVADE);
+        this._flags &= (ALL_SB_MASK - HIDE);
         return this;
     }
     /**
@@ -310,12 +274,21 @@ class AutoPilot {
      * @returns this auto-pilot object
      */
     hideOn(agent) {
-        this._flags |= EVADE;
-        this.evadeAgent = agent;
+        this._flags |= HIDE;
+        this.hideFromAgent = agent;
         return this;
     }
     /** Is hide switched on?   */
-    get isHideOn() { return (this._flags & EVADE) != 0; }
+    get isHideOn() { return (this._flags & HIDE) != 0; }
+    setHideFromAgent(m) { this._hideFromAgent = m; return this; }
+    set hideFromAgent(m) { this._hideFromAgent = m; }
+    get hideFromAgent() { return this._hideFromAgent; }
+    setHideSearchRange(n) { this.__hideSearchRange = n; return this; }
+    set hideSearchRange(n) { this.__hideSearchRange = n; }
+    get hideSearchRange() { return this.__hideSearchRange; }
+    setHideStandoffDist(n) { this.__hideStandoffDist = n; return this; }
+    set hideStandoffDist(n) { this.__hideStandoffDist = n; }
+    get hideStandoffDist() { return this.__hideStandoffDist; }
     /*
      * ======================================================================
      * PURSUIT
@@ -343,6 +316,62 @@ class AutoPilot {
     }
     /** Is pursuit switched off? */
     get isPusuitOn() { return (this._flags & PURSUIT) != 0; }
+    setPursueAgent(a) { this._pursueAgent = a; return this; }
+    set pursueAgent(a) { this._pursueAgent = a; }
+    get pursueAgent() { return this._pursueAgent; }
+    /*
+     * ======================================================================
+     * OFFSET PURSUIT
+     * ======================================================================
+     */
+    offsetPursuit(owner, leader, offset) {
+        // calculate the offset's position in world space
+        let worldOffsetPos = Transform.pointToWorldSpace(offset, leader.heading, leader.side, leader.pos);
+        // Owner to offset vector
+        let toOffset = worldOffsetPos.sub(owner.pos);
+        // the lookahead time is proportional to the distance between the leader
+        // and the pursuer; and is inversely proportional to the sum of both
+        // agent's velocities
+        let lookAheadTime = toOffset.length() / (owner.maxSpeed + leader.speed);
+        // now Arrive at the predicted future position of the offset
+        let target = leader.vel.mult(lookAheadTime).add(worldOffsetPos);
+        return this.arrive(owner, target, FAST);
+    }
+    /*
+    protected Vector2D offsetPursuit(MovingEntity me, MovingEntity leader, Vector2D offset) {
+        // calculate the offset's position in world space
+        Vector2D worldOffsetPos = Transformations.pointToWorldSpace(offset, leader.heading(), leader.side(), leader.pos());
+        Vector2D toOffset = Vector2D.sub(worldOffsetPos, me.pos());
+
+        // the lookahead time is proportional to the distance between the leader and the
+        // pursuer; and is inversely proportional to the sum of both agent's velocities
+        double lookAheadTime = toOffset.length() / (me.maxSpeed() + leader.speed());
+
+        // now Arrive at the predicted future position of the offset
+        Vector2D target = new Vector2D(leader.velocity());
+        target.mult(lookAheadTime);
+        target.add(worldOffsetPos);
+
+        return arrive(me, target, FAST);
+    }
+    */
+    /** Switch off pursuit behaviour */
+    offsetPursuitOff() {
+        this._flags &= (ALL_SB_MASK - OFFSET_PURSUIT);
+        return this;
+    }
+    /** Switch on pursuit behaviour and set agent to pursue     */
+    offsetPursuitOn(agent, offset) {
+        this._flags |= OFFSET_PURSUIT;
+        this.pursueAgent = agent;
+        this.pursueOffset = offset;
+        return this;
+    }
+    /** Is pursuit switched off? */
+    get isOffsetPusuitOn() { return (this._flags & OFFSET_PURSUIT) != 0; }
+    setPursueOffset(v) { this.__pursueOffset.set(v); return this; }
+    set pursueOffset(v) { this.__pursueOffset.set(v); }
+    get pursueOffset() { return this.__pursueOffset; }
     /*
      * ======================================================================
      * INTERPOSE
@@ -381,15 +410,19 @@ class AutoPilot {
     }
     /** Is pursuit switched off? */
     get isInterposeOn() { return (this._flags & INTERPOSE) != 0; }
+    setAgent0(a) { this._agent0 = a; return this; }
+    get agent0() { return this._agent0; }
+    set agent0(a) { this._agent0 = a; }
+    setAgent1(a) { this._agent1 = a; return this; }
+    set agent1(a) { this._agent1 = a; }
+    get agent1() { return this._agent1; }
     /*
      * ======================================================================
      * WANDER
      * ======================================================================
      */
     wander(owner, elapsedTime) {
-        function rnd(n) {
-            return (Math.random() - Math.random()) * n;
-        }
+        function rnd(n) { return (Math.random() - Math.random()) * n; }
         let delta = this.__wanderJitter;
         // Add small displacement to wander target
         this._wanderTarget = this._wanderTarget.add(rnd(delta), rnd(delta));
@@ -415,6 +448,16 @@ class AutoPilot {
     }
     /** Is wander switched on?    */
     get isWanderOn() { return (this._flags & WANDER) != 0; }
+    setWanderRadius(n) { this.__wanderRadius = n; return this; }
+    set wanderRadius(n) { this.__wanderRadius = n; }
+    get wanderRadius() { return this.__wanderRadius; }
+    setWanderDist(n) { this.__wanderDist = n; return this; }
+    set wanderDist(n) { this.__wanderDist = n; }
+    get wanderDist() { return this.__wanderDist; }
+    setWanderJitter(n) { this.__wanderJitter = n; return this; }
+    set wanderJitter(n) { this.__wanderJitter = n; }
+    get wanderJitter() { return this.__wanderJitter; }
+    get wanderTarget() { return this._wanderTarget; }
     /*
      * ======================================================================
      * OBSTACLE AVOIDANCE
@@ -482,6 +525,9 @@ class AutoPilot {
     }
     /** Is obstacle avoidance switched on?    */
     get isObsAvoidOn() { return (this._flags & OBSTACLE_AVOID) != 0; }
+    setDetectBoxLength(n) { this.__detectBoxLength = n; return this; }
+    set detectBoxLength(n) { this.__detectBoxLength = n; }
+    get detectBoxLength() { return this.__detectBoxLength; }
     /*
      * ======================================================================
      * WALL AVOIDANCE
@@ -547,6 +593,19 @@ class AutoPilot {
         owner.pos // origin
         );
     }
+    setNbrFeelers(n) { this.__nbrFeelers = n; return this; }
+    set nbrFeelers(n) { this.__nbrFeelers = n; }
+    get nbrFeelers() { return this.__nbrFeelers; }
+    setFeelerFOV(n) { this.__feelerFOV = n; return this; }
+    set feelerFOV(n) { this.__feelerFOV = n; }
+    get feelerFOV() { return this.__feelerFOV; }
+    setFeelerLength(n) { this.__feelerLength = n; return this; }
+    set feelerLength(n) { this.__feelerLength = n; }
+    get feelerLength() { return this.__feelerLength; }
+    setOvalEnvelope(b) { this.__ovalEnvelope = b; return this; }
+    set ovalEnvelope(b) { this.__ovalEnvelope = b; }
+    get ovalEnvelope() { return this.__ovalEnvelope; }
+    ;
     /**
      * Used internally by the getFeelers() methods. <br>
      * Given an origin, a facing direction, a 'field of view' describing the
@@ -653,6 +712,14 @@ class AutoPilot {
             let f = this.pursuit(owner, this.pursueAgent);
             f = f.mult(this._weight[BIT_PURSUIT]);
             recorder?.addData(BIT_PURSUIT, f);
+            if (!this.accumulateForce(accumulator, f, maxForce))
+                return accumulator;
+        }
+        if (this.isOffsetPusuitOn) {
+            console.log('offset pursuit calculate');
+            let f = this.offsetPursuit(owner, this.pursueAgent, this.pursueOffset);
+            f = f.mult(this._weight[BIT_OFFSET_PURSUIT]);
+            recorder?.addData(BIT_OFFSET_PURSUIT, f);
             if (!this.accumulateForce(accumulator, f, maxForce))
                 return accumulator;
         }

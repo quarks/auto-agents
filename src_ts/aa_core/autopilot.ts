@@ -17,134 +17,11 @@ class AutoPilot {
     //                            PROPERTIES
     // ########################################################################
 
-    // ************    SEEK / ARRIVVE    ********************
-    _target = new Vector2D();   // Target for both arrive and seek behaviours
-    setTarget(t: Vector2D): AutoPilot { this._target.set(t); return this; }
-    set target(t: Vector2D) { this._target.set(t); }
-    get target(): Vector2D { return this._target; }
-
-    // Deceleration rate for arrive
-    _arriveRate: number = NORMAL;
-    setArriveRate(n: number): AutoPilot {
-        if (n == SLOW || n == FAST) this._arriveRate = n; else this._arriveRate = NORMAL;
-        return this;
-    }
-    set arriveRate(n: number) { this._arriveRate = n; }
-    get arriveRate(): number { return this._arriveRate; }
-
-    _arriveDist = 1;
-    set arriveDist(n: number) { this._arriveDist = n; }
-    get arriveDist(): number { return this._arriveDist; }
-
-    // ****************      FLEE      **********************
-    __fleeTarget = new Vector2D();
-    setFleeTarget(t: Vector2D): AutoPilot { this.__fleeTarget.set(t); return this; }
-    set fleeTarget(t: Vector2D) { this.__fleeTarget.set(t); }
-    get fleeTarget(): Vector2D { return this.__fleeTarget; }
-
-    // Panic distance squared for flee to be effective
-    __fleeRadius = 100;
-    get fleeRadius(): number { return this.__fleeRadius; }
-    set fleeRadius(n: number) { this.__fleeRadius = n; }
-
     // ****************  PATH FINDING  **********************
     // Used in path following
     // LinkedList<GraphNode> path = new LinkedList<GraphNode>();
     _pathSeekDist = 20;
     _pathArriveDist = 0.5;
-
-    // ****************    PURSUE / EVADE / HIDE    **********************
-    _agent0: Mover;
-    setAgent0(a: Mover): AutoPilot { this._agent0 = a; return this; }
-    get agent0(): Mover { return this._agent0; }
-    set agent0(a: Mover) { this._agent0 = a; }
-
-    _agent1: Mover;
-    setAgent1(a: Mover): AutoPilot { this._agent1 = a; return this; }
-    set agent1(a: Mover) { this._agent1 = a; }
-    get agent1(): Mover { return this._agent1; }
-
-    _pursueAgent: Mover;
-    setPursueAgent(a: Mover): AutoPilot { this._pursueAgent = a; return this; }
-    set pursueAgent(a: Mover) { this._pursueAgent = a; }
-    get pursueAgent(): Mover { return this._pursueAgent; }
-
-    _evadeAgent: Mover;
-    setEvadeAgent(a: Mover): AutoPilot { this._evadeAgent = a; return this; }
-    set evadeAgent(a: Mover) { this._evadeAgent = a; }
-    get evadeAgent(): Mover { return this._evadeAgent; }
-
-    _pursueOffset = new Vector2D();
-    setPursueOffset(v: Vector2D): AutoPilot { this._pursueOffset.set(v); return this; }
-    set pursueOffset(v: Vector2D) { this._pursueOffset.set(v); }
-    get pursueOffset(): Vector2D { return this._pursueOffset; }
-
-    _hideFromAgent: Mover;
-    setHideFromAgent(m: Mover): AutoPilot { this._hideFromAgent = m; return this; }
-    set hideFromAgent(m: Mover) { this._hideFromAgent = m; }
-    get hideFromAgent(): Mover { return this._hideFromAgent; }
-
-    __hideSearchRange: number
-    setHideSearchRange(n: number): AutoPilot { this.__hideSearchRange = n; return this; }
-    set hideSearchRange(n: number) { this.__hideSearchRange = n; }
-    get hideSearchRange(): number { return this.__hideSearchRange; }
-
-    __hideStandoffDist = 20;
-    setHideStandoffDist(n: number): AutoPilot { this.__hideStandoffDist = n; return this; }
-    set hideStandoffDist(n: number) { this.__hideStandoffDist = n; }
-    get hideStandoffDist(): number { return this.__hideStandoffDist; }
-
-
-    // *******************    WANDER    **********************
-    // radius of the constraining circle for the wander behaviour
-    __wanderRadius = 30.0;
-    setWanderRadius(n: number): AutoPilot { this.__wanderRadius = n; return this; }
-    set wanderRadius(n: number) { this.__wanderRadius = n; }
-    get wanderRadius() { return this.__wanderRadius; }
-
-    // distance the wander circle is projected in front of the agent
-    __wanderDist = 80.0;
-    setWanderDist(n: number): AutoPilot { this.__wanderDist = n; return this; }
-    set wanderDist(n: number) { this.__wanderDist = n; }
-    get wanderDist() { return this.__wanderDist; }
-
-    // Maximum jitter per update
-    __wanderJitter = 2.5;
-    setWanderJitter(n: number): AutoPilot { this.__wanderJitter = n; return this; }
-    set wanderJitter(n: number) { this.__wanderJitter = n; }
-    get wanderJitter() { return this.__wanderJitter; }
-
-    // The target lies on the circumference of the wander circle
-    _wanderTarget: Vector2D = new Vector2D();
-    get wanderTarget(): Vector2D { return this._wanderTarget; }
-
-    // **************    OBSTACLE AVOIDANCE    ******************
-    __detectBoxLength = 20;
-    setDetectBoxLength(n: number): AutoPilot { this.__detectBoxLength = n; return this; }
-    set detectBoxLength(n: number) { this.__detectBoxLength = n; }
-    get detectBoxLength(): number { return this.__detectBoxLength; }
-
-    // *******************    WALL AVOID    *******************
-    __nbrFeelers = 5;
-    setNbrFeelers(n: number): AutoPilot { this.__nbrFeelers = n; return this; }
-    set nbrFeelers(n: number) { this.__nbrFeelers = n; }
-    get nbrFeelers(): number { return this.__nbrFeelers; }
-
-    __feelerFOV = Math.PI; // radians
-    setFeelerFOV(n: number): AutoPilot { this.__feelerFOV = n; return this; }
-    set feelerFOV(n: number) { this.__feelerFOV = n; }
-    get feelerFOV(): number { return this.__feelerFOV; }
-
-    __feelerLength = 30;
-    setFeelerLength(n: number): AutoPilot { this.__feelerLength = n; return this; }
-    set feelerLength(n: number) { this.__feelerLength = n; }
-    get feelerLength(): number { return this.__feelerLength; }
-
-    __ovalEnvelope = false;
-    setOvalEnvelope(b: boolean): AutoPilot { this.__ovalEnvelope = b; return this; }
-    set ovalEnvelope(b: boolean) { this.__ovalEnvelope = b; }
-    get ovalEnvelope(): boolean { return this.__ovalEnvelope };
-
 
     // The maximum distance between moving entities for them to be considered
     // as neighbours. Used for group behaviours
@@ -220,6 +97,11 @@ class AutoPilot {
     /** Is seek switched on?   */
     get isSeekOn(): boolean { return (this._flags & SEEK) != 0; }
 
+    _target = new Vector2D();   // Target for both arrive and seek behaviours
+    setTarget(t: Vector2D): AutoPilot { this._target.set(t); return this; }
+    set target(t: Vector2D) { this._target.set(t); }
+    get target(): Vector2D { return this._target; }
+
 
     /*
      * ======================================================================
@@ -251,6 +133,16 @@ class AutoPilot {
 
     /** Is seek switched on?   */
     get isFleeOn(): boolean { return (this._flags & FLEE) != 0; }
+
+    __fleeTarget = new Vector2D();
+    setFleeTarget(t: Vector2D): AutoPilot { this.__fleeTarget.set(t); return this; }
+    set fleeTarget(t: Vector2D) { this.__fleeTarget.set(t); }
+    get fleeTarget(): Vector2D { return this.__fleeTarget; }
+
+    // Panic distance squared for flee to be effective
+    __fleeRadius = 100;
+    get fleeRadius(): number { return this.__fleeRadius; }
+    set fleeRadius(n: number) { this.__fleeRadius = n; }
 
 
     /*
@@ -290,6 +182,20 @@ class AutoPilot {
     get isArriveOn(): boolean { return (this._flags & ARRIVE) != 0; }
 
 
+    // Deceleration rate for arrive
+    _arriveRate: number = NORMAL;
+    setArriveRate(n: number): AutoPilot {
+        if (n == SLOW || n == FAST) this._arriveRate = n; else this._arriveRate = NORMAL;
+        return this;
+    }
+    set arriveRate(n: number) { this._arriveRate = n; }
+    get arriveRate(): number { return this._arriveRate; }
+
+    _arriveDist = 1;
+    set arriveDist(n: number) { this._arriveDist = n; }
+    get arriveDist(): number { return this._arriveDist; }
+
+
     /*
      * ======================================================================
      * EVADE
@@ -320,6 +226,11 @@ class AutoPilot {
     /** Is evade switched on?   */
     get isEvadeOn(): boolean { return (this._flags & EVADE) != 0; }
 
+    _evadeAgent: Mover;
+    setEvadeAgent(a: Mover): AutoPilot { this._evadeAgent = a; return this; }
+    set evadeAgent(a: Mover) { this._evadeAgent = a; }
+    get evadeAgent(): Mover { return this._evadeAgent; }
+
 
     /*
      * ======================================================================
@@ -333,25 +244,35 @@ class AutoPilot {
         let pos = owner.pos;
         let result = world.tree.getItemsInRegion(pos.x - sd, pos.y - sd, pos.x + sd, pos.y + sd);
         let obs = result.entities.filter(e => e instanceof Obstacle);
-
+        console.log(`Found ${obs.length} obstacles for hiding behind`)
         let distToNearest = Number.MAX_VALUE;
         let bestHidingSpot: Vector2D;
 
         for (let ob of obs) {
+            let spot = this.getHidingPosition(owner, hideFrom, ob);
+            let dist = Vector2D.distSq(spot, owner.pos);
 
+            if (dist < distToNearest) {
+                distToNearest = dist;
+                bestHidingSpot = spot;
+            }
         }
-        return Vector2D.ZERO;
+        // if no suitable obstacles found then Evade the hunter
+        if (bestHidingSpot)
+            return this.arrive(owner, bestHidingSpot, FAST);
+        else
+            return this.evade(owner, hideFrom);
     }
 
-    getHidingPosition(owner: Mover, seeker: Mover, ob: Obstacle): Vector2D {
-        let toOb = ob.pos.sub(seeker.pos).normalize();
+    getHidingPosition(owner: Mover, hideFrom: Mover, ob: Obstacle): Vector2D {
+        let toOb = ob.pos.sub(hideFrom.pos).normalize();
         let hidingSpot = toOb.mult(ob.colRad + owner.colRad + this.hideStandoffDist).add(ob.pos);
         return hidingSpot;
     }
 
     /** Switch off evade  */
     hideOff(): AutoPilot {
-        this._flags &= (ALL_SB_MASK - EVADE); return this;
+        this._flags &= (ALL_SB_MASK - HIDE); return this;
     }
 
     /**
@@ -359,14 +280,28 @@ class AutoPilot {
      * @returns this auto-pilot object
      */
     hideOn(agent: Mover): AutoPilot {
-        this._flags |= EVADE;
-        this.evadeAgent = agent;
+        this._flags |= HIDE;
+        this.hideFromAgent = agent;
         return this;
     }
 
     /** Is hide switched on?   */
-    get isHideOn(): boolean { return (this._flags & EVADE) != 0; }
+    get isHideOn(): boolean { return (this._flags & HIDE) != 0; }
 
+    _hideFromAgent: Mover;
+    setHideFromAgent(m: Mover): AutoPilot { this._hideFromAgent = m; return this; }
+    set hideFromAgent(m: Mover) { this._hideFromAgent = m; }
+    get hideFromAgent(): Mover { return this._hideFromAgent; }
+
+    __hideSearchRange: number
+    setHideSearchRange(n: number): AutoPilot { this.__hideSearchRange = n; return this; }
+    set hideSearchRange(n: number) { this.__hideSearchRange = n; }
+    get hideSearchRange(): number { return this.__hideSearchRange; }
+
+    __hideStandoffDist = 20;
+    setHideStandoffDist(n: number): AutoPilot { this.__hideStandoffDist = n; return this; }
+    set hideStandoffDist(n: number) { this.__hideStandoffDist = n; }
+    get hideStandoffDist(): number { return this.__hideStandoffDist; }
 
 
     /*
@@ -400,6 +335,75 @@ class AutoPilot {
 
     /** Is pursuit switched off? */
     get isPusuitOn(): boolean { return (this._flags & PURSUIT) != 0; }
+
+    _pursueAgent: Mover;
+    setPursueAgent(a: Mover): AutoPilot { this._pursueAgent = a; return this; }
+    set pursueAgent(a: Mover) { this._pursueAgent = a; }
+    get pursueAgent(): Mover { return this._pursueAgent; }
+
+
+    /*
+     * ======================================================================
+     * OFFSET PURSUIT
+     * ======================================================================
+     */
+    offsetPursuit(owner: Vehicle, leader: Mover, offset: Vector2D) {
+        // calculate the offset's position in world space
+        let worldOffsetPos = Transform.pointToWorldSpace(offset,
+            leader.heading, leader.side, leader.pos);
+        // Owner to offset vector
+        let toOffset = worldOffsetPos.sub(owner.pos);
+
+        // the lookahead time is proportional to the distance between the leader
+        // and the pursuer; and is inversely proportional to the sum of both
+        // agent's velocities
+        let lookAheadTime = toOffset.length() / (owner.maxSpeed + leader.speed);
+
+        // now Arrive at the predicted future position of the offset
+        let target = leader.vel.mult(lookAheadTime).add(worldOffsetPos);
+        return this.arrive(owner, target, FAST);
+    }
+
+    /*
+    protected Vector2D offsetPursuit(MovingEntity me, MovingEntity leader, Vector2D offset) {
+        // calculate the offset's position in world space
+        Vector2D worldOffsetPos = Transformations.pointToWorldSpace(offset, leader.heading(), leader.side(), leader.pos());
+        Vector2D toOffset = Vector2D.sub(worldOffsetPos, me.pos());
+
+        // the lookahead time is proportional to the distance between the leader and the
+        // pursuer; and is inversely proportional to the sum of both agent's velocities
+        double lookAheadTime = toOffset.length() / (me.maxSpeed() + leader.speed());
+
+        // now Arrive at the predicted future position of the offset
+        Vector2D target = new Vector2D(leader.velocity());
+        target.mult(lookAheadTime);
+        target.add(worldOffsetPos);
+
+        return arrive(me, target, FAST);
+    }
+    */
+
+    /** Switch off pursuit behaviour */
+    offsetPursuitOff(): AutoPilot {
+        this._flags &= (ALL_SB_MASK - OFFSET_PURSUIT); return this;
+    }
+
+    /** Switch on pursuit behaviour and set agent to pursue     */
+    offsetPursuitOn(agent: Mover, offset: Vector2D): AutoPilot {
+        this._flags |= OFFSET_PURSUIT;
+        this.pursueAgent = agent;
+        this.pursueOffset = offset;
+        return this;
+    }
+
+    /** Is pursuit switched off? */
+    get isOffsetPusuitOn(): boolean { return (this._flags & OFFSET_PURSUIT) != 0; }
+
+    __pursueOffset = new Vector2D();
+    setPursueOffset(v: Vector2D): AutoPilot { this.__pursueOffset.set(v); return this; }
+    set pursueOffset(v: Vector2D) { this.__pursueOffset.set(v); }
+    get pursueOffset(): Vector2D { return this.__pursueOffset; }
+
 
     /*
      * ======================================================================
@@ -444,6 +448,16 @@ class AutoPilot {
     /** Is pursuit switched off? */
     get isInterposeOn(): boolean { return (this._flags & INTERPOSE) != 0; }
 
+    _agent0: Mover;
+    setAgent0(a: Mover): AutoPilot { this._agent0 = a; return this; }
+    get agent0(): Mover { return this._agent0; }
+    set agent0(a: Mover) { this._agent0 = a; }
+
+    _agent1: Mover;
+    setAgent1(a: Mover): AutoPilot { this._agent1 = a; return this; }
+    set agent1(a: Mover) { this._agent1 = a; }
+    get agent1(): Mover { return this._agent1; }
+
 
     /*
      * ======================================================================
@@ -451,9 +465,7 @@ class AutoPilot {
      * ======================================================================
      */
     wander(owner: Vehicle, elapsedTime: number) {
-        function rnd(n: number) {
-            return (Math.random() - Math.random()) * n;
-        }
+        function rnd(n: number) { return (Math.random() - Math.random()) * n; }
         let delta = this.__wanderJitter;
         // Add small displacement to wander target
         this._wanderTarget = this._wanderTarget.add(rnd(delta), rnd(delta));
@@ -482,6 +494,28 @@ class AutoPilot {
 
     /** Is wander switched on?    */
     get isWanderOn(): boolean { return (this._flags & WANDER) != 0; }
+
+    // radius of the constraining circle for the wander behaviour
+    __wanderRadius = 30.0;
+    setWanderRadius(n: number): AutoPilot { this.__wanderRadius = n; return this; }
+    set wanderRadius(n: number) { this.__wanderRadius = n; }
+    get wanderRadius() { return this.__wanderRadius; }
+
+    // distance the wander circle is projected in front of the agent
+    __wanderDist = 80.0;
+    setWanderDist(n: number): AutoPilot { this.__wanderDist = n; return this; }
+    set wanderDist(n: number) { this.__wanderDist = n; }
+    get wanderDist() { return this.__wanderDist; }
+
+    // Maximum jitter per update
+    __wanderJitter = 2.5;
+    setWanderJitter(n: number): AutoPilot { this.__wanderJitter = n; return this; }
+    set wanderJitter(n: number) { this.__wanderJitter = n; }
+    get wanderJitter() { return this.__wanderJitter; }
+
+    // The target lies on the circumference of the wander circle
+    _wanderTarget: Vector2D = new Vector2D();
+    get wanderTarget(): Vector2D { return this._wanderTarget; }
 
 
     /*
@@ -553,6 +587,11 @@ class AutoPilot {
 
     /** Is obstacle avoidance switched on?    */
     get isObsAvoidOn(): boolean { return (this._flags & OBSTACLE_AVOID) != 0; }
+
+    __detectBoxLength = 20;
+    setDetectBoxLength(n: number): AutoPilot { this.__detectBoxLength = n; return this; }
+    set detectBoxLength(n: number) { this.__detectBoxLength = n; }
+    get detectBoxLength(): number { return this.__detectBoxLength; }
 
 
     /*
@@ -630,6 +669,28 @@ class AutoPilot {
             owner.pos // origin
         );
     }
+
+    // *******************    WALL AVOID    *******************
+    __nbrFeelers = 5;
+    setNbrFeelers(n: number): AutoPilot { this.__nbrFeelers = n; return this; }
+    set nbrFeelers(n: number) { this.__nbrFeelers = n; }
+    get nbrFeelers(): number { return this.__nbrFeelers; }
+
+    __feelerFOV = Math.PI; // radians
+    setFeelerFOV(n: number): AutoPilot { this.__feelerFOV = n; return this; }
+    set feelerFOV(n: number) { this.__feelerFOV = n; }
+    get feelerFOV(): number { return this.__feelerFOV; }
+
+    __feelerLength = 30;
+    setFeelerLength(n: number): AutoPilot { this.__feelerLength = n; return this; }
+    set feelerLength(n: number) { this.__feelerLength = n; }
+    get feelerLength(): number { return this.__feelerLength; }
+
+    __ovalEnvelope = false;
+    setOvalEnvelope(b: boolean): AutoPilot { this.__ovalEnvelope = b; return this; }
+    set ovalEnvelope(b: boolean) { this.__ovalEnvelope = b; }
+    get ovalEnvelope(): boolean { return this.__ovalEnvelope };
+
 
     /**
      * Used internally by the getFeelers() methods. <br>
@@ -756,6 +817,14 @@ class AutoPilot {
             if (!this.accumulateForce(accumulator, f, maxForce))
                 return accumulator;
         }
+        if (this.isOffsetPusuitOn) {
+            console.log('offset pursuit calculate')
+            let f = this.offsetPursuit(owner, this.pursueAgent, this.pursueOffset);
+            f = f.mult(this._weight[BIT_OFFSET_PURSUIT]);
+            recorder?.addData(BIT_OFFSET_PURSUIT, f);
+            if (!this.accumulateForce(accumulator, f, maxForce))
+                return accumulator;
+        }
         if (this.isInterposeOn) {
             let f = this.interpose(owner, this.agent0, this.agent1);
             f = f.mult(this._weight[BIT_INTERPOSE]);
@@ -836,7 +905,7 @@ class AutoPilot {
     /** Default values for steering behaviour objects. */
     _weight: Array<number> = [
         220.0, // wall avoidance weight
-        10.0, // obstacle avoidance weight
+        40.0, // obstacle avoidance weight
         5.0, // evade weight
         0.5, // flee weight
         1.0, // separation weight
@@ -848,7 +917,7 @@ class AutoPilot {
         20.0, // pursuit weight
         10.0, // offset pursuit weight
         10.0, // interpose weight
-        10.0, // hide weight
+        5.0, // hide weight
         20.0, // follow path weight
         1.0 // flock weight
     ];
