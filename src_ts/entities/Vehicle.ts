@@ -1,31 +1,27 @@
 class Vehicle extends Mover {
 
     _autopilot: AutoPilot;
-    _forceRecorder: ForceRecorder;
-    _force = new Vector2D();
-    _accel = new Vector2D();
-
     get pilot() { return this._autopilot; }
-    // set pilot(pilot: AutoPilot) { this._autopilot = pilot; this._autopilot.owner = this; }
-    // setPilot(pilot: AutoPilot): Vehicle { this._autopilot = pilot; this._autopilot.owner = this; return this; }
+    addAutoPilot(world: World) {
+        this._autopilot = new AutoPilot(this, world);
+    }
 
+    _forceRecorder: ForceRecorder;
     get recorder() { return this._forceRecorder; }
 
-    get force() { return this._force; }
-    set force(force: Vector2D) { this._force.set(force); }
+    _force = new Vector2D();
     setForce(force: Vector2D): Vehicle { this._force.set(force); return this; }
+    set force(force: Vector2D) { this._force.set(force); }
+    get force() { return this._force; }
 
-    get accel() { return this._accel; }
-    set accel(accel: Vector2D) { this._accel.set(accel); }
+    _accel = new Vector2D();
     setAccel(accel: Vector2D): Vehicle { this._accel.set(accel); return this; }
+    set accel(accel: Vector2D) { this._accel.set(accel); }
+    get accel() { return this._accel; }
 
     constructor(position: Vector2D, radius: number, world?: World) {
         super(position, radius); this._type = VEHICLE;
         if (world) this._autopilot = new AutoPilot(this, world);
-    }
-
-    addAutoPilot(world: World) {
-        this._autopilot = new AutoPilot(this, world);
     }
 
     fits_inside(lowX: number, lowY: number, highX: number, highY: number): boolean {
@@ -50,26 +46,24 @@ class Vehicle extends Mover {
      * The force recorder should be switched off in the final sketch.
      */
     forceRecorderOn(): Vehicle {
-        if (this.pilot) {
+        if (this.pilot)
             this._forceRecorder = new ForceRecorder(this, this.pilot._weight);
-        }
         return this;
     }
+
     forceRecorderOff(): Vehicle {
         console.log(this.recorder.toString())
         this._forceRecorder = undefined;
         return this;
     }
-    /**
-     * Display the steering force data for this Vehicle. If there is no 
-     * recorder or no data has been collected for this Vehicle then
-     * nothing is displayed.
-     */
-    // public void printForceData(){
-    // 	if(forceRecorder != null && forceRecorder.hasData())
-    // 		System.out.println(forceRecorder);
-    // }
+    /** Display the steering force data for this Vehicle.   */
+    printForceData() {
+        console.log(this.recorder?.toString());
+    }
 
+    clearForceData() {
+        this.recorder?.clearData();
+    }
 
     /**
      * Update method for any moving entity in the world that is under
@@ -84,7 +78,6 @@ class Vehicle extends Mover {
         this._force.set([0, 0]); this._accel.set([0, 0]);
         if (this._autopilot) {
             this._force.set(this._autopilot.calculateForce(elapsedTime, world));
-            //console.log(this._force.length(), this.maxForce)
             this._force = this._force.truncate(this._maxForce);
             this._accel = this._force.mult(elapsedTime / this._mass);
             this.vel = this.vel.add(this._accel);
@@ -96,7 +89,7 @@ class Vehicle extends Mover {
         // Apply domain constraints
         this.applyDomainConstraint(this._domain ? this._domain : world._domain);
         // Update heading
-        if (this._vel.lengthSq() > 1)
+        if (this._vel.lengthSq() > 0.01)
             this.rotateHeadingToAlignWith(elapsedTime, this._vel);
         else {
             this._vel.set([0, 0]);

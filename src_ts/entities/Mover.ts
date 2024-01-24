@@ -1,81 +1,63 @@
 class Mover extends Entity {
 
-    // The domain the entity is constrained to (if any)
+    /** Movement domain - if none provided the world domain is used */
     _domain: Domain;
-
-    // World position after last update
+    set domain(d: Domain) { this._domain = d; }
+    get domain(): Domain { return this._domain; }
+    set domainConstraint(c: symbol) { this._domain?.setConstraint(c); }
+    /** Prev world position */
     _prevPos = new Vector2D();
-
-    // Current velocity vector (controls speed and direction of travel)
-    _vel = new Vector2D();
-    // a normalised vector pointing in the direction the entity is heading / facing. 
-    _heading = new Vector2D(1, 0); // facing East;
-    // a normalised vector pointing in the entity's rest heading. 
-    _headingAtRest = new Vector2D(1, 0); // facing East;
-    // a normalised vector perpendicular to the heading vector
-    _side: Vector2D;
-
-    // The mass of the entity
-    _mass: number = 1;
-    // The maximum speed this entity may travel at.
-    _maxSpeed: number = 100;
-    // The maximum force this entity can use to power itself 
-    _maxForce: number = 1000;
-    // The current rate of turn (radians per second)         
-    _turnRate = 1;
-    // The distance that the entity can see another moving entity
-    _viewDistance = 50;
-    // Field of view (radians)
-    _viewFOV = 1.047; // Default is 60 degrees
-
-    // /** Position */
-    // set pos(v: Vector2D) { this._pos = v; }
-    // get pos(): Vector2D { return this._pos }
-    /** Prev position */
     set prevPos(v: Vector2D) { this._prevPos = v; }
     get prevPos(): Vector2D { return this._prevPos }
     /** Velocity */
+    _vel = new Vector2D();
     set vel(v: Vector2D) { this._vel = v; }
     get vel(): Vector2D { return this._vel; }
     get velAngle(): number { return this._vel.angle; }
     /** Speed */
     get speed(): number { return this._vel.length(); }
     get speedSq(): number { return this._vel.lengthSq(); }
-    /** Heading / facing */
+    /** Heading / facing (normalised) */
+    _heading = new Vector2D(1, 0); // facing East;
     set heading(v: Vector2D) { this._heading = v; }
     get heading(): Vector2D { return this._heading; }
     /** Heading / facing angle */
     set headingAngle(n: number) { this._heading.x = Math.cos(n); this._heading.x = Math.sin(n); }
     get headingAngle(): number { return this.heading.angle; }
-    /** Heading at rest */
+    /** Heading at rest (normalised */
+    _headingAtRest = new Vector2D(1, 0); // facing East;
     set headingAtRest(v: Vector2D) { this._heading = v; }
     get headingAtRest(): Vector2D { return this._heading; }
     /** Heading at rest angle */
     set headingAtRestAngle(n: number) { this._heading.x = Math.cos(n); this._heading.x = Math.sin(n); }
     get headingAtRestAngle(): number { return this.heading.angle; }
-    /** Perpendiclar to heading */
-    get side() { return this._heading.getPerp() }
+    /** Perpendiclar to heading (normalised) */
+    _side: Vector2D; get side() { return this._heading.getPerp() }
     /** Mass */
+    _mass: number = 1;
     set mass(n: number) { this._mass = n; }
     get mass(): number { return this._mass; }
     /** Max speed */
+    _maxSpeed: number = 100;
     set maxSpeed(n: number) { this._maxSpeed = n; }
     get maxSpeed(): number { return this._maxSpeed; }
     /** Max force */
+    _maxForce: number = 200;
     set maxForce(n: number) { this._maxForce = n; }
     get maxForce(): number { return this._maxForce; }
     /** Current turn rate */
+    _turnRate = 1;
     set turnRate(n: number) { this._turnRate = Math.min(Math.max(n, 0), MAX_TURN_RATE); }
     get turnRate(): number { return this._turnRate; }
-    /** View distance */
+    /** Distance a moving entity can see another one */
+    _viewDistance = 50;
     set viewDistance(n: number) { this._viewDistance = n; }
     get viewDistance(): number { return this._viewDistance; }
-    /** View distance */
+    /** Field of view (radians) */
+    _viewFOV = 1.047; // Default is 60 degrees
     set viewFOV(n: number) { this._viewFOV = n; }
     get viewFOV(): number { return this._viewFOV; }
-    /** Domain */
-    set domain(d: Domain) { this._domain = d.copy(); }
-    get domain(): Domain { return this._domain.copy(); }
+
 
     constructor(position: Array<number> | Vector2D, colRadius = 0) {
         super(position, colRadius); this._type = MOVER;
@@ -274,7 +256,7 @@ class Mover extends Entity {
         // Remember the starting position
         this._prevPos.set(this._pos);
         // Update position
-        this._pos = new Vector2D(this._pos.x + this._vel.x * elapsedTime, this._pos.y + this._vel.y * elapsedTime);
+        this._pos = this._pos.add(this._vel.mult(elapsedTime));
         // Apply domain constraint
         this.applyDomainConstraint(this._domain ? this._domain : world._domain);
         // Update heading

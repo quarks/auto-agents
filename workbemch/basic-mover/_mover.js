@@ -66,31 +66,6 @@ function keyTyped() {
     if (key == 't') printTree(world._tree);
 }
 
-// function personPainter(colF, colS, p = p5.instance) {
-//     let body = [
-//         0.15, -0.5,
-//         0.15, 0.5,
-//         -0.18, 0.3,
-//         -0.18, -0.3
-//     ];
-//     return (function () {
-//         p.push();
-//         p.translate(this._pos.x, this._pos.y);
-//         p.rotate(this.headingAngle)
-//         let size = 2 * this.colRad;
-//         // p.fill(0, 32); p.noStroke();
-//         // p.ellipse(0, 0, size, size);
-//         p.fill(colF); p.stroke(colS); p.strokeWeight(1.1);
-//         p.beginShape();
-//         for (let idx = 0; idx < body.length; idx += 2)
-//             p.vertex(body[idx] * size, body[idx + 1] * size);
-//         p.endShape(CLOSE);
-//         p.fill(colS); p.noStroke();
-//         p.ellipse(0, 0, 0.6 * size, 0.56 * size)
-//         p.pop();
-//     });
-// }
-
 function printTree(tree) {
     function pt(tree) {
         if (tree._entities.size > 0)

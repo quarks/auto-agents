@@ -1,5 +1,6 @@
 class World {
     constructor(wsizeX, wsizeY, depth = 1) {
+        // Largest obstacle collision radius
         this._biggestObsColRad = 0;
         this._postman = new Dispatcher(this);
         this._population = new Map();
@@ -9,6 +10,7 @@ class World {
         this._treeSize = Math.max(wsizeX, wsizeY);
         this._tree = QPart.makeTree(0, 0, this._treeSize, this._treeSize, depth);
     }
+    get domain() { return this._domain; }
     get population() { return [...this._population.values()]; }
     get postman() { return this._postman; }
     set painter(painter) { this._painter = painter; }

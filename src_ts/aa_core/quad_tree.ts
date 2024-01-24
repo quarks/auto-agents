@@ -83,16 +83,6 @@ class QPart {
         return this.isRoot ? this : this._parent.getRoot();
     }
 
-    // getEntitiesInPartition(part: QPart): Array<Entity> {
-    //     function getEntities(part: QPart, ents: Array<Entity>) {
-    //         ents.push(...part._entities);
-    //         part._children?.forEach(value => getEntities(value, ents));
-    //     }
-    //     let entities = [];
-    //     getEntities(part, entities);
-    //     return entities;
-    // }
-
     // Find the partition that encompasses the specifies region. The specified region will be 
     // trimmed to fit inside the root if necessary.
     getEnclosingPartition(lowX: number, lowY: number, highX: number, highY: number): QPart {

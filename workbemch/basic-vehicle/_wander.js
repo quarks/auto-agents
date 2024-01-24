@@ -13,14 +13,49 @@ let wanderdemo = function (p) {
         trail = new Trail(300, p.color(0, 180, 0), 0.95);
 
         wanderer.pilot.setProperties({ 'wanderDist': 75, 'wanderRadius': 65, 'xyz': 123, 'wanderJitter': 2.5 });
-
         let pn = 'toString', exists = wanderer.hasOwnProperty(pn);
-
         console.log(`Property ${pn}  ${exists ? "exists" : "does not exist"}`);
 
         gui = GUI.getNamed('WanderDemo', p5canvas, p);
         p.createGUI(gui);
     }
+
+    p.draw = function () {
+        if (p.frameCount == 300) wanderer.forceRecorderOn();
+        if (p.frameCount == 360) wanderer.forceRecorderOff();
+
+        world.update(p.deltaTime / 1000);
+        trail.add(wanderer.pos);
+        p.background(220, 160, 220);
+        p.noStroke(); p.fill(200, 255, 200);
+        let d = world._domain;
+        p.rect(d.lowX, d.lowY, d.width, d.height);
+        world.render();
+        if (hintTrail) trail.render();
+        p.stroke(128, 0, 128); p.strokeWeight(4); p.fill(255, 220);
+        p.rect(410, 10, 220, 380, 10);
+        gui.draw();
+    }
+
+    p.keyTyped = function () {
+        if (key === 'p') {
+            allowLooping = !allowLooping;
+            allowLooping ? loop() : noLoop();
+        }
+    }
+
+    p.makeWanderer = function () {
+        wanderer = new Vehicle([world.width / 2, world.height / 2], 12, world);
+        wanderer.vel = Vector2D.fromRandom(30, 60);
+        wanderer.painter = vcePerson(p.color(200, 200, 255), p.color(20, 20, 160), p);
+        wanderer.maxSpeed = 50;
+        wanderer.pilot.wanderOn();
+        // wanderer.pilot.wanderDist = 70;
+        // wanderer.pilot.wanderRadius = 50;
+        // wanderer.pilot.wanderJitter = 20;
+        world.birth(wanderer);
+    }
+
 
     p.createGUI = function (gui) {
         let pilot = wanderer.pilot;
@@ -70,42 +105,6 @@ let wanderdemo = function (p) {
                 wanderer.maxSpeed = Math.round(info.value);
                 gui.$('lblMaxSpeed').text(`Max. Speed ( ${wanderer.maxSpeed} )`);
             });
-    }
-
-    p.draw = function () {
-        if (p.frameCount == 300) wanderer.forceRecorderOn();
-        if (p.frameCount == 360) wanderer.forceRecorderOff();
-
-        world.update(p.deltaTime / 1000);
-        trail.add(wanderer.pos);
-        p.background(220, 160, 220);
-        p.noStroke(); p.fill(200, 255, 200);
-        let d = world._domain;
-        p.rect(d.lowX, d.lowY, d.width, d.height);
-        world.render();
-        if (hintTrail) trail.render();
-        p.stroke(128, 0, 128); p.strokeWeight(4); p.fill(255, 220);
-        p.rect(410, 10, 220, 380, 10);
-        gui.draw();
-    }
-
-    p.keyTyped = function () {
-        if (key === 'p') {
-            allowLooping = !allowLooping;
-            allowLooping ? loop() : noLoop();
-        }
-    }
-
-    p.makeWanderer = function () {
-        wanderer = new Vehicle([world.width / 2, world.height / 2], 12, world);
-        wanderer.vel = Vector2D.fromRandom(30, 60);
-        wanderer.painter = vcePerson(p.color(200, 200, 255), p.color(20, 20, 160), p);
-        wanderer.maxSpeed = 50;
-        wanderer.pilot.wanderOn();
-        // wanderer.pilot.wanderDist = 70;
-        // wanderer.pilot.wanderRadius = 50;
-        // wanderer.pilot.wanderJitter = 20;
-        world.birth(wanderer);
     }
 
     class Trail {

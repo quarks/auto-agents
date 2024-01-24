@@ -32,6 +32,8 @@ const FORCE_NAME = [
     'Interpose      ', 'Hide           ', 'Path           ', 'Flock          '
 ];
 
+const NBR_BEHAVIOURS = 16;
+
 // Behaviour identifier constants (flag values)
 const WALL_AVOID = 1 << BIT_WALL_AVOID;
 const OBSTACLE_AVOID = 1 << BIT_OBSTACLE_AVOID;
@@ -50,7 +52,6 @@ const HIDE = 1 << BIT_HIDE;
 const PATH = 1 << BIT_PATH;
 const FLOCK = 1 << BIT_FLOCK;
 
-const NBR_BEHAVIOURS = 16;
 
 // All behaviours mask used when switching off a behaviour
 const ALL_SB_MASK = 0x0000ffff;

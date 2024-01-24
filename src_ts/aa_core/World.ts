@@ -1,12 +1,14 @@
 class World {
-    _domain: Domain;
 
     // Internal collection of entites to be added or removed
     // during world.update
     _births: Array<Entity>;
     _deaths: Array<Entity>;
 
-    _biggestObsColRad = 0;
+
+
+    _domain: Domain;
+    get domain(): Domain { return this._domain; }
 
     _population: Map<number, Entity>;
     get population(): Array<Entity> { return [...this._population.values()]; }
@@ -27,6 +29,10 @@ class World {
 
     /** Size of top layer */
     _treeSize: number;
+
+    // Largest obstacle collision radius
+    _biggestObsColRad = 0;
+
 
     constructor(wsizeX: number, wsizeY: number, depth: number = 1) {
         this._postman = new Dispatcher(this);

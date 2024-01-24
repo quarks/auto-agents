@@ -26,8 +26,13 @@ class Domain {
 	get cY(): number { return this._cY; }
 	get width(): number { return this._width; }
 	get height(): number { return this._height; }
+
 	get constraint(): symbol { return this._constraint; }
 	set constraint(c: symbol) {
+		if (c == REBOUND || c == WRAP || c == PASS_THROUGH)
+			this._constraint = c;
+	}
+	setConstraint(c: symbol) {
 		if (c == REBOUND || c == WRAP || c == PASS_THROUGH)
 			this._constraint = c;
 	}

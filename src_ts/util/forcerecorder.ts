@@ -10,13 +10,10 @@ class ForceRecorder {
         this._forces = FORCE_NAME.map((v, i) => new Force(this, i, v, weights[i]));
     }
 
-    addData(type: number, force: Vector2D) {
-        if (type >= 0 && type < NBR_BEHAVIOURS) {
-            //let mag = force.length();
-            //if (mag > 0) {
+    addData(typeFlag: number, force: Vector2D) {
+        if (typeFlag >= 0 && typeFlag < NBR_BEHAVIOURS) {
             this._nbrReadings++;
-            this._forces[type].addData(force.length());
-            //}
+            this._forces[typeFlag].addData(force.length());
         }
     }
 

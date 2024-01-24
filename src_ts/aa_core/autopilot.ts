@@ -23,15 +23,12 @@ class AutoPilot {
     _pathSeekDist = 20;
     _pathArriveDist = 0.5;
 
-    // The maximum distance between moving entities for them to be considered
-    // as neighbours. Used for group behaviours
-    __neighbourDist = 100.0;
-
 
     // Valiables used during testing
     testObstaclesFound: Array<Entity>;
     testWallsFound: Array<Entity>;
     testClosestObstacle: Entity;
+    testNeighbours: Array<Vehicle>;
 
     // Extra variables needed to draw hints
     _boxLength = 0;
@@ -364,25 +361,6 @@ class AutoPilot {
         return this.arrive(owner, target, FAST);
     }
 
-    /*
-    protected Vector2D offsetPursuit(MovingEntity me, MovingEntity leader, Vector2D offset) {
-        // calculate the offset's position in world space
-        Vector2D worldOffsetPos = Transformations.pointToWorldSpace(offset, leader.heading(), leader.side(), leader.pos());
-        Vector2D toOffset = Vector2D.sub(worldOffsetPos, me.pos());
-
-        // the lookahead time is proportional to the distance between the leader and the
-        // pursuer; and is inversely proportional to the sum of both agent's velocities
-        double lookAheadTime = toOffset.length() / (me.maxSpeed() + leader.speed());
-
-        // now Arrive at the predicted future position of the offset
-        Vector2D target = new Vector2D(leader.velocity());
-        target.mult(lookAheadTime);
-        target.add(worldOffsetPos);
-
-        return arrive(me, target, FAST);
-    }
-    */
-
     /** Switch off pursuit behaviour */
     offsetPursuitOff(): AutoPilot {
         this._flags &= (ALL_SB_MASK - OFFSET_PURSUIT); return this;
@@ -496,7 +474,7 @@ class AutoPilot {
     get isWanderOn(): boolean { return (this._flags & WANDER) != 0; }
 
     // radius of the constraining circle for the wander behaviour
-    __wanderRadius = 30.0;
+    __wanderRadius = 20.0;
     setWanderRadius(n: number): AutoPilot { this.__wanderRadius = n; return this; }
     set wanderRadius(n: number) { this.__wanderRadius = n; }
     get wanderRadius() { return this.__wanderRadius; }
@@ -508,7 +486,7 @@ class AutoPilot {
     get wanderDist() { return this.__wanderDist; }
 
     // Maximum jitter per update
-    __wanderJitter = 2.5;
+    __wanderJitter = 4;
     setWanderJitter(n: number): AutoPilot { this.__wanderJitter = n; return this; }
     set wanderJitter(n: number) { this.__wanderJitter = n; }
     get wanderJitter() { return this.__wanderJitter; }
@@ -523,7 +501,6 @@ class AutoPilot {
      * OBSTACLE AVOIDANCE
      * ======================================================================
      */
-
     obstacleAvoidance(owner: Vehicle, world: World, elapsedTime: number) {
         // Calculate the length of the detection box
         this.boxLength = this.detectBoxLength * (1 + owner.speed / owner.maxSpeed);
@@ -599,11 +576,10 @@ class AutoPilot {
      * WALL AVOIDANCE
      * ======================================================================
      */
-
     wallAvoidance(owner: Vehicle, world: World, elapsedTime: number) {
         let pos = owner.pos, fl = this.__feelerLength;
         let result = world.tree.getItemsInRegion(pos.x - fl, pos.y - fl, pos.x + fl, pos.y + fl);
-        let walls = result.entities.filter(w => w.type == WALL &&
+        let walls = result.entities.filter(w => w instanceof Wall &&
             Geom2D.line_circle(w.start.x, w.start.y, w.end.x, w.end.y, pos.x, pos.y, fl));
         this.testWallsFound = [...walls]; // ============================   TEST TEST  
         // Details of  closest wall and closest intersection point
@@ -661,16 +637,15 @@ class AutoPilot {
      * owns this steering behaviour.
      */
     getFeelers(owner = this.owner): Array<Vector2D> {
-        return this.createFeelers(
-            this.__nbrFeelers, // Number of feelers
-            this.__feelerLength, // Whisker length
-            this.__feelerFOV, // fov
-            owner.heading, // facing
-            owner.pos // origin
+        return this._createFeelers(
+            this.__nbrFeelers,      // Number of feelers
+            this.__feelerLength,    // Feeler length
+            this.__feelerFOV,       // fov
+            owner.heading,          // facing
+            owner.pos               // origin
         );
     }
 
-    // *******************    WALL AVOID    *******************
     __nbrFeelers = 5;
     setNbrFeelers(n: number): AutoPilot { this.__nbrFeelers = n; return this; }
     set nbrFeelers(n: number) { this.__nbrFeelers = n; }
@@ -691,30 +666,13 @@ class AutoPilot {
     set ovalEnvelope(b: boolean) { this.__ovalEnvelope = b; }
     get ovalEnvelope(): boolean { return this.__ovalEnvelope };
 
-
-    /**
-     * Used internally by the getFeelers() methods. <br>
-     * Given an origin, a facing direction, a 'field of view' describing the
-     * limit of the outer feelers, a whisker length and the number of feelers
-     * this method returns a vector containing the end positions of a series
-     * of feelers radiating away from the origin and with equal distance between
-     * them. (like the spokes of a wheel clipped to a specific segment size)
-     * 
-     * @param nbrFeelers   number of feelers (>=1)
-     * @param feelerLength (the length of the feelers)
-     * @param fov           the 'field of view'
-     * @param facing        the vehicle's heading
-     * @param origin        the vehicle's position
-     * @return an array of feelers for wall avoidance
-     */
-    createFeelers(
-        nbrFeelers: number,
-        feelerLength: number,
-        fov: number,
-        facing: Vector2D,
-        origin: Vector2D): Array<Vector2D> {
-
-        // this is the magnitude of the angle separating each whisker
+    _createFeelers(
+        nbrFeelers: number,     // Number of feelers
+        feelerLength: number,   // Feeler length
+        fov: number,            // Field of view (radians)  between extreme feelers
+        facing: Vector2D,       // vehicle's heading
+        origin: Vector2D        // vehicle's position
+    ): Array<Vector2D> {        // return the array of feelers
         let angleBetweenFeelers = fov / (nbrFeelers - 1);
         let feelers: Array<Vector2D> = [];
         let angle = -fov * 0.5;
@@ -730,6 +688,178 @@ class AutoPilot {
         }
         return feelers;
     }
+
+
+    /*
+     * ======================================================================
+     * FLOCK
+     * ======================================================================
+     */
+    flock(owner: Vehicle, world: World, ndist = this.__neighbourDist) {
+        let neighbours = this.getNeighbours(owner, world, ndist);
+        let nCount = neighbours.length;
+        if (nCount > 0) {
+            let cohForce = new Vector2D();  // Cohesion
+            let sepForce = new Vector2D();  // Separation
+            let alnForce = new Vector2D();  // Alignment
+
+            for (let nb of neighbours) {
+                let distSq = Vector2D.distSq(owner.pos, nb.pos);
+                cohForce = cohForce.add(nb.pos);
+                alnForce = alnForce.add(nb.heading);
+                sepForce = owner.pos.sub(nb.pos).div(distSq).add(sepForce);
+            }
+            // Cohesion
+            cohForce = cohForce.div(nCount).sub(owner.pos).normalize()
+                .mult(owner.maxSpeed).sub(owner.vel).normalize()
+                .mult(this._weight[BIT_COHESION]);
+            // Separation
+            //sepForce = sepForce.normalize().mult(this._weight[BIT_SEPARATION]);
+            sepForce = sepForce.mult(this._weight[BIT_SEPARATION]);
+            // Alignment
+            alnForce = alnForce.div(nCount).sub(owner.heading)
+                .mult(this._weight[BIT_ALIGNMENT]);
+            // Add them to get flock force
+            let flockForce = cohForce.add(sepForce).add(alnForce);
+            return flockForce;
+        }
+
+        return Vector2D.ZERO;
+    }
+
+    /** Switch off flocking     */
+    flockOff(): AutoPilot {
+        this._flags &= (ALL_SB_MASK - FLOCK);
+        return this;
+    }
+
+    /** Switch on flocking    */
+    flockOn(ndist = this.__neighbourDist): AutoPilot {
+        this.__neighbourDist = ndist;
+        this._flags |= FLOCK;
+        return this;
+    }
+
+    /** Is flocking switched on?    */
+    get isFlockOn(): boolean { return (this._flags & FLOCK) != 0; }
+
+    // The maximum distance between moving entities for them to be considered
+    // as neighbours. Used for group behaviours
+    __neighbourDist = 100.0;
+    setNeighbourDist(n: number): AutoPilot { this.__neighbourDist = n; return this; }
+    set neighbourDist(n: number) { this.__neighbourDist = n; }
+    get neighbourDist(): number { return this.__neighbourDist; }
+
+    getNeighbours(owner: Vehicle, world: World, ndist = this.__neighbourDist) {
+        let pos = owner.pos;
+        let ndist2 = ndist * ndist;
+        let items = world.tree.getItemsInRegion(pos.x - ndist, pos.y - ndist,
+            pos.x + ndist, pos.y + ndist);
+        let neighbours = items.entities.filter(e => e instanceof Vehicle
+            && Vector2D.distSq(e.pos, pos) <= ndist2
+            && e != owner && e != this.evadeAgent);
+        this.testNeighbours = neighbours;  // For test purposes only
+        return neighbours;
+    }
+
+    /*
+     * ======================================================================
+     * ALIGNMENT
+     * ======================================================================
+     */
+    alignment(owner: Vehicle, world: World, ndist = this.__neighbourDist) {
+        let avgHeading = new Vector2D();
+        let neighbours = this.getNeighbours(owner, world, ndist);
+        if (neighbours.length > 0) {
+            for (let nb of neighbours)
+                avgHeading = avgHeading.add(nb.heading);
+            avgHeading.div(neighbours.length).sub(owner.heading);
+        }
+        return avgHeading;
+    }
+
+    /** Switch off alignment     */
+    alignmentOff(): AutoPilot {
+        this._flags &= (ALL_SB_MASK - ALIGNMENT);
+        return this;
+    }
+
+    /** Switch on alignment    */
+    alignmentOn(): AutoPilot {
+        this._flags |= ALIGNMENT;
+        return this;
+    }
+
+    /** Is wall avoidance switched on?    */
+    get isAlignmentOn(): boolean { return (this._flags & ALIGNMENT) != 0; }
+
+
+    /*
+     * ======================================================================
+     * SEPARATION
+     * ======================================================================
+     */
+    separation(owner: Vehicle, world: World, ndist = this.__neighbourDist) {
+        let sf = new Vector2D();
+        let neighbours = this.getNeighbours(owner, world, ndist);
+        for (let nb of neighbours) {
+            let toAgent = owner.pos.sub(nb.pos);
+            let nbf = toAgent.normalize().div(toAgent.length());
+            sf = sf.add(nbf);
+        }
+        //if (neighbours.length > 0) sf = sf.normalize();
+        return sf;
+    }
+
+    /** Switch off separation     */
+    separationOff(): AutoPilot {
+        this._flags &= (ALL_SB_MASK - SEPARATION);
+        return this;
+    }
+
+    /** Switch on separation    */
+    separationOn(): AutoPilot {
+        this._flags |= SEPARATION;
+        return this;
+    }
+
+    /** Is separation switched on?    */
+    get isSeparationOn(): boolean { return (this._flags & SEPARATION) != 0; }
+
+
+    /*
+     * ======================================================================
+     * COHESION
+     * ======================================================================
+     */
+    cohesion(owner: Vehicle, world: World, ndist = this.__neighbourDist) {
+        let centreOfMass = new Vector2D(), sf = new Vector2D();
+        let neighbours = this.getNeighbours(owner, world, ndist);
+        let nCount = neighbours.length;
+        if (nCount > 0) {
+            for (let nb of neighbours)
+                centreOfMass = centreOfMass.add(nb.pos);
+            centreOfMass = centreOfMass.div(nCount);
+            return this.seek(owner, centreOfMass);
+        }
+        return sf;
+    }
+
+    /** Switch off cohesion     */
+    cohesionOff(): AutoPilot {
+        this._flags &= (ALL_SB_MASK - COHESION);
+        return this;
+    }
+
+    /** Switch on cohsion    */
+    cohesionOn(): AutoPilot {
+        this._flags |= COHESION;
+        return this;
+    }
+
+    /** Is cohesion switched on?    */
+    get isCohesionOn(): boolean { return (this._flags & COHESION) != 0; }
+
 
     // ########################################################################
     //                          FORCE CALCULATOR TYPES
@@ -788,7 +918,35 @@ class AutoPilot {
             if (!this.accumulateForce(accumulator, f, maxForce))
                 return accumulator;
         }
-
+        if (this.isFlockOn) {
+            let f = this.flock(owner, world);
+            f = f.mult(this._weight[BIT_FLOCK]);
+            recorder?.addData(BIT_FLOCK, f);
+            if (!this.accumulateForce(accumulator, f, maxForce))
+                return accumulator;
+        } else {
+            if (this.isSeparationOn) {
+                let f = this.separation(owner, world);
+                f.mult(this._weight[BIT_SEPARATION]);
+                recorder?.addData(BIT_SEPARATION, f);
+                if (!this.accumulateForce(accumulator, f, maxForce))
+                    return accumulator;
+            }
+            if (this.isAlignmentOn) {
+                let f = this.alignment(owner, world);
+                f.mult(this._weight[BIT_ALIGNMENT]);
+                recorder?.addData(BIT_ALIGNMENT, f);
+                if (!this.accumulateForce(accumulator, f, maxForce))
+                    return accumulator;
+            }
+            if (this.isCohesionOn) {
+                let f = this.cohesion(owner, world);
+                f.mult(this._weight[BIT_COHESION]);
+                recorder?.addData(BIT_COHESION, f);
+                if (!this.accumulateForce(accumulator, f, maxForce))
+                    return accumulator;
+            }
+        }
         if (this.isSeekOn) {
             let f = this.seek(owner, this.target);
             f = f.mult(this._weight[BIT_SEEK]);
@@ -908,12 +1066,12 @@ class AutoPilot {
         40.0, // obstacle avoidance weight
         5.0, // evade weight
         0.5, // flee weight
-        1.0, // separation weight
+        5.0, // separation weight
         4.0, // alignment weight
-        15.0, // cohesion weight
+        5.0, // cohesion weight
         0.5, // seek weight
         1.0, // arrive weight
-        1.0, // wander weight
+        5.0, // wander weight
         20.0, // pursuit weight
         10.0, // offset pursuit weight
         10.0, // interpose weight

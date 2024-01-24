@@ -4,13 +4,10 @@ class ForceRecorder {
         this._owner = owner;
         this._forces = FORCE_NAME.map((v, i) => new Force(this, i, v, weights[i]));
     }
-    addData(type, force) {
-        if (type >= 0 && type < NBR_BEHAVIOURS) {
-            //let mag = force.length();
-            //if (mag > 0) {
+    addData(typeFlag, force) {
+        if (typeFlag >= 0 && typeFlag < NBR_BEHAVIOURS) {
             this._nbrReadings++;
-            this._forces[type].addData(force.length());
-            //}
+            this._forces[typeFlag].addData(force.length());
         }
     }
     clearData() {

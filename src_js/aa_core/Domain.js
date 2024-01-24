@@ -32,6 +32,10 @@ class Domain {
         if (c == REBOUND || c == WRAP || c == PASS_THROUGH)
             this._constraint = c;
     }
+    setConstraint(c) {
+        if (c == REBOUND || c == WRAP || c == PASS_THROUGH)
+            this._constraint = c;
+    }
     /** returns a copy of this domain object */
     copy() {
         return new Domain(this._lowX, this._lowY, this._highX, this._highY, this._constraint);
