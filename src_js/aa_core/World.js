@@ -34,10 +34,10 @@ class World {
     update(elapsedTime) {
         // ======================================================================
         // Births and deaths
-        while (this._births.length > 0)
-            this._addEntity(this._births.pop());
         while (this._deaths.length > 0)
             this._subEntity(this._deaths.pop());
+        while (this._births.length > 0)
+            this._addEntity(this._births.pop());
         // ======================================================================
         // Process telegrams
         this._postman?.update();
@@ -47,6 +47,9 @@ class World {
         // ======================================================================
         // Update all entities
         [...this._population.values()].forEach(v => v.update(elapsedTime, this));
+        // ======================================================================
+        // Ensure Zero  Overlap
+        this.ensureNoOverlap();
         // ======================================================================
         // Correct partition data
         this._tree.correctPartitionContents();
@@ -65,6 +68,24 @@ class World {
         this._population.delete(entity.id);
         this._tree.subEntity(entity);
         entity.world = undefined;
+    }
+    ensureNoOverlap() {
+        let mvrs = this.population.filter(e => e instanceof Mover);
+        let n = mvrs.length;
+        for (let i = 0; i < n - 2; i++)
+            for (let j = i + 1; j < n - 1; j++)
+                this._ensureNoMoverOverlap(mvrs[i], mvrs[j]);
+    }
+    _ensureNoMoverOverlap(mvr0, mvr1) {
+        let cnLen = Vector2D.dist(mvr1.pos, mvr0.pos);
+        let overlap = mvr0.colRad + mvr1.colRad - cnLen;
+        if (overlap > 0) {
+            let cnVec = mvr1.pos.sub(mvr0.pos).div(cnLen);
+            let mass = mvr0.mass + mvr1.mass;
+            mvr0.pos = mvr0.pos.sub(cnVec.mult(overlap * mvr1.mass / mass));
+            mvr1.pos = mvr1.pos.add(cnVec.mult(overlap * mvr0.mass / mass));
+            //     console.log(`Overlap ${overlap.toPrecision(4)}   Prev: ${mvr1.prevPos.$(4)}  Curr: ${mvr1.pos.$(4)}  Dist: ${Vector2D.dist(mvr1.pos, mvr1.prevPos)}`);
+        }
     }
 }
 //# sourceMappingURL=world.js.map

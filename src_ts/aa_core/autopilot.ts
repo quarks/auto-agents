@@ -1066,12 +1066,12 @@ class AutoPilot {
         40.0, // obstacle avoidance weight
         5.0, // evade weight
         0.5, // flee weight
-        5.0, // separation weight
+        1.0, // separation weight
         4.0, // alignment weight
-        5.0, // cohesion weight
+        15.0, // cohesion weight
         0.5, // seek weight
         1.0, // arrive weight
-        5.0, // wander weight
+        1.0, // wander weight
         20.0, // pursuit weight
         10.0, // offset pursuit weight
         10.0, // interpose weight

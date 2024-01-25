@@ -1,5 +1,5 @@
-let wx = 400, wy = 400, depth = 5;
-let nd = 50, popSize = 50;
+let wx = 400, wy = 400, depth = 4;
+let nd = 150, popSize = 100;
 let intParts = [], intEnts = [];
 let entities = [];
 
@@ -35,26 +35,27 @@ function selectRandomVehicle() {
     selEntity = entities[n];
     entities.forEach(e => e.painter = ppCyan);
     // Make selected entity red
-    selEntity.painter = ppRed;
+    // selEntity.painter = ppRed;
     // selEntity.pilot.getNeighbours(selEntity, world, nd);
     // selEntity.pilot.testNeighbours.forEach(e => e.painter = ppBlue);
 
     selEntity.forceRecorderOn();
-    console.log(`${selEntity.pilot.testNeighbours.length} Neighbours found  (Pop: ${popSize})`);
+    // console.log(`${selEntity.pilot.testNeighbours.length} Neighbours found  (Pop: ${popSize})`);
 }
 
 function makeNeighbours() {
     for (let i = 0; i < popSize; i++) {
         let x = Math.random() * 200 + 100, y = Math.random() * 200 + 100;
-        let v = new Vehicle([x, y], 8, world);
+        let v = new Vehicle([x, y], 6, world);
         v.painter = ppCyan;
-        v.vel = Vector2D.fromRandom(10, 15);
+        v.vel = Vector2D.fromRandom(60, 160);
         v.heading = v.vel.copy().normalize();
-        v.maxSpeed = 15;
+        v.maxSpeed = 40;
         // v.pilot.cohesionOn();
         // v.pilot.separationOn();
         // v.pilot.alignmentOn();
-        v.pilot.flockOn();
+        v.pilot.flockOn(nd);
+        v.pilot.wanderOn();
         entities.push(v);
         world.birth(v);
     }
