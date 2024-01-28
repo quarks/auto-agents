@@ -236,7 +236,7 @@ class AutoPilot {
      */
     hide(owner: Vehicle, world: World, hideFrom: Mover) {
         // Calculate the search distance for obstacles
-        let sd = this.__hideSearchRange + world._biggestObsColRad;
+        let sd = this.__hideSearchRange + world._maxObstacleSize;
         // Get all obstacles inside search distance
         let pos = owner.pos;
         let result = world.tree.getItemsInRegion(pos.x - sd, pos.y - sd, pos.x + sd, pos.y + sd);
@@ -505,7 +505,7 @@ class AutoPilot {
         // Calculate the length of the detection box
         this.boxLength = this.detectBoxLength * (1 + owner.speed / owner.maxSpeed);
         // Calculate the search distance for obstacles
-        let sd = this.boxLength + world._biggestObsColRad;
+        let sd = this.boxLength + world._maxObstacleSize;
         // Get all obstacles inside search distance
         let pos = owner.pos;
         let result = world.tree.getItemsInRegion(pos.x - sd, pos.y - sd, pos.x + sd, pos.y + sd);
@@ -1071,13 +1071,13 @@ class AutoPilot {
         15.0, // cohesion weight
         0.5, // seek weight
         1.0, // arrive weight
-        1.0, // wander weight
+        5.0, // wander weight
         20.0, // pursuit weight
         10.0, // offset pursuit weight
         10.0, // interpose weight
         5.0, // hide weight
         20.0, // follow path weight
-        1.0 // flock weight
+        4.0 // flock weight
     ];
 
     // _weight: Array<number> = [

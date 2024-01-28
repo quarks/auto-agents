@@ -1,32 +1,29 @@
-let wx = 400, wy = 400, depth = 4;
-let nd = 150, popSize = 100;
+let wx = 400, wy = 400, depth = 5, arrowSize = 4;
+let nd = 80, popSize = 100;
 let intParts = [], intEnts = [];
 let entities = [];
 
 function setup() {
     //console.clear();
     console.log('GLOBAL mode');
-    let p5canvas = createCanvas(800, 440);
+    let p5canvas = createCanvas(800, 800);
     p5canvas.parent('sketch');
     showColCircle = false;
-    world = new World(wx, wy, depth);
+    world = new World(wx, wy, depth, 90);
     world.domain.constraint = WRAP;
     makePainters();
     makeNeighbours();
     selectRandomVehicle();
-    // console.log(`Start at ${entities[0].pos.$(6)}`);
 }
 
 function draw() {
     world.update(deltaTime / 1000);
     background(220);
+    translate((world.tree.treeSize - world.width + 20) / 2, (world.tree.treeSize - world.height + 20) / 2 + 10);
     noStroke(); fill(220, 255, 220);
     let d = world._domain;
     rect(d.lowX, d.lowY, d.width, d.height);
     renderTreeGrid();
-    // Render neighbourhood
-    // fill(0, 20); stroke(0, 48); strokeWeight(1.2);
-    // ellipse(selEntity.pos.x, selEntity.pos.y, 2 * nd, 2 * nd);
     world.render();
 }
 
@@ -45,12 +42,13 @@ function selectRandomVehicle() {
 
 function makeNeighbours() {
     for (let i = 0; i < popSize; i++) {
-        let x = Math.random() * 200 + 100, y = Math.random() * 200 + 100;
-        let v = new Vehicle([x, y], 6, world);
+        let x = (Math.random() - Math.random()) * world.width / 2.2 + world.width / 2;
+        let y = (Math.random() - Math.random()) * world.height / 2.2 + world.height / 2;
+        let v = new Vehicle([x, y], arrowSize, world);
         v.painter = ppCyan;
         v.vel = Vector2D.fromRandom(60, 160);
         v.heading = v.vel.copy().normalize();
-        v.maxSpeed = 40;
+        v.maxSpeed = 70;
         // v.pilot.cohesionOn();
         // v.pilot.separationOn();
         // v.pilot.alignmentOn();
@@ -73,46 +71,25 @@ function makePainters() {
 function renderTreeGrid() {
     function renderPart(level) {
         level = (2 ** (level - 1));
-        let dx = r.width / level, dy = r.height / level;
-        for (let i = r.lowX; i <= highX; i += dx) line(i, r.lowY, i, highY);
-        for (let i = r.lowY; i <= highY; i += dy) line(r.lowX, i, highX, i);
+        let delta = r.treeSize / level;
+        for (let i = r.lowX; i <= r.highX; i += delta) line(i, r.lowY, i, r.highY);
+        for (let i = r.lowY; i <= r.highY; i += delta) line(r.lowX, i, r.highX, i);
     }
-    let r = world._tree, d = world._domain;
-    let highX = Math.min(r.highX, d.highX), highY = Math.min(r.highY, d.highY);
-    stroke(0, 16); strokeWeight(1.1);
+    let r = world._tree;
+    //let highX = Math.min(r.highX, d.highX), highY = Math.min(r.highY, d.highY);
+    //let highX = r.highX, highY = r.highY;
+    stroke(0, 32); strokeWeight(1.1);
     for (let i = 1; i <= depth; i++) renderPart(i);
 }
 
 function keyTyped() {
+    if (key == 'o') {
+        world.preventOverlap = !world.isPreventOverlapOn;
+        console.log(`No Overlap Allowed? ${world.isPreventOverlapOn}`)
+    }
+    if (key == 'q') world.quadtreeAnalysis();
+
     if (key == 'd') selEntity.printForceData();
     if (key == 's') noLoop();
-    if (key == ' ') selectRandomVehicle();
-    if (key == 't') printTree(world._tree);
-    if (key == 'e') {
-        let ents = world._tree?.getEntitiesInPartition(encPart);
-        ents.forEach(value => value.painter = ppRed);
-    }
-    let eid = '0123456789'.indexOf(key);
-    if (eid >= 0 && eid < entities.length) {
-        world.death(eid);
-        //world.death(entities[eid]);
-    }
-}
 
-function printTree(tree) {
-    function pt(tree) {
-        if (tree._entities.size > 0)
-            tree.$$();
-        //console.log(tree.toString());
-        if (tree._children)
-            for (let child of tree._children)
-                pt(child);
-    }
-    console.log('=====================================================================================');
-    pt(tree);
-    console.log(`World population        ( Size = ${world._population.size} )`)
-    if (world._population.size > 0) {
-        let pop = [...world._population.values()].map(x => x.id).reduce((x, y) => x + ' ' + y, '{ ') + '  }';
-        console.log(pop);
-    }
 }

@@ -17,48 +17,25 @@ class QPart {
         this._depth = depth;
         this._entities = new Set();
     }
-    static makeTree(lowX, lowY, highX, highY, depth) {
-        function buildSubTree(parent, level, depth) {
-            if (level <= depth) {
-                let x0 = parent._lowX, x2 = parent._highX, x1 = (x0 + x2) / 2;
-                let y0 = parent._lowY, y2 = parent._highY, y1 = (y0 + y2) / 2;
-                parent._children = [];
-                let a = parent._children;
-                a[0] = new QPart(parent, x0, y0, x1, y1, level, depth);
-                a[1] = new QPart(parent, x1, y0, x2, y1, level, depth);
-                a[2] = new QPart(parent, x0, y1, x1, y2, level, depth);
-                a[3] = new QPart(parent, x1, y1, x2, y2, level, depth);
-                buildSubTree(a[0], level + 1, depth);
-                buildSubTree(a[1], level + 1, depth);
-                buildSubTree(a[2], level + 1, depth);
-                buildSubTree(a[3], level + 1, depth);
-            }
-        }
-        console.assert((highX - lowX == highY - lowY), `Quadtree must be square for consistant behaviour.  Requested size (${highX - lowX} x ${highY - lowY}) is invalid.`);
-        let level = 1, root = new QPart(undefined, lowX, lowY, highX, highY, level, depth);
-        buildSubTree(root, level + 1, depth);
-        return root;
-    }
+    get entities() { return [...this._entities]; }
+    get parent() { return this._parent; }
+    get children() { return this._children; }
+    get level() { return this._level; }
+    get depth() { return this._depth; }
     get lowX() { return this._lowX; }
     get highX() { return this._highX; }
     get lowY() { return this._lowY; }
     get highY() { return this._highY; }
     get cX() { return this._cX; }
     get cY() { return this._cY; }
-    get width() { return this.highX - this._lowX; }
-    get height() { return this.highY - this._lowY; }
-    get level() { return this._level; }
-    get depth() { return this._depth; }
+    get partSize() { return this.highX - this._lowX; }
+    get treeSize() { return this.getRoot().partSize; }
     get leafSize() {
-        let r = this.getRoot();
-        while (r._children)
-            r = r._children[0];
-        return r.width;
+        return this.getRoot().partSize / 2 ** (this._depth - 1);
     }
     get isLeaf() { return !this._children; }
     get isRoot() { return !this._parent; }
     get hasChildren() { return Boolean(this._children); }
-    get entities() { return [...this._entities]; }
     getRoot() {
         return this.isRoot ? this : this._parent.getRoot();
     }
@@ -176,6 +153,37 @@ class QPart {
         let root = this.getRoot();
         processPartition(root, root);
     }
+    getTreeLevelData() {
+        function CountEntitiesByLevel(part) {
+            let s = 0;
+            part._entities.forEach(e => { if (e instanceof Wall)
+                s++; });
+            levelWall[0] += s;
+            levelWall[part.level] += s;
+            s = 0;
+            part._entities.forEach(e => { if (e instanceof Obstacle)
+                s++; });
+            levelObstacle[0] += s;
+            levelObstacle[part.level] += s;
+            s = 0;
+            part._entities.forEach(e => { if (e instanceof Mover)
+                s++; });
+            levelMover[0] += s;
+            levelMover[part.level] += s;
+            if (part.hasChildren)
+                for (let child of part.children)
+                    CountEntitiesByLevel(child);
+        }
+        let levelMover = new Array(this.depth + 1).fill(0);
+        let levelWall = new Array(this.depth + 1).fill(0);
+        let levelObstacle = new Array(this.depth + 1).fill(0);
+        CountEntitiesByLevel(this.getRoot());
+        return {
+            'movers': levelMover, 'obstacles': levelObstacle, 'walls': levelWall,
+            'depth': this.depth, 'treesize': this.treeSize, 'leafsize': this.leafSize,
+            'lowX': this.lowX, 'lowY': this.lowY
+        };
+    }
     $$(len = 5) {
         console.log(this.$(len));
         return this.toString(len);
@@ -197,6 +205,27 @@ class QPart {
         if (p._entities.size > 0)
             t = [...p._entities].map(x => x.id).reduce((x, y) => x + ' ' + y, '  ### ');
         return s + t;
+    }
+    static makeTree(lowX, lowY, size, depth) {
+        function buildSubTree(parent, level, depth) {
+            if (level <= depth) {
+                let x0 = parent._lowX, x2 = parent._highX, x1 = (x0 + x2) / 2;
+                let y0 = parent._lowY, y2 = parent._highY, y1 = (y0 + y2) / 2;
+                parent._children = [];
+                let a = parent._children;
+                a[0] = new QPart(parent, x0, y0, x1, y1, level, depth);
+                a[1] = new QPart(parent, x1, y0, x2, y1, level, depth);
+                a[2] = new QPart(parent, x0, y1, x1, y2, level, depth);
+                a[3] = new QPart(parent, x1, y1, x2, y2, level, depth);
+                buildSubTree(a[0], level + 1, depth);
+                buildSubTree(a[1], level + 1, depth);
+                buildSubTree(a[2], level + 1, depth);
+                buildSubTree(a[3], level + 1, depth);
+            }
+        }
+        let level = 1, root = new QPart(undefined, lowX, lowY, lowX + size, lowY + size, level, depth);
+        buildSubTree(root, level + 1, depth);
+        return root;
     }
 }
 //# sourceMappingURL=quad_tree.js.map

@@ -215,15 +215,6 @@ class Vector2D {
             throw new Error('Cannot normalise a vector of zero or infinite length');
         return new Vector2D(this._p[0] / mag, this._p[1] / mag);
     }
-    // normalize(): Vector2D {
-    //     let nv = this.copy();
-    //     let mag = Math.sqrt(nv._p[0] * nv._p[0] + nv._p[1] * nv._p[1]);
-    //     if (!Number.isFinite(mag) || mag == 0)
-    //         throw new Error('Cannot normalise a vector of zero or infinite length');
-    //     nv._p[0] /= mag;
-    //     nv._p[1] /= mag;
-    //     return nv;
-    // }
     resize(size) {
         let mag = this.length();
         if (!Number.isFinite(mag) || mag == 0)
