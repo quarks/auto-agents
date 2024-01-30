@@ -1,7 +1,6 @@
-let wx = 400, wy = 400, depth = 5, arrowSize = 4;
-let nd = 80, popSize = 100;
-let intParts = [], intEnts = [];
-let entities = [];
+let wx = 500, wy = 400, depth = 5, border = 25;
+let nDist = 80, popSize = 200, arrowSize = 4;
+let intParts = [], intEnts = [], entities = [];
 
 function setup() {
     //console.clear();
@@ -9,7 +8,7 @@ function setup() {
     let p5canvas = createCanvas(800, 800);
     p5canvas.parent('sketch');
     showColCircle = false;
-    world = new World(wx, wy, depth, 90);
+    world = new World(wx, wy, depth, border);
     world.domain.constraint = WRAP;
     makePainters();
     makeNeighbours();
@@ -33,7 +32,7 @@ function selectRandomVehicle() {
     entities.forEach(e => e.painter = ppCyan);
     // Make selected entity red
     // selEntity.painter = ppRed;
-    // selEntity.pilot.getNeighbours(selEntity, world, nd);
+    // selEntity.pilot.getNeighbours(selEntity, world, nDist);
     // selEntity.pilot.testNeighbours.forEach(e => e.painter = ppBlue);
 
     selEntity.forceRecorderOn();
@@ -52,7 +51,7 @@ function makeNeighbours() {
         // v.pilot.cohesionOn();
         // v.pilot.separationOn();
         // v.pilot.alignmentOn();
-        v.pilot.flockOn(nd);
+        v.pilot.flockOn(nDist);
         v.pilot.wanderOn();
         entities.push(v);
         world.birth(v);

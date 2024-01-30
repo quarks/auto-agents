@@ -84,13 +84,14 @@ class World {
         for (let e of this._population.values()) e.render();
     }
 
-    quadtreeAnalysis() {
+    quadtreeAnalysis(): Array<string> {
+        let a: Array<string> = [];
         let d = this.tree.getTreeLevelData();
         let m = d.movers, o = d.obstacles, w = d.walls;
-        console.log('#########   Quadtree Analysis Data   #########');
-        console.log(`Depth    :   ${d.depth} level(s)`)
-        console.log(`Position :   X ${d.lowX.toFixed(2)}   Y ${d.lowX.toFixed(2)}`)
-        console.log(`Size     :   Tree ${d.treesize.toFixed(1)}   Leaf ${d.leafsize.toFixed(1)}`)
+        a.push('#########   Quadtree Analysis Data   #########');
+        a.push(`Depth    :   ${d.depth} level(s)`)
+        a.push(`Position :   X ${d.lowX.toFixed(2)}   Y ${d.lowX.toFixed(2)}`)
+        a.push(`Size     :   Tree ${d.treesize.toFixed(1)}   Leaf ${d.leafsize.toFixed(1)}`)
         if (m.length > 0) {
             let mvrs = this.population.filter(e => e instanceof Mover);
             let minCR = mvrs[0].colRad, maxCR = mvrs[0].colRad;
@@ -98,31 +99,31 @@ class World {
                 minCR = Math.min(minCR, m.colRad);
                 maxCR = Math.max(maxCR, m.colRad);
             });
-            console.log(`Movers col. radius :  Min ${minCR.toFixed(1)}   Max ${maxCR.toFixed(1)}`);
+            a.push(`Movers col. radius :  Min ${minCR.toFixed(1)}   Max ${maxCR.toFixed(1)}`);
         }
         let hr = '===================';
         let r0 = '  Levels > |  All |';
         let r1 = '-----------+------+'
         for (let i = 1; i <= d.depth; i++) {
-            hr += '=======';
             r0 += i.toString().padStart(4, ' ') + '  |';
-            r1 += '------+';
+            r1 += '------+'; hr += '=======';
         }
-        let r2 = 'Obstacles  |';
-        for (let i = 0; i <= d.depth; i++) r2 += o[i].toString().padStart(5, ' ') + ' |';
-        let r3 = 'Walls      |';
-        for (let i = 0; i <= d.depth; i++) r3 += w[i].toString().padStart(5, ' ') + ' |';
-        let r4 = 'Movers     |';
-        for (let i = 0; i <= d.depth; i++) r4 += m[i].toString().padStart(5, ' ') + ' |';
-        console.log(`${hr}\n${r0}\n${r1}\n${r2}\n${r3}\n${r4}\n${hr}`);
+        let r2 = 'Obstacles  |', r3 = 'Walls      |', r4 = 'Movers     |';
+        for (let i = 0; i <= d.depth; i++) {
+            r2 += o[i].toString().padStart(5, ' ') + ' |';
+            r3 += w[i].toString().padStart(5, ' ') + ' |';
+            r4 += m[i].toString().padStart(5, ' ') + ' |';
+        }
+        a.push(hr, r0, r1, r2, r3, r4, hr);
         // Now calculate factor
-        //let m = d.movers;
         let total = this._nbrTests > 0 ? this._nbrTests :
             this._estimateNbrTests(m, d.lowX, d.lowY, d.treesize, d.depth);
         // Brute force count 
-        let bfc = m[0] * (m[0] - 1) / 2 - (m[0] - 1);
+        let bfc = m[0] * (m[0] - 1) / 2 - (m[0] - 1); //Quadtree with just 1 level
         let qtFactor = Math.round((100 * (bfc - total) / bfc));
-        console.log(`Quadtree effectiveness:  ${qtFactor}% (rough estimate)`);
+        a.push(`Quadtree effectiveness:  ${qtFactor}% (rough estimate)`);
+        console.log(a.join('\n'));
+        return a;
     }
 
     _estimateNbrTests(movers: Array<number>, lowX: number, lowY: number, treesize: number, depth: number): number {
@@ -138,7 +139,6 @@ class World {
         }
         return total;
     }
-
 
     _addEntity(entity: Entity) {
         this._population.set(entity.id, entity);

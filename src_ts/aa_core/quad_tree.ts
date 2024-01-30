@@ -4,7 +4,7 @@ class QPart {
     _parent: QPart;
     get parent(): QPart { return this._parent; }
     _children: Array<QPart>;
-    get children(): Array<QPart> { return this._children }
+    get children(): Array<QPart> { return this._children; }
     _level: number;
     get level(): number { return this._level; }
     _depth: number;
