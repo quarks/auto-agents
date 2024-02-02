@@ -44,19 +44,21 @@ function drawGraph(graph) {
 function keyTyped() {
     if (key === 'q') console.log(graph.getData().join('\n'));
     if (key === 'c') graph.compact();
+    if (key === 'e') graph.removeEdge(2, 4, true);
+    if (key === 'n') graph.removeNode(4);
 }
 
 function testData1() {
-    graph.createEdge(2, 4, [62], 'M62');
-    graph.createEdge(4, 5, [111], 'M6');
-    graph.createNode(1, 325, 325, 0, 'London');
-    graph.createNode(2, 250, 225, 0, 'Leeds');
-    graph.createNode(3, 325, 75, 0, 'Newcastle');
-    graph.createNode(4, 125, 240, 88, 'Manchester');
-    graph.createNode(5, 105, 305, 88, 'Birmingham');
-    graph.createEdge(1, 2, 220, 'M1');
-    graph.createEdge(2, 3, [100], 'A1');
-    // graph.createEdge(2, 4, [62], 'M62');
-    graph.createEdge(4, 5, [88], 'M6');
-    // graph.createEdge(4, 5, [111], 'M6');
+    graph.createNode(1, [325, 325], 'London');
+    graph.createNode(2, [250, 225], 'Leeds');
+    graph.createNode(3, [325, 75], 'Newcastle');
+    graph.createNode(4, [125, 240], 'Manchester');
+    graph.createNode(5, [105, 305], 'Birmingham');
+    graph.createNode(6, [75, 25], 'Glasgow');
+
+    graph.createEdge(1, 2, true, [130, 0], 'M1');
+    graph.createEdge(2, 3, true, [100, 99], 'A1');
+    graph.createEdge(2, 4, true, [62], 'M62');
+    graph.createEdge(4, 5, true, [88], 'M6');
+    graph.createEdge(4, 6, true, [220], 'M6');
 }

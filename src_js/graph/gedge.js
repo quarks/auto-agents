@@ -1,15 +1,14 @@
 /**
- * This class is used to represent a directed edge between 2 nodes
- * and the cost of traversing this edge.
+ * This class is used to represent a directed edge between 2 nodes and the
+ * cost of traversing it.
  *
  * @author Peter Lager
- *
  */
 class GraphEdge {
     /** If no cost provided cost = distance between nodes   */
-    constructor(from, to, cost, name = '') {
+    constructor(from, to, cost = 0, name = '') {
         this._name = '';
-        this._cost = 1;
+        this._cost = 0;
         this._from = from;
         this._to = to;
         this._cost = cost;
