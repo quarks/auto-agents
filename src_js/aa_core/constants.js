@@ -49,10 +49,6 @@ const PATH = 1 << BIT_PATH;
 const FLOCK = 1 << BIT_FLOCK;
 // All behaviours mask used when switching off a behaviour
 const ALL_SB_MASK = 0x0000ffff;
-// Force calculator
-const WEIGHTED = Symbol.for('Weighted Truncated Sum');
-const WEIGHTED_PRIORITIZED = Symbol.for('Weighted Truncated Running Sum with Prioritization');
-const PRIORITIZED_DITHERING = Symbol.for('Prioritized Dithering');
 // Arrive
 const DECEL_TWEEK = [0.0, 0.3, 0.6, 0.9];
 const FAST = 1;

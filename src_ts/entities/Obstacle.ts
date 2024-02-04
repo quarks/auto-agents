@@ -1,6 +1,6 @@
 class Obstacle extends Entity {
 
-    constructor(position: Array<number> | Position, colRadius = 1) {
+    constructor(position: Array<number> | _XY_, colRadius = 1) {
         super(position, colRadius); this._type = OBSTACLE;
     }
 

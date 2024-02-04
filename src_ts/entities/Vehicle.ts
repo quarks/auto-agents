@@ -89,7 +89,7 @@ class Vehicle extends Mover {
         // Apply domain constraints
         this.applyDomainConstraint(this._domain ? this._domain : world._domain);
         // Update heading
-        if (this._vel.lengthSq() > 0.01)
+        if (this._vel.lengthSq() > 0.02)
             this.rotateHeadingToAlignWith(elapsedTime, this._vel);
         else {
             this._vel.set([0, 0]);

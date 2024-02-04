@@ -1,58 +1,60 @@
 let showDrag = false;
 let route, testedEdges;
-
 let cellsize = 20, nodeRad = cellsize * 0.275;
 let routeWeight = cellsize * 0.2, edgeWeight = 0.9;
 let w, h, walls = [];
 
-let raw_data = [];
-let diags = [false, true, true, true];
-let mn = 3;
-
+let walker;
 
 function preload() {
-    raw_data[0] = loadStrings('maze_0.txt');
-    raw_data[1] = loadStrings('maze_1.txt');
-    raw_data[2] = loadStrings('maze_2.txt');
-    raw_data[3] = loadStrings('maze_3.txt');
+    maze_data = loadStrings('maze_3.txt');
+    node_data = loadStrings('fa_nodes.txt');
+    edge_data = loadStrings('fa_edges.txt');
 }
 
 function setup() {
-    maze_data = raw_data[mn];
-    useDiags = diags[mn];
     h = maze_data.length, w = maze_data[0].length;
     console.clear();
     console.log('GLOBAL mode');
     let p5canvas = createCanvas(w * cellsize, h * cellsize);
     p5canvas.parent('sketch');
-    cellCol = [color(250), color(0)];
+    // World
+    world = new World(w * cellsize, h * cellsize);
+    cellCol = [color(255, 255, 220), color(0)];
     nodeCol = color(200);
     routeNodeCol = color(240, 0, 0);
+    // Create walker
+    walker = new Vehicle({ x: 15, y: 15 }, 10, world);
+    ppBlue = vcePerson(color(200, 200, 255), color(20, 20, 160));
+    walker.painter = ppBlue;
+    walker.maxSpeed = 40;
+    walker.forceRecorderOn();
+    world.birth(walker);
     // #######  Make Maze Data  ##############
-    graph = createMazeGraph(maze_data, useDiags);
+    walls = createMazeWalls(maze_data);
+    graph = createGraph(node_data, edge_data);
     nodes = graph.nodes;
     edges = graph.edges;
-
-    console.log(`Graph: nbr nodes ${graph.nodes.length}    edges ${graph.edges.length}`);
 }
 
 function draw() {
-    background(255, 255, 220);
+    world.update(deltaTime / 1000);
+    background(200);
     drawMazeWalls();
     //drawEdges();
-
-    drawTestedEdges();
+    //drawTestedEdges();
     drawNodes();
     drawRoute();
-
-
     stroke(0, 255, 255); strokeWeight(3);
     if (showDrag)
         line(startNode.x, startNode.y, endNode.x, endNode.y);
+    world.render();
 }
 
 
+
 function keyTyped() {
+    if (key == 'w') walker.printForceData();
     if (key === 'q') console.log(graph.getData().join('\n'));
     if (key === 's') {
         let searcher = new Search_DFS(graph);
@@ -78,10 +80,12 @@ function mouseDragged() {
 
 function mouseReleased() {
     showDrag = false;
-    let hst = new AshManhattan();
     let gs = new Astar(graph);
     gs.search(startNode.id, endNode.id);
-    route = gs.route;
+    route = [...gs.route];
+    walker.setPos(new Vector2D(gs.route[0].x, gs.route[0].y));
+    gs.route.shift();
+    walker.pilot.pathOn(gs.route);
     testedEdges = gs.testedEdges;
     console.log(`Route length ${route.length}   Nbr edges tested ${testedEdges.length}`);
 }
@@ -132,31 +136,28 @@ function drawMazeWalls() {
         }
 }
 
-function createMazeGraph(data, diags) {
-    walls = [];
+function createMazeWalls(data) {
+    let walls = [];
     console.log(`Maze size: ${w} x ${h}`);
     for (let i = 0; i < h; i++) {
         walls.push(new Uint8Array(w));
         for (let j = 0; j < w; j++)
             walls[i][j] = data[i].charAt(j) === ' ' ? 0 : 1;
     }
-    let g = new Graph('Maze A'), id = 0;
-    for (let i = 0; i < walls.length; i++) {
-        for (let j = 0; j < walls[i].length; j++) {
-            if (walls[i][j] === 0) {
-                g.createNode(id, [(j + 0.5) * cellsize, (i + 0.5) * cellsize]);
-                g.createEdge(id, id - 2 * w, true);
-                g.createEdge(id, id - 1, true);
-                if (diags) {
-                    g.createEdge(id, id - 2 * w - 1, true);
-                    g.createEdge(id, id - 2 * w + 1, true);
-                }
-
-            }
-            id++;
-        }
-        id += w; // Avoid wrap
-    }
+    return walls;
+}
+function createGraph(n_data, e_data) {
+    let g = new Graph('Maze A');
+    n_data.forEach(d => {
+        let n = d.split(' ').map(v => Number(v));
+        g.createNode(n[0], [(n[1] + 0.5) * cellsize, (n[2] + 0.5) * cellsize]);
+    });
+    e_data.forEach(d => {
+        let n = d.split(' ').map(v => Number(v));
+        let n0 = n.shift();
+        n.forEach(n1 =>
+            g.createEdge(n0, n1));
+    });
     g.compact();
     return g;
 }

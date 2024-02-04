@@ -4,9 +4,9 @@ const VECTOR2D = '2 # 23 Dec 2023';
 * Simple 2D vector class
 *
 * Although it is possible to change the x and y properties with the set 
-* methods it is not recommended as changes the actual vector.
+* methods it is not recommended as it changes the actual vector.
 * 
-* All methods return a new vector representing the result of the
+* Allother methods return a new vector representing the result of the
 * operation. For instance the statement
 *
 * <pre> v0.add(v1);  </pre>
@@ -23,7 +23,7 @@ const VECTOR2D = '2 # 23 Dec 2023';
 *
 * @author Peter Lager
 */
-class Vector2D implements Position {
+class Vector2D implements _XY_ {
 
     /** Null vector (coordinates: 0, 0). */
     static ZERO = new Vector2D(0, 0);
@@ -56,7 +56,7 @@ class Vector2D implements Position {
     static CLOCKWISE = 1;
     static ANTI_CLOCKWISE = -1;
 
-    _p = new Float64Array(2);
+    #p = new Float64Array(2);
 
     /**
      * If no values are passed then a zero vector will be created.
@@ -65,18 +65,18 @@ class Vector2D implements Position {
      * @param y y value
      */
     constructor(x: number = 0, y: number = 0) {
-        this._p[0] = x; this._p[1] = y;
+        this.#p[0] = x; this.#p[1] = y;
     }
 
     /** X coordinate value */
-    get x(): number { return this._p[0]; }
-    set x(value) { if (Number.isFinite(value)) this._p[0] = value; }
+    get x(): number { return this.#p[0]; }
+    set x(value) { if (Number.isFinite(value)) this.#p[0] = value; }
     /** Y coordinate value */
-    get y(): number { return this._p[1]; }
-    set y(value) { if (Number.isFinite(value)) this._p[1] = value; }
+    get y(): number { return this.#p[1]; }
+    set y(value) { if (Number.isFinite(value)) this.#p[1] = value; }
     /** Angle in 2D plane */
-    get angle() { return Math.atan2(this._p[1], this._p[0]); }
-    set angle(n: number) { this._p[0] = Math.cos(n); this._p[1] = Math.sin(n); }
+    get angle() { return Math.atan2(this.#p[1], this.#p[0]); }
+    set angle(n: number) { this.#p[0] = Math.cos(n); this.#p[1] = Math.sin(n); }
 
     /**
      * Add a displacement (either vector object or 2 scalars ) 
@@ -89,10 +89,10 @@ class Vector2D implements Position {
     add(x: number | Vector2D, y?: number): Vector2D {
         let nv = this.copy();
         if (typeof x === 'object') {
-            nv._p[0] += x._p[0]; nv._p[1] += x._p[1];
+            nv.#p[0] += x.#p[0]; nv.#p[1] += x.#p[1];
         }
         else if (Number.isFinite(x) && Number.isFinite(y)) {
-            nv._p[0] += x; nv._p[1] += y;
+            nv.#p[0] += x; nv.#p[1] += y;
         }
         return nv;
     }
@@ -103,10 +103,10 @@ class Vector2D implements Position {
      * @return the angle between in radians
      */
     angleBetween(v: Vector2D): number {
-        let denom = Math.sqrt(this._p[0] * this._p[0] + this._p[1] * this._p[1]) *
-            Math.sqrt(v._p[0] * v._p[0] + v._p[1] * v._p[1]);
+        let denom = Math.sqrt(this.#p[0] * this.#p[0] + this.#p[1] * this.#p[1]) *
+            Math.sqrt(v.#p[0] * v.#p[0] + v.#p[1] * v.#p[1]);
         if (Number.isFinite(denom)) {
-            let a = Math.acos((this._p[0] * v._p[0] + this._p[1] * v._p[1]) / denom);
+            let a = Math.acos((this.#p[0] * v.#p[0] + this.#p[1] * v.#p[1]) / denom);
             return Number.isFinite(a) ? a : 0;
         }
         return 0;
@@ -117,7 +117,7 @@ class Vector2D implements Position {
      * @returns a copy of this vector
      */
     copy(): Vector2D {
-        return new Vector2D(this._p[0], this._p[1]);
+        return new Vector2D(this.#p[0], this.#p[1]);
     }
 
     /**
@@ -126,8 +126,8 @@ class Vector2D implements Position {
      * @return distance to other point
      */
     dist(v: Vector2D): number {
-        let dx = v._p[0] - this._p[0];
-        let dy = v._p[1] - this._p[1];
+        let dx = v.#p[0] - this.#p[0];
+        let dy = v.#p[1] - this.#p[1];
         return Math.sqrt(dx * dx + dy * dy);
     }
 
@@ -138,8 +138,8 @@ class Vector2D implements Position {
      * @return distance to other point squared
      */
     distSq(v: Vector2D): number {
-        let dx = v._p[0] - this._p[0];
-        let dy = v._p[1] - this._p[1];
+        let dx = v.#p[0] - this.#p[0];
+        let dy = v.#p[1] - this.#p[1];
         return dx * dx + dy * dy;
     }
 
@@ -151,7 +151,7 @@ class Vector2D implements Position {
     div(s: number): Vector2D {
         if (s == 0)
             throw new Error('Cannot divide vector by zero)');
-        return new Vector2D(this._p[0] / s, this._p[1] / s);
+        return new Vector2D(this.#p[0] / s, this.#p[1] / s);
     }
 
     /**
@@ -160,7 +160,7 @@ class Vector2D implements Position {
      * @return the dot product
      */
     dot(v: Vector2D): number {
-        return (this._p[0] * v._p[0] + this._p[1] * v._p[1]);
+        return (this.#p[0] * v.#p[0] + this.#p[1] * v.#p[1]);
     }
 
     /**
@@ -170,9 +170,9 @@ class Vector2D implements Position {
      * @return the cosine of angle between them
      */
     dotNorm(v: Vector2D): number {
-        let denom = Math.sqrt(this._p[0] * this._p[0] + this._p[1] * this._p[1]) *
-            Math.sqrt(v._p[0] * v._p[0] + v._p[1] * v._p[1]);
-        return (this._p[0] * v._p[0] + this._p[1] * v._p[1]) / denom;
+        let denom = Math.sqrt(this.#p[0] * this.#p[0] + this.#p[1] * this.#p[1]) *
+            Math.sqrt(v.#p[0] * v.#p[0] + v.#p[1] * v.#p[1]);
+        return (this.#p[0] * v.#p[0] + this.#p[1] * v.#p[1]) / denom;
     }
 
     /**
@@ -183,8 +183,8 @@ class Vector2D implements Position {
      * @returns true if this vector 'equals' v
      */
     equals(v: Vector2D) {
-        return (Math.abs(this._p[0] - v._p[0]) <= Vector2D.EPSILON
-            && Math.abs(this._p[1] - v._p[1]) <= Vector2D.EPSILON);
+        return (Math.abs(this.#p[0] - v.#p[0]) <= Vector2D.EPSILON
+            && Math.abs(this.#p[1] - v.#p[1]) <= Vector2D.EPSILON);
     }
 
     /**
@@ -192,7 +192,7 @@ class Vector2D implements Position {
      * @return a perpendicular vector
      */
     getPerp(): Vector2D {
-        return new Vector2D(-this._p[1], this._p[0]);
+        return new Vector2D(-this.#p[1], this.#p[0]);
     }
 
     /**
@@ -203,8 +203,8 @@ class Vector2D implements Position {
     getReflect(norm: Vector2D, normalize = false): Vector2D {
         if (normalize) norm = norm.normalize();
         let dot = this.dot(norm);
-        let nx = this._p[0] + (-2 * dot * norm._p[0]);
-        let ny = this._p[1] + (-2 * dot * norm._p[1]);
+        let nx = this.#p[0] + (-2 * dot * norm.#p[0]);
+        let ny = this.#p[1] + (-2 * dot * norm.#p[1]);
         return new Vector2D(nx, ny);
     }
 
@@ -213,21 +213,21 @@ class Vector2D implements Position {
      * @return the reverse vector
      */
     getReverse(): Vector2D {
-        return new Vector2D(-this._p[0], -this._p[1]);
+        return new Vector2D(-this.#p[0], -this.#p[1]);
     }
 
     /**
      * Get the vector length
      */
     length(): number {
-        return Math.sqrt(this._p[0] * this._p[0] + this._p[1] * this._p[1]);
+        return Math.sqrt(this.#p[0] * this.#p[0] + this.#p[1] * this.#p[1]);
     }
 
     /**
      * Get the vector length squared
      */
     lengthSq(): number {
-        return this._p[0] * this._p[0] + this._p[1] * this._p[1];
+        return this.#p[0] * this.#p[0] + this.#p[1] * this.#p[1];
     }
 
     /**
@@ -237,8 +237,8 @@ class Vector2D implements Position {
      */
     mult(s: number): Vector2D {
         let nv = this.copy();
-        nv._p[0] *= s;
-        nv._p[1] *= s;
+        nv.#p[0] *= s;
+        nv.#p[1] *= s;
         return nv;
     }
 
@@ -249,7 +249,7 @@ class Vector2D implements Position {
      * @return the negated version as a new vector
      */
     negate(): Vector2D {
-        return new Vector2D(-this._p[0], -this._p[1]);
+        return new Vector2D(-this.#p[0], -this.#p[1]);
     }
 
     /**
@@ -259,7 +259,7 @@ class Vector2D implements Position {
         let mag = this.length();
         if (!Number.isFinite(mag) || mag == 0)
             throw new Error('Cannot normalise a vector of zero or infinite length');
-        return new Vector2D(this._p[0] / mag, this._p[1] / mag);
+        return new Vector2D(this.#p[0] / mag, this.#p[1] / mag);
     }
 
     resize(size: number): Vector2D {
@@ -267,7 +267,7 @@ class Vector2D implements Position {
         if (!Number.isFinite(mag) || mag == 0)
             throw new Error('Cannot resize a vector of zero or infinite length');
         let ratio = size / mag;
-        return new Vector2D(this._p[0] * ratio, this._p[1] * ratio);
+        return new Vector2D(this.#p[0] * ratio, this.#p[1] * ratio);
     }
 
     /**
@@ -275,12 +275,12 @@ class Vector2D implements Position {
      * @param position change the coordinates to match position
      * @returns the changed vetor
      */
-    set(position: Array<number> | Position): Vector2D {
+    set(position: Array<number> | _XY_): Vector2D {
         if (position instanceof Array) {
-            this._p[0] = position[0]; this._p[1] = position[1];
+            this.#p[0] = position[0]; this.#p[1] = position[1];
         }
         else {
-            this._p[0] = position.x; this._p[1] = position.y;
+            this.#p[0] = position.x; this.#p[1] = position.y;
         }
         return this;
     }
@@ -291,7 +291,7 @@ class Vector2D implements Position {
      * @return positive (+1) if clockwise else negative (-1)
      */
     sign(v: Vector2D): number {
-        if (this._p[1] * v._p[0] > this._p[0] * v._p[1])
+        if (this.#p[1] * v.#p[0] > this.#p[0] * v.#p[1])
             return Vector2D.CLOCKWISE;
         else
             return Vector2D.ANTI_CLOCKWISE;
@@ -308,10 +308,10 @@ class Vector2D implements Position {
     sub(x: number | Vector2D, y?: number): Vector2D {
         let nv = this.copy();
         if (typeof x === 'object') {
-            nv._p[0] -= x._p[0]; nv._p[1] -= x._p[1];
+            nv.#p[0] -= x.#p[0]; nv.#p[1] -= x.#p[1];
         }
         else if (Number.isFinite(x) && Number.isFinite(y)) {
-            nv._p[0] -= x; nv._p[1] -= y;
+            nv.#p[0] -= x; nv.#p[1] -= y;
         }
         return nv;
     }
@@ -334,7 +334,7 @@ class Vector2D implements Position {
      * Get the x,y coordinates as an array.
      */
     toArray(): Array<number> {
-        return [this._p[0], this._p[1]];
+        return [this.#p[0], this.#p[1]];
     }
 
     /**       +++++++++++++ CLASS METHODS +++++++++++++++        */
@@ -343,7 +343,7 @@ class Vector2D implements Position {
      * @returns true if these vectors have the same coordinates
      */
     static areEqual(v0: Vector2D, v1: Vector2D): boolean {
-        return (Math.abs(v1._p[0] - v0._p[0]) <= Vector2D.EPSILON && Math.abs(v1._p[1] - v0._p[1]) <= Vector2D.EPSILON);
+        return (Math.abs(v1.#p[0] - v0.#p[0]) <= Vector2D.EPSILON && Math.abs(v1.#p[1] - v0.#p[1]) <= Vector2D.EPSILON);
     }
 
     /**
@@ -353,9 +353,7 @@ class Vector2D implements Position {
      * @return the distance between them
      */
     static dist(v0: Vector2D, v1: Vector2D): number {
-        let dx = v1._p[0] - v0._p[0];
-        let dy = v1._p[1] - v0._p[1];
-        return Math.sqrt(dx * dx + dy * dy);
+        return Math.sqrt(Vector2D.distSq(v0, v1));
     }
 
     /**
@@ -365,8 +363,8 @@ class Vector2D implements Position {
      * @return square of the distance between them
      */
     static distSq(v0: Vector2D, v1: Vector2D): number {
-        let dx = v1._p[0] - v0._p[0];
-        let dy = v1._p[1] - v0._p[1];
+        let dx = v1.#p[0] - v0.#p[0];
+        let dy = v1.#p[1] - v0.#p[1];
         return dx * dx + dy * dy;
     }
 
@@ -377,9 +375,9 @@ class Vector2D implements Position {
      * @return the angle between in radians
      */
     static angleBetween(v0: Vector2D, v1: Vector2D): number {
-        let denom = Math.sqrt(v0._p[0] * v0._p[0] + v0._p[1] * v0._p[1]) * Math.sqrt(v1._p[0] * v1._p[0] + v1._p[1] * v1._p[1]);
+        let denom = Math.sqrt(v0.#p[0] * v0.#p[0] + v0.#p[1] * v0.#p[1]) * Math.sqrt(v1.#p[0] * v1.#p[0] + v1.#p[1] * v1.#p[1]);
         if (Number.isFinite(denom)) {
-            let a = Math.acos((v0._p[0] * v1._p[0] + v0._p[1] * v1._p[1]) / denom);
+            let a = Math.acos((v0.#p[0] * v1.#p[0] + v0.#p[1] * v1.#p[1]) / denom);
             return Number.isFinite(a) ? a : 0;
         }
         return 0;
@@ -419,7 +417,7 @@ class Vector2D implements Position {
      * @param colRadius 
      * @returns 
      */
-    static from(position: Array<number> | Position): Vector2D {
+    static from(position: Array<number> | _XY_): Vector2D {
         if (position instanceof Array)
             return new Vector2D(position[0], position[1]);
         else
@@ -443,7 +441,7 @@ class Vector2D implements Position {
 
 }
 
-interface Position {
+interface _XY_ {
     x: number;
     y: number;
 }

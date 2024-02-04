@@ -25,7 +25,7 @@ class Mover extends Entity {
     set headingAngle(n: number) { this._heading.x = Math.cos(n); this._heading.x = Math.sin(n); }
     get headingAngle(): number { return this.heading.angle; }
     /** Heading at rest (normalised */
-    _headingAtRest = new Vector2D(1, 0); // facing East;
+    _headingAtRest;  //= new Vector2D(1, 0); // facing East;
     set headingAtRest(v: Vector2D) { this._heading = v; }
     get headingAtRest(): Vector2D { return this._heading; }
     /** Heading at rest angle */
@@ -46,7 +46,7 @@ class Mover extends Entity {
     set maxForce(n: number) { this._maxForce = n; }
     get maxForce(): number { return this._maxForce; }
     /** Current turn rate */
-    _turnRate = 1;
+    _turnRate = 2;
     set turnRate(n: number) { this._turnRate = Math.min(Math.max(n, 0), MAX_TURN_RATE); }
     get turnRate(): number { return this._turnRate; }
     /** Distance a moving entity can see another one */

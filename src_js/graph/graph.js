@@ -19,6 +19,10 @@ class Graph {
     node(id) {
         return this._nodes.get(id);
     }
+    /** Gets the node for a given id it it exists. */
+    edge(from, to) {
+        return this._nodes.get(from)?.edge(to);
+    }
     /**
      * Create and add a node. If a z coordinate is not provided then it is
      * set to zero.
@@ -65,7 +69,7 @@ class Graph {
      * @param name name for this edge
      * @returns this graph
      */
-    createEdge(from, to, bidirectional, cost = [0, 0], name = '') {
+    createEdge(from, to, bidirectional = true, cost = [0, 0], name = '') {
         if (!cost)
             cost = [0, 0];
         if (bidirectional && cost.length == 1)
@@ -140,25 +144,26 @@ class Graph {
         }
         return this;
     }
-    static _distSq(pa, pb) {
-        let dx = pb[0] - pa[0], dy = pb[1] - pa[1], dz = pb[2] - pb[2];
-        return (dx * dx + dy * dy + dz * dz);
-    }
-    static _dist(pa, pb) {
-        let dx = pb[0] - pa[0], dy = pb[1] - pa[1], dz = pb[2] - pb[2];
-        return Math.sqrt(dx * dx + dy * dy + dz * dz);
-    }
     /** Eclidean distance between two nodes or node positions */
     static dist(n0, n1) {
-        let pa = n0 instanceof GraphNode ? n0.pos : n0;
-        let pb = n1 instanceof GraphNode ? n1.pos : n1;
-        return Graph._dist(pa, pb);
+        return Math.sqrt(Graph.distSq(n0, n1));
     }
     /** Eclidean distance squared between two nodes or node positions */
     static distSq(n0, n1) {
         let pa = n0 instanceof GraphNode ? n0.pos : n0;
         let pb = n1 instanceof GraphNode ? n1.pos : n1;
-        return Graph._distSq(pa, pb);
+        let dx = pb[0] - pa[0], dy = pb[1] - pa[1], dz = pb[2] - pb[2];
+        return dx * dx + dy * dy + dz * dz;
+    }
+    /** Eclidean distance between a nodes or node positions and XYZ coordinates */
+    static dist_XYZ(n0, x, y, z = 0) {
+        return Math.sqrt(Graph.distSq_XYZ(n0, x, y, z));
+    }
+    /** Eclidean distance squared between a nodes or node positions and XYZ coordinates */
+    static distSq_XYZ(n0, x, y, z = 0) {
+        let pa = n0 instanceof GraphNode ? n0.pos : n0;
+        let dx = pa[0] - x, dy = pa[1] - y, dz = pa[2] - z;
+        return dx * dx + dy * dy + dz * dz;
     }
     /** Returns an array of strings listing all nodes and edges */
     getData() {

@@ -5,26 +5,17 @@ class AutoPilot {
 
     _world: World;
     _flags = 0;
-    _forceCalcMethod: symbol;
 
     constructor(owner: Vehicle, world: World) {
         this._owner = owner;
         this._world = world;
-        this.forceCalculator = WEIGHTED_PRIORITIZED;
     }
 
     // ########################################################################
     //                            PROPERTIES
     // ########################################################################
 
-    // ****************  PATH FINDING  **********************
-    // Used in path following
-    // LinkedList<GraphNode> path = new LinkedList<GraphNode>();
-    _pathSeekDist = 20;
-    _pathArriveDist = 0.5;
-
-
-    // Valiables used during testing
+    // Valiables used to support testing
     testObstaclesFound: Array<Entity>;
     testWallsFound: Array<Entity>;
     testClosestObstacle: Entity;
@@ -84,8 +75,8 @@ class AutoPilot {
         return this;
     }
 
-    /** Switch on seek behaviour and change target if provided    */
-    seekOn(target?: Array<number> | Position): AutoPilot {
+    /** Switch on seek behaviour and change target if anothe is provided    */
+    seekOn(target?: Array<number> | _XY_): AutoPilot {
         this._flags |= SEEK;
         if (target) this.target.set(target);
         return this;
@@ -98,7 +89,6 @@ class AutoPilot {
     setTarget(t: Vector2D): AutoPilot { this._target.set(t); return this; }
     set target(t: Vector2D) { this._target.set(t); }
     get target(): Vector2D { return this._target; }
-
 
     /*
      * ======================================================================
@@ -122,7 +112,7 @@ class AutoPilot {
     }
 
     /** Switch on flee behaviour and change flee target if provided.    */
-    fleeOn(target?: Array<number> | Position): AutoPilot {
+    fleeOn(target?: Array<number> | _XY_): AutoPilot {
         this._flags |= FLEE;
         if (target) this.__fleeTarget.set(target);
         return this;
@@ -410,7 +400,7 @@ class AutoPilot {
     }
 
     /** Switch on interpose behaviour     */
-    interposeOn(agent0: Mover, other: Entity | Vector2D | Position): AutoPilot {
+    interposeOn(agent0: Mover, other: Entity | Vector2D | _XY_): AutoPilot {
         this._flags |= INTERPOSE;
         this.agent0 = agent0;
         // Create a dummy Mover with zero velocity to simplify calculations if needed
@@ -861,143 +851,181 @@ class AutoPilot {
     get isCohesionOn(): boolean { return (this._flags & COHESION) != 0; }
 
 
-    // ########################################################################
-    //                          FORCE CALCULATOR TYPES
-    // ########################################################################
-
-    calculateForce: Function;
-
-    set forceCalculator(type: Symbol) {
-        switch (type) {
-            case WEIGHTED:
-                this._forceCalcMethod = WEIGHTED;
-                break;
-            case WEIGHTED_PRIORITIZED:
-                this._forceCalcMethod = WEIGHTED_PRIORITIZED;
-                this.calculateForce = this.calculatePrioritized;
-                break;
-            case PRIORITIZED_DITHERING:
-                this._forceCalcMethod = PRIORITIZED_DITHERING;
-                break;
-            default:
-                console.error(`Invalid force calculator`);
+    /*
+     * ======================================================================
+     * PATH
+     * ======================================================================
+     */
+    path(owner: Vehicle, world: World) {
+        let route = this._route;
+        if (route.length > 0) {
+            let target = new Vector2D(route[0].x, route[0].y);
+            let pd = (route.length == 1) ? this._pad : this._psd;
+            console.log(`Route length ${route.length}    target dist ${target.length()}`)
+            if (target.distSq(owner.pos) < pd)
+                route.shift();
+            return route.length == 1 ? this.arrive(owner, target, FAST) : this.seek(owner, target);
         }
+        owner.vel = Vector2D.ZERO;
+        this.pathOff();
+        return Vector2D.ZERO;
     }
 
-    calculatePrioritized(elapsedTime: number, world: World): Vector2D {
+    _route: Array<GraphNode | Vector2D> = [];
+
+    _psd = 20;
+    setPathSeekDist(n: number): AutoPilot { this._psd = n * n; return this; }
+    set pathSeekDist(n: number) { this._psd = n * n; }
+    get pathSeekDist(): number { return Math.sqrt(this._psd); }
+
+    _pad = 1;
+    setPathArriveDist(n: number): AutoPilot { this._pad = n * n; return this; }
+    set pathArriveDist(n: number) { this._pad = n * n; }
+    get pathArriveDist(): number { return Math.sqrt(this._pad); }
+
+    /** Switch off cohesion     */
+    pathOff(): AutoPilot {
+        this._flags &= (ALL_SB_MASK - PATH);
+        return this;
+    }
+
+    /** Switch on cohsion    */
+    pathOn(route: Array<GraphNode | Vector2D>): AutoPilot {   // Should we include array of vector????
+        if (Array.isArray(route) && route.length > 0) {
+            this._route = route;
+            this._flags |= PATH;
+        }
+        return this;
+    }
+
+    /** Is cohesion switched on?    */
+    get isPathOn(): boolean { return (this._flags & PATH) != 0; }
+
+
+    // ########################################################################
+    //                          FORCE CALCULATOR
+    // ########################################################################
+
+    calculateForce(elapsedTime: number, world: World) {
         let owner: Vehicle = this.owner;
         let maxForce = owner.maxForce;
         let recorder: ForceRecorder = owner.recorder;
-        let accumulator = new Vector2D();
+        let sumForces = { x: 0, y: 0 };
 
         if (this.isWallAvoidOn) {
             let f = this.wallAvoidance(owner, world, elapsedTime);
             f = f.mult(this._weight[BIT_WALL_AVOID]);
             recorder?.addData(BIT_WALL_AVOID, f);
-            if (!this.accumulateForce(accumulator, f, maxForce))
-                return accumulator;
+            if (!this.accumulateForce(sumForces, f, maxForce))
+                return Vector2D.from(sumForces);
         }
         if (this.isObsAvoidOn) {
             let f = this.obstacleAvoidance(owner, world, elapsedTime);
             f = f.mult(this._weight[BIT_OBSTACLE_AVOID]);
             recorder?.addData(BIT_OBSTACLE_AVOID, f);
-            if (!this.accumulateForce(accumulator, f, maxForce))
-                return accumulator;
+            if (!this.accumulateForce(sumForces, f, maxForce))
+                return Vector2D.from(sumForces);
         }
         if (this.isEvadeOn) {
             let f = this.evade(owner, this.evadeAgent);
             f = f.mult(this._weight[BIT_EVADE]);
             recorder?.addData(BIT_EVADE, f);
-            if (!this.accumulateForce(accumulator, f, maxForce))
-                return accumulator;
+            if (!this.accumulateForce(sumForces, f, maxForce))
+                return Vector2D.from(sumForces);
         }
         if (this.isFleeOn) {
             let f = this.flee(owner, this.fleeTarget);
             f = f.mult(this._weight[BIT_FLEE]);
             recorder?.addData(BIT_FLEE, f);
-            if (!this.accumulateForce(accumulator, f, maxForce))
-                return accumulator;
+            if (!this.accumulateForce(sumForces, f, maxForce))
+                return Vector2D.from(sumForces);
         }
         if (this.isFlockOn) {
             let f = this.flock(owner, world);
             f = f.mult(this._weight[BIT_FLOCK]);
             recorder?.addData(BIT_FLOCK, f);
-            if (!this.accumulateForce(accumulator, f, maxForce))
-                return accumulator;
+            if (!this.accumulateForce(sumForces, f, maxForce))
+                return Vector2D.from(sumForces);
         } else {
             if (this.isSeparationOn) {
                 let f = this.separation(owner, world);
                 f.mult(this._weight[BIT_SEPARATION]);
                 recorder?.addData(BIT_SEPARATION, f);
-                if (!this.accumulateForce(accumulator, f, maxForce))
-                    return accumulator;
+                if (!this.accumulateForce(sumForces, f, maxForce))
+                    return Vector2D.from(sumForces);
             }
             if (this.isAlignmentOn) {
                 let f = this.alignment(owner, world);
                 f.mult(this._weight[BIT_ALIGNMENT]);
                 recorder?.addData(BIT_ALIGNMENT, f);
-                if (!this.accumulateForce(accumulator, f, maxForce))
-                    return accumulator;
+                if (!this.accumulateForce(sumForces, f, maxForce))
+                    return Vector2D.from(sumForces);
             }
             if (this.isCohesionOn) {
                 let f = this.cohesion(owner, world);
                 f.mult(this._weight[BIT_COHESION]);
                 recorder?.addData(BIT_COHESION, f);
-                if (!this.accumulateForce(accumulator, f, maxForce))
-                    return accumulator;
+                if (!this.accumulateForce(sumForces, f, maxForce))
+                    return Vector2D.from(sumForces);
             }
         }
         if (this.isSeekOn) {
             let f = this.seek(owner, this.target);
             f = f.mult(this._weight[BIT_SEEK]);
             recorder?.addData(BIT_SEEK, f);
-            if (!this.accumulateForce(accumulator, f, maxForce))
-                return accumulator;
+            if (!this.accumulateForce(sumForces, f, maxForce))
+                return Vector2D.from(sumForces);
         }
         if (this.isArriveOn) {
             let f = this.arrive(owner, this.target);
             f = f.mult(this._weight[BIT_ARRIVE]);
             recorder?.addData(BIT_ARRIVE, f);
-            if (!this.accumulateForce(accumulator, f, maxForce))
-                return accumulator;
+            if (!this.accumulateForce(sumForces, f, maxForce))
+                return Vector2D.from(sumForces);
         }
         if (this.isWanderOn) {
             let f = this.wander(owner, elapsedTime);
             f = f.mult(this._weight[BIT_WANDER]);
             recorder?.addData(BIT_WANDER, f);
-            if (!this.accumulateForce(accumulator, f, maxForce))
-                return accumulator;
+            if (!this.accumulateForce(sumForces, f, maxForce))
+                return Vector2D.from(sumForces);
         }
         if (this.isPusuitOn) {
             let f = this.pursuit(owner, this.pursueAgent);
             f = f.mult(this._weight[BIT_PURSUIT]);
             recorder?.addData(BIT_PURSUIT, f);
-            if (!this.accumulateForce(accumulator, f, maxForce))
-                return accumulator;
+            if (!this.accumulateForce(sumForces, f, maxForce))
+                return Vector2D.from(sumForces);
         }
         if (this.isOffsetPusuitOn) {
-            console.log('offset pursuit calculate')
             let f = this.offsetPursuit(owner, this.pursueAgent, this.pursueOffset);
             f = f.mult(this._weight[BIT_OFFSET_PURSUIT]);
             recorder?.addData(BIT_OFFSET_PURSUIT, f);
-            if (!this.accumulateForce(accumulator, f, maxForce))
-                return accumulator;
+            if (!this.accumulateForce(sumForces, f, maxForce))
+                return Vector2D.from(sumForces);
         }
         if (this.isInterposeOn) {
             let f = this.interpose(owner, this.agent0, this.agent1);
             f = f.mult(this._weight[BIT_INTERPOSE]);
             recorder?.addData(BIT_INTERPOSE, f);
-            if (!this.accumulateForce(accumulator, f, maxForce))
-                return accumulator;
+            if (!this.accumulateForce(sumForces, f, maxForce))
+                return Vector2D.from(sumForces);
         }
         if (this.isHideOn) {
             let f = this.hide(owner, world, this.hideFromAgent);
             f = f.mult(this._weight[BIT_HIDE]);
             recorder?.addData(BIT_HIDE, f);
-            if (!this.accumulateForce(accumulator, f, maxForce))
-                return accumulator;
+            if (!this.accumulateForce(sumForces, f, maxForce))
+                return Vector2D.from(sumForces);
         }
-        return accumulator;
+        if (this.isPathOn) {
+            let f = this.path(owner, world);
+            f = f.mult(this._weight[BIT_PATH]);
+            recorder?.addData(BIT_PATH, f);
+            if (!this.accumulateForce(sumForces, f, maxForce))
+                return Vector2D.from(sumForces);
+        }
+        return Vector2D.from(sumForces);
     }
 
     /**
@@ -1005,14 +1033,15 @@ class AutoPilot {
      * For each active behaviour in turn it calculates how much of the
      * maximum steering force is left then adds that amount of to the accumulator.
      * 
-     * @param totalForceSoFar running total
+     * @param forceSoFar   running total of calculated forces
      * @param forceToAdd   the force we want to add from the current behaviour
      * @param maxForce     the maximum force available.
      * @return true if we have not reached the maximum permitted force.
      */
-    accumulateForce(totalForceSoFar: Vector2D, forceToAdd: Vector2D, maxForce: number): boolean {
+    accumulateForce(forceSoFar, forceToAdd: Vector2D, maxForce: number): boolean {
         // calculate how much steering force the vehicle has used so far
-        let magSoFar = totalForceSoFar.length();
+        //       let magSoFar = totalForceSoFar.length();
+        let magSoFar = Math.sqrt(forceSoFar.x * forceSoFar.x + forceSoFar.y * forceSoFar.y);
         // calculate how much steering force remains to be used by this vehicle
         let magLeft = maxForce - magSoFar;
         // calculate the magnitude of the force we want to add
@@ -1022,16 +1051,43 @@ class AutoPilot {
         // add together. Otherwise add as much of the ForceToAdd vector is
         // possible without going over the max.
         if (magToAdd < magLeft) {
-            totalForceSoFar.set([totalForceSoFar.x + forceToAdd.x, totalForceSoFar.y + forceToAdd.y]);
+            forceSoFar.x = forceSoFar.x + forceToAdd.x;
+            forceSoFar.y = forceSoFar.y + forceToAdd.y;
             return true;
         } else {
             forceToAdd = forceToAdd.normalize();
             forceToAdd = forceToAdd.mult(magLeft);
             // add it to the steering force
-            totalForceSoFar.set([totalForceSoFar.x + forceToAdd.x, totalForceSoFar.y + forceToAdd.y]);
+            forceSoFar.x = forceSoFar.x + forceToAdd.x;
+            forceSoFar.y = forceSoFar.y + forceToAdd.y;
             return false;
         }
     }
+
+    // accumulateForce(totalForceSoFar: Vector2D, forceToAdd: Vector2D, maxForce: number): boolean {
+    //     // calculate how much steering force the vehicle has used so far
+    //     let magSoFar = totalForceSoFar.length();
+    //     // calculate how much steering force remains to be used by this vehicle
+    //     let magLeft = maxForce - magSoFar;
+    //     // calculate the magnitude of the force we want to add
+    //     let magToAdd = forceToAdd.length();
+    //     // if the magnitude of the sum of ForceToAdd and the running total
+    //     // does not exceed the maximum force available to this vehicle, just
+    //     // add together. Otherwise add as much of the ForceToAdd vector is
+    //     // possible without going over the max.
+    //     if (magToAdd < magLeft) {
+    //         totalForceSoFar.set([totalForceSoFar.x + forceToAdd.x, totalForceSoFar.y + forceToAdd.y]);
+    //         //totalForceSoFar = new Vector2D(totalForceSoFar.x + forceToAdd.x, totalForceSoFar.y + forceToAdd.y);
+    //         return true;
+    //     } else {
+    //         forceToAdd = forceToAdd.normalize();
+    //         forceToAdd = forceToAdd.mult(magLeft);
+    //         // add it to the steering force
+    //         totalForceSoFar.set([totalForceSoFar.x + forceToAdd.x, totalForceSoFar.y + forceToAdd.y]);
+    //         //totalForceSoFar = new Vector2D(totalForceSoFar.x + forceToAdd.x, totalForceSoFar.y + forceToAdd.y);
+    //         return false;
+    //     }
+    // }
 
     off(behaviours: number) {
         this._flags &= (ALL_SB_MASK - behaviours);
@@ -1098,6 +1154,5 @@ class AutoPilot {
     //     20.0, // follow path weight
     //     1.0 // flock weight
     // ];
-
 
 }

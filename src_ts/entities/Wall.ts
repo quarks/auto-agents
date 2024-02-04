@@ -24,7 +24,7 @@ class Wall extends Entity {
     }
     get repelSide() { return this.__repelSide; }
 
-    constructor(start: Position, end: Position, repelSide = OUTSIDE) {
+    constructor(start: _XY_, end: _XY_, repelSide = OUTSIDE) {
         super(start, 1); this._type = WALL;
         this._end = Vector2D.from(end);
         this._norm = new Vector2D(-(end.y - start.y), end.x - start.x);

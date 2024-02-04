@@ -17,7 +17,7 @@ abstract class Entity {
     _zorder: number = 0;
     _colRad: number = 0;
 
-    constructor(position: Array<number> | Position, colRadius = 1) {
+    constructor(position: Array<number> | _XY_, colRadius = 1) {
         this._type = ENTITY;
         this._id = Entity.NEXT_ID++;
         this._pos = Vector2D.from(position);

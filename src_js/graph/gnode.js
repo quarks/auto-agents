@@ -64,6 +64,9 @@ class GraphNode {
     removeEdge(id) {
         this._edges.delete(id);
     }
+    edge(to) {
+        return this._edges.get(to);
+    }
     resetSearchCosts() {
         this.graphCost = this.fullCost = 0;
     }

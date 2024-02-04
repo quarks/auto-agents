@@ -27,7 +27,7 @@ class ForceRecorder {
     toString() {
         let s = `----------------------------------------------------------------------------------------\n`;
         s += `Owner ID: ${this._owner.id} \n`;
-        s += `Force calculator:  ${Symbol.keyFor(this._owner.pilot._forceCalcMethod)} \n`;
+        s += `Force calculator:  Weighted Truncated Running Sum with Prioritization. \n`;
         s += `Max force:  ${this._owner.maxForce} \n`;
         s += '                           Min         Max         Avg     Std Dev   Count   Weighting\n';
         for (let force of this._forces)

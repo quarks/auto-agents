@@ -7,8 +7,6 @@ class Mover extends Entity {
         this._vel = new Vector2D();
         /** Heading / facing (normalised) */
         this._heading = new Vector2D(1, 0); // facing East;
-        /** Heading at rest (normalised */
-        this._headingAtRest = new Vector2D(1, 0); // facing East;
         /** Mass */
         this._mass = 1;
         /** Max speed */
@@ -16,7 +14,7 @@ class Mover extends Entity {
         /** Max force */
         this._maxForce = 200;
         /** Current turn rate */
-        this._turnRate = 1;
+        this._turnRate = 2;
         /** Distance a moving entity can see another one */
         this._viewDistance = 50;
         /** Field of view (radians) */
