@@ -861,7 +861,7 @@ class AutoPilot {
         if (route.length > 0) {
             let target = new Vector2D(route[0].x, route[0].y);
             let pd = (route.length == 1) ? this._pad : this._psd;
-            console.log(`Route length ${route.length}    target dist ${target.length()}`)
+            //            console.log(`Route length ${route.length}    target dist ${target.length()}`)
             if (target.distSq(owner.pos) < pd)
                 route.shift();
             return route.length == 1 ? this.arrive(owner, target, FAST) : this.seek(owner, target);
@@ -1038,7 +1038,7 @@ class AutoPilot {
      * @param maxForce     the maximum force available.
      * @return true if we have not reached the maximum permitted force.
      */
-    accumulateForce(forceSoFar, forceToAdd: Vector2D, maxForce: number): boolean {
+    accumulateForce(forceSoFar: _XY_, forceToAdd: Vector2D, maxForce: number): boolean {
         // calculate how much steering force the vehicle has used so far
         //       let magSoFar = totalForceSoFar.length();
         let magSoFar = Math.sqrt(forceSoFar.x * forceSoFar.x + forceSoFar.y * forceSoFar.y);
@@ -1155,4 +1155,10 @@ class AutoPilot {
     //     1.0 // flock weight
     // ];
 
+}
+
+
+interface _XY_ {
+    x: number;
+    y: number;
 }

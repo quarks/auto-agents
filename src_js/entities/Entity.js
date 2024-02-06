@@ -1,18 +1,26 @@
+var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
+};
+var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
+    if (kind === "m") throw new TypeError("Private method is not writable");
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
+    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
+};
+var _a, _Entity_NEXT_ID;
 class Entity {
     constructor(position, colRadius = 1) {
+        var _b, _c, _d;
         this._pos = new Vector2D();
         this._visible = true;
         this._zorder = 0;
         this._colRad = 0;
-        this._type = ENTITY;
-        this._id = Entity.NEXT_ID++;
+        this._id = (__classPrivateFieldSet(_b = Entity, _a, (_d = __classPrivateFieldGet(_b, _a, "f", _Entity_NEXT_ID), _c = _d++, _d), "f", _Entity_NEXT_ID), _c);
         this._pos = Vector2D.from(position);
         this._colRad = colRadius;
     }
-    get type() { return this._type; }
-    ;
-    get type$() { return Symbol.keyFor(this.type); }
-    ;
     /** Position coordinates */
     get x() { return this._pos.x; }
     get y() { return this._pos.y; }
@@ -70,10 +78,11 @@ class Entity {
                 s = ' ' + s;
             return s;
         }
-        let s = `${this.type$} ID: ${fmt(this.id, 0, 2)}`;
+        let s = `${this.constructor.name} ID: ${fmt(this.id, 0, 2)}`;
         s += ` @ [${fmt(this.x, 0, len)}, ${fmt(this.y, 0, len)}]`;
         return s;
     }
 }
-Entity.NEXT_ID = 0;
+_a = Entity;
+_Entity_NEXT_ID = { value: 0 };
 //# sourceMappingURL=entity.js.map

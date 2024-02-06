@@ -6,7 +6,7 @@ class Building extends Entity {
     highY: number;
 
     constructor( /* Vetices */) {
-        super(Vector2D.ZERO, 1); this._type = BUILDING;
+        super(Vector2D.ZERO, 1);
     }
 
     fits_inside(lowX: number, lowY: number, highX: number, highY: number): boolean {

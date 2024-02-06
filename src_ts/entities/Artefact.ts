@@ -8,7 +8,7 @@ class Artefact extends Entity {
     _height: number;
 
     constructor(center: Vector2D, width: number, height: number) {
-        super(center); this._type = ARTEFACT;
+        super(center);
         this._width = width;
         this._height = height;
         this._lowX = center.x - width / 2;

@@ -1,5 +1,5 @@
 class Astar {
-    constructor(graph, ash = new AshCrowFlight()) {
+    constructor(graph, ash = Euclidean()) {
         this._graph = graph;
         this._ash = ash;
         this._route = [];
@@ -19,7 +19,7 @@ class Astar {
         let settledNodes = new Set();
         let parent = new Map();
         let next, edgeTo;
-        start.fullCost = this._ash.getCost(start, target);
+        start.fullCost = this._ash(start, target);
         unsettledNodes.push(start);
         while (unsettledNodes.length > 0) {
             next = unsettledNodes.shift();
@@ -36,7 +36,7 @@ class Astar {
             next.edges.forEach(e => {
                 edgeTo = this._graph.node(e.to);
                 let gCost = next.graphCost + e.cost;
-                let hCost = this._ash.getCost(edgeTo, target);
+                let hCost = this._ash(edgeTo, target);
                 let edgeToCost = edgeTo.graphCost;
                 if (!settledNodes.has(edgeTo) && (edgeToCost == 0 || edgeTo.graphCost > gCost + hCost)) {
                     edgeTo.graphCost = gCost;
@@ -51,30 +51,44 @@ class Astar {
         return this;
     }
 }
-class AshCrowFlight {
-    constructor(factor = 1) {
-        this._factor = 1.0;
-        this._factor = factor;
-    }
-    getCost(node, target) {
+function Euclidean(factor = 1) {
+    return (function (node, target) {
         let dx = target.x - node.x;
         let dy = target.y - node.y;
         let dz = target.z - node.z;
-        return this._factor * Math.sqrt(dx * dx + dy * dy + dz * dz);
-    }
+        return factor * Math.sqrt(dx * dx + dy * dy + dz * dz);
+    });
 }
-class AshManhattan {
-    constructor() {
-        this._factor = 1.0;
-    }
-    AshManhattan(factor = 1) {
-        this._factor = factor;
-    }
-    getCost(node, target) {
+function Manhattan(factor = 1) {
+    return (function (node, target) {
         let dx = Math.abs(target.x - node.x);
         let dy = Math.abs(target.y - node.y);
         let dz = Math.abs(target.z - node.z);
-        return this._factor * (dx + dy + dz);
-    }
+        return factor * (dx + dy + dz);
+    });
 }
+// class AshCrowFlight implements AstarHeuristic {
+//     _factor = 1.0;
+//     constructor(factor: number = 1) {
+//         this._factor = factor;
+//     }
+//     getCost(node: GraphNode, target: GraphNode): number {
+//         let dx = target.x - node.x;
+//         let dy = target.y - node.y;
+//         let dz = target.z - node.z;
+//         return this._factor * Math.sqrt(dx * dx + dy * dy + dz * dz);
+//     }
+// }
+// class AshManhattan implements AstarHeuristic {
+//     _factor = 1.0;
+//     public AshManhattan(factor = 1) {
+//         this._factor = factor;
+//     }
+//     getCost(node: GraphNode, target: GraphNode): number {
+//         let dx = Math.abs(target.x - node.x);
+//         let dy = Math.abs(target.y - node.y);
+//         let dz = Math.abs(target.z - node.z);
+//         return this._factor * (dx + dy + dz);
+//     }
+// }
 //# sourceMappingURL=gs_astar.js.map

@@ -1,7 +1,7 @@
 class Obstacle extends Entity {
 
     constructor(position: Array<number> | _XY_, colRadius = 1) {
-        super(position, colRadius); this._type = OBSTACLE;
+        super(position, colRadius);
     }
 
     isEitherSide(p0: Vector2D, p1: Vector2D): boolean {

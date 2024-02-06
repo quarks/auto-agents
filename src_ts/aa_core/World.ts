@@ -44,7 +44,7 @@ class World {
     }
 
     birth(entity: Entity) {
-        if (entity.type == OBSTACLE)
+        if (entity instanceof Obstacle)
             this._maxObstacleSize = Math.max(this._maxObstacleSize, entity.colRad);
         if (entity) this._births.push(entity);
     }

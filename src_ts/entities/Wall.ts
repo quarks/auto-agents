@@ -20,12 +20,11 @@ class Wall extends Entity {
             default:
                 this.__repelSide == NO_SIDE;
         }
-        //console.log(`ID ${this.id}     Repel ${Symbol.keyFor(this.__repelSide)}`)
     }
     get repelSide() { return this.__repelSide; }
 
     constructor(start: _XY_, end: _XY_, repelSide = OUTSIDE) {
-        super(start, 1); this._type = WALL;
+        super(start, 1);
         this._end = Vector2D.from(end);
         this._norm = new Vector2D(-(end.y - start.y), end.x - start.x);
         this._norm = this._norm.normalize();

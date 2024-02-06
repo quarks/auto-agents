@@ -60,7 +60,7 @@ class Mover extends Entity {
 
 
     constructor(position: Array<number> | Vector2D, colRadius = 0) {
-        super(position, colRadius); this._type = MOVER;
+        super(position, colRadius);
         this._prevPos.set(this._pos);
         this._mass = 1;
         this._side = this._heading.getPerp();

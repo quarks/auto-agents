@@ -1,9 +1,6 @@
 abstract class Entity {
-    static NEXT_ID = 0;
 
-    _type: symbol;
-    get type(): symbol { return this._type };
-    get type$(): string { return Symbol.keyFor(this.type) };
+    static #NEXT_ID = 0;
 
     _id: number;
     _tag: string | number
@@ -18,8 +15,7 @@ abstract class Entity {
     _colRad: number = 0;
 
     constructor(position: Array<number> | _XY_, colRadius = 1) {
-        this._type = ENTITY;
-        this._id = Entity.NEXT_ID++;
+        this._id = Entity.#NEXT_ID++;
         this._pos = Vector2D.from(position);
         this._colRad = colRadius;
     }
@@ -98,7 +94,7 @@ abstract class Entity {
             while (s.length < bufferLength) s = ' ' + s;
             return s;
         }
-        let s = `${this.type$} ID: ${fmt(this.id, 0, 2)}`;
+        let s = `${this.constructor.name} ID: ${fmt(this.id, 0, 2)}`;
         s += ` @ [${fmt(this.x, 0, len)}, ${fmt(this.y, 0, len)}]`;
         return s;
     }

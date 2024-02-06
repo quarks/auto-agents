@@ -20,7 +20,7 @@ class Vehicle extends Mover {
     get accel() { return this._accel; }
 
     constructor(position: Vector2D, radius: number, world?: World) {
-        super(position, radius); this._type = VEHICLE;
+        super(position, radius);
         if (world) this._autopilot = new AutoPilot(this, world);
     }
 

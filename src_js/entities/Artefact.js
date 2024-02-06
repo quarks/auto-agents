@@ -1,7 +1,6 @@
 class Artefact extends Entity {
     constructor(center, width, height) {
         super(center);
-        this._type = ARTEFACT;
         this._width = width;
         this._height = height;
         this._lowX = center.x - width / 2;

@@ -3,7 +3,6 @@ class Vehicle extends Mover {
         super(position, radius);
         this._force = new Vector2D();
         this._accel = new Vector2D();
-        this._type = VEHICLE;
         if (world)
             this._autopilot = new AutoPilot(this, world);
     }

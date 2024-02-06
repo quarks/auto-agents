@@ -19,7 +19,6 @@ class Mover extends Entity {
         this._viewDistance = 50;
         /** Field of view (radians) */
         this._viewFOV = 1.047; // Default is 60 degrees
-        this._type = MOVER;
         this._prevPos.set(this._pos);
         this._mass = 1;
         this._side = this._heading.getPerp();

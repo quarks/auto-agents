@@ -1,7 +1,6 @@
 class Building extends Entity {
     constructor( /* Vetices */) {
         super(Vector2D.ZERO, 1);
-        this._type = BUILDING;
     }
     fits_inside(lowX, lowY, highX, highY) {
         throw new Error("Method not implemented.");

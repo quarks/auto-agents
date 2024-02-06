@@ -1,14 +1,10 @@
-let showDrag = false;
-let route, testedEdges;
-
-let cellsize = 20, nodeRad = cellsize * 0.275;
-let routeWeight = cellsize * 0.2, edgeWeight = 0.9;
-let w, h, walls = [];
-
 let raw_data = [];
 let diags = [false, true, true, true];
-let mn = 3;
-
+let mn = 0;
+let showDrag = false;
+let route, testedEdges;
+let cellsize = 20, nodeRad = cellsize * 0.2;
+let rWt = cellsize * 0.2, eWt = cellsize * 0.025, eeWt = rWt * 0.85;
 
 function preload() {
     raw_data[0] = loadStrings('maze_0.txt');
@@ -18,11 +14,14 @@ function preload() {
 }
 
 function setup() {
-    maze_data = raw_data[mn];
-    useDiags = diags[mn];
-    h = maze_data.length, w = maze_data[0].length;
     console.clear();
     console.log('GLOBAL mode');
+    console.log(`Maze No.  ${mn}`);
+    maze_data = raw_data[mn];
+    useDiags = diags[mn];
+    cellCol = [color(255, 255, 220), color(0)];
+    backImage = createMazeWallImage(maze_data, cellsize, cellCol);
+    let h = maze_data.length, w = maze_data[0].length;
     let p5canvas = createCanvas(w * cellsize, h * cellsize);
     p5canvas.parent('sketch');
     cellCol = [color(250), color(0)];
@@ -32,25 +31,20 @@ function setup() {
     graph = createMazeGraph(maze_data, useDiags);
     nodes = graph.nodes;
     edges = graph.edges;
-
     console.log(`Graph: nbr nodes ${graph.nodes.length}    edges ${graph.edges.length}`);
 }
 
 function draw() {
     background(255, 255, 220);
-    drawMazeWalls();
-    //drawEdges();
-
+    image(backImage, 0, 0);
+    drawEdges();
     drawTestedEdges();
     drawNodes();
     drawRoute();
-
-
     stroke(0, 255, 255); strokeWeight(3);
     if (showDrag)
         line(startNode.x, startNode.y, endNode.x, endNode.y);
 }
-
 
 function keyTyped() {
     if (key === 'q') console.log(graph.getData().join('\n'));
@@ -66,6 +60,7 @@ function mousePressed() {
     startNode = graph.nearestNode(mouseX, mouseY);
     endNode = startNode;
 }
+
 function mouseMoved() {
     // let n = graph.nearestNode(mouseX, mouseY);
     // console.log(n.id);
@@ -78,63 +73,51 @@ function mouseDragged() {
 
 function mouseReleased() {
     showDrag = false;
-    let hst = new AshManhattan();
-    let gs = new Astar(graph);
+    let gs = new Astar(graph, Euclidean());
     gs.search(startNode.id, endNode.id);
     route = gs.route;
     testedEdges = gs.testedEdges;
     console.log(`Route length ${route.length}   Nbr edges tested ${testedEdges.length}`);
 }
 
-
-function drawNodes() {
-    noStroke(); fill(nodeCol);
-    nodes.forEach(n => {
-        ellipse(n.x, n.y, 2 * nodeRad, 2 * nodeRad);
-    });
-}
-
-
 function drawRoute() {
     if (route) {
-        stroke(240, 0, 0); strokeWeight(routeWeight);
+        stroke(240, 0, 0); strokeWeight(rWt);
         for (let i = 1; i < route.length; i++)
             line(route[i - 1].x, route[i - 1].y, route[i].x, route[i].y);
-        noStroke(); fill(routeNodeCol);
+        stroke(0); strokeWeight(0.7); fill(routeNodeCol);
         route.forEach(n => {
             ellipse(n.x, n.y, 2 * nodeRad, 2 * nodeRad);
         });
     }
 }
 
+function drawNodes() {
+    stroke(0); strokeWeight(0.7); fill(nodeCol);
+    nodes.forEach(n => {
+        ellipse(n.x, n.y, 2 * nodeRad, 2 * nodeRad);
+    });
+}
+
+function drawTestedEdges() {
+    stroke(140, 140, 240); strokeWeight(eeWt);
+    testedEdges?.forEach(e => {
+        let n0 = graph.node(e.from), n1 = graph.node(e.to);
+        line(n0.x, n0.y, n1.x, n1.y);
+    })
+}
+
 function drawEdges() {
-    stroke(180, 215, 210); strokeWeight(edgeWeight);
+    stroke(0, 32); strokeWeight(eWt);
     edges.forEach(e => {
         let n0 = graph.node(e.from), n1 = graph.node(e.to);
         line(n0.x, n0.y, n1.x, n1.y);
     })
 }
 
-
-function drawTestedEdges() {
-    stroke(10); strokeWeight(edgeWeight);
-    testedEdges?.forEach(e => {
-        let n0 = graph.node(e.from), n1 = graph.node(e.to);
-        line(n0.x, n0.y, n1.x, n1.y);
-    })
-}
-function drawMazeWalls() {
-    noStroke();
-    for (let i = 0; i < walls.length; i++)
-        for (j = 0; j < walls[i].length; j++) {
-            fill(cellCol[walls[i][j]]);
-            rect(j * cellsize, i * cellsize, cellsize, cellsize);
-        }
-}
-
 function createMazeGraph(data, diags) {
-    walls = [];
-    console.log(`Maze size: ${w} x ${h}`);
+    let h = maze_data.length, w = maze_data[0].length;
+    let walls = [];
     for (let i = 0; i < h; i++) {
         walls.push(new Uint8Array(w));
         for (let j = 0; j < w; j++)
@@ -151,7 +134,6 @@ function createMazeGraph(data, diags) {
                     g.createEdge(id, id - 2 * w - 1, true);
                     g.createEdge(id, id - 2 * w + 1, true);
                 }
-
             }
             id++;
         }
