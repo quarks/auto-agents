@@ -1,27 +1,39 @@
+var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
+    if (kind === "m") throw new TypeError("Private method is not writable");
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
+    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
+};
+var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
+};
+var _Graph_nodes, _Graph_floatingEdges, _Graph_name;
 class Graph {
     constructor(name = '') {
-        this._nodes = new Map();
-        this._floatingEdges = new Set();
-        this._name = '';
-        this._name = name;
+        _Graph_nodes.set(this, new Map());
+        _Graph_floatingEdges.set(this, new Set());
+        _Graph_name.set(this, '');
+        __classPrivateFieldSet(this, _Graph_name, name, "f");
     }
-    get nodes() { return [...this._nodes.values()]; }
+    get nodes() { return [...__classPrivateFieldGet(this, _Graph_nodes, "f").values()]; }
     ;
     get edges() {
         let e = [];
         this.nodes.forEach(n => e.push(n.edges));
         return e.flat();
     }
-    setName(n) { this._name = n; return this; }
-    set name(n) { this._name = n; }
-    get name() { return this._name; }
+    setName(n) { __classPrivateFieldSet(this, _Graph_name, n, "f"); return this; }
+    set name(n) { __classPrivateFieldSet(this, _Graph_name, n, "f"); }
+    get name() { return __classPrivateFieldGet(this, _Graph_name, "f"); }
     /** Gets the node for a given id it it exists. */
     node(id) {
-        return this._nodes.get(id);
+        return __classPrivateFieldGet(this, _Graph_nodes, "f").get(id);
     }
     /** Gets the node for a given id it it exists. */
     edge(from, to) {
-        return this._nodes.get(from)?.edge(to);
+        return __classPrivateFieldGet(this, _Graph_nodes, "f").get(from)?.edge(to);
     }
     /**
      * Create and add a node. If a z coordinate is not provided then it is
@@ -42,8 +54,8 @@ class Graph {
      * @returns this graph
      */
     addNode(node) {
-        console.assert(!this._nodes.has(node.id), `Duplicate node ID: ${node.id} - the original node has been overwritten`);
-        this._nodes.set(node.id, node);
+        console.assert(!__classPrivateFieldGet(this, _Graph_nodes, "f").has(node.id), `Duplicate node ID: ${node.id} - the original node has been overwritten`);
+        __classPrivateFieldGet(this, _Graph_nodes, "f").set(node.id, node);
         return this;
     }
     /**
@@ -54,8 +66,8 @@ class Graph {
     removeNode(id) {
         let node = this.node(id);
         if (node) {
-            this._nodes.delete(node.id);
-            [...this._nodes.values()].forEach(n => n.removeEdge(node.id));
+            __classPrivateFieldGet(this, _Graph_nodes, "f").delete(node.id);
+            [...__classPrivateFieldGet(this, _Graph_nodes, "f").values()].forEach(n => n.removeEdge(node.id));
         }
         return this;
     }
@@ -85,13 +97,13 @@ class Graph {
      * @returns this graph
      */
     addEdge(edge) {
-        if (this._nodes.has(edge.from) && this._nodes.has(edge.to)) {
+        if (__classPrivateFieldGet(this, _Graph_nodes, "f").has(edge.from) && __classPrivateFieldGet(this, _Graph_nodes, "f").has(edge.to)) {
             if (edge.cost == 0)
                 edge.cost = Graph.dist(this.node(edge.from), this.node(edge.to));
             this.node(edge.from).addEdge(edge);
         }
         else
-            this._floatingEdges.add(edge);
+            __classPrivateFieldGet(this, _Graph_floatingEdges, "f").add(edge);
         return this;
     }
     /**
@@ -111,7 +123,7 @@ class Graph {
         let pos = Float64Array.of(x, y, z);
         let nearestDist = Number.MAX_VALUE;
         let nearestNode;
-        this._nodes.forEach(n => {
+        __classPrivateFieldGet(this, _Graph_nodes, "f").forEach(n => {
             let dist = Graph.distSq(n.pos, pos);
             if (dist < nearestDist) {
                 nearestDist = dist;
@@ -127,7 +139,7 @@ class Graph {
      */
     compact() {
         let nfe = 0, feadded = 0;
-        for (let fe of this._floatingEdges.values()) {
+        for (let fe of __classPrivateFieldGet(this, _Graph_floatingEdges, "f").values()) {
             nfe++;
             let fromNode = this.node(fe.from), toNode = this.node(fe.to);
             if (fromNode && toNode) {
@@ -139,7 +151,7 @@ class Graph {
             console.log(`Compact:  ${feadded} of ${nfe} floating edges have been added to graph.`);
             if (feadded < nfe) {
                 console.log(`          ${nfe - feadded} orphan edge(s) have been deleted.`);
-                this._floatingEdges.clear();
+                __classPrivateFieldGet(this, _Graph_floatingEdges, "f").clear();
             }
         }
         return this;
@@ -170,15 +182,23 @@ class Graph {
         let a = [];
         a.push(`GRAPH: "${this.name}"`);
         a.push('Nodes:');
-        for (let node of this._nodes.values()) {
+        for (let node of __classPrivateFieldGet(this, _Graph_nodes, "f").values()) {
             a.push(`  ${node.toString()}`);
-            for (let edge of node._edges.values())
+            for (let edge of node.edges.values())
                 a.push(`        ${edge.toString()}`);
         }
         a.push('Floating Edges:');
-        for (let edge of this._floatingEdges.values())
+        for (let edge of __classPrivateFieldGet(this, _Graph_floatingEdges, "f").values())
             a.push(`  ${edge.toString()}`);
         return a;
     }
+}
+_Graph_nodes = new WeakMap(), _Graph_floatingEdges = new WeakMap(), _Graph_name = new WeakMap();
+function getRouteEdges(nodes) {
+    let edges = [];
+    for (let i = 0; i < nodes.length - 1; i++) {
+        edges.push(nodes[i].edge(nodes[i + 1].id));
+    }
+    return edges;
 }
 //# sourceMappingURL=graph.js.map

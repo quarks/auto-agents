@@ -1,73 +1,88 @@
+var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
+    if (kind === "m") throw new TypeError("Private method is not writable");
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
+    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
+};
+var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
+};
+var _ForceRecorder_owner, _ForceRecorder_forces, _ForceRecorder_nbrReadings, _Force_forceName, _Force_min, _Force_max, _Force_s1, _Force_s2, _Force_n, _Force_weight;
 class ForceRecorder {
     constructor(owner, weights) {
-        this._nbrReadings = 0;
-        this._owner = owner;
-        this._forces = FORCE_NAME.map((v, i) => new Force(this, i, v, weights[i]));
+        _ForceRecorder_owner.set(this, void 0);
+        _ForceRecorder_forces.set(this, void 0);
+        _ForceRecorder_nbrReadings.set(this, 0);
+        __classPrivateFieldSet(this, _ForceRecorder_owner, owner, "f");
+        __classPrivateFieldSet(this, _ForceRecorder_forces, FORCE_NAME.map((v, i) => new Force(v, weights[i])), "f");
     }
     addData(typeFlag, force) {
+        var _a;
         if (typeFlag >= 0 && typeFlag < NBR_BEHAVIOURS) {
-            this._nbrReadings++;
-            this._forces[typeFlag].addData(force.length());
+            __classPrivateFieldSet(this, _ForceRecorder_nbrReadings, (_a = __classPrivateFieldGet(this, _ForceRecorder_nbrReadings, "f"), _a++, _a), "f");
+            __classPrivateFieldGet(this, _ForceRecorder_forces, "f")[typeFlag].addData(force.length());
         }
     }
     clearData() {
-        this._nbrReadings = 0;
-        for (let f of this._forces)
+        __classPrivateFieldSet(this, _ForceRecorder_nbrReadings, 0, "f");
+        for (let f of __classPrivateFieldGet(this, _ForceRecorder_forces, "f"))
             f.clearData();
     }
-    hasData() { return (this._nbrReadings > 1); }
+    hasData() { return (__classPrivateFieldGet(this, _ForceRecorder_nbrReadings, "f") > 1); }
     toString() {
         let s = `----------------------------------------------------------------------------------------\n`;
-        s += `Owner ID: ${this._owner.id} \n`;
+        s += `Owner ID: ${__classPrivateFieldGet(this, _ForceRecorder_owner, "f").id} \n`;
         s += `Force calculator:  Weighted Truncated Running Sum with Prioritization. \n`;
-        s += `Max force:  ${this._owner.maxForce} \n`;
+        s += `Max force:  ${__classPrivateFieldGet(this, _ForceRecorder_owner, "f").maxForce} \n`;
         s += '                           Min         Max         Avg     Std Dev   Count   Weighting\n';
-        for (let force of this._forces)
+        for (let force of __classPrivateFieldGet(this, _ForceRecorder_forces, "f"))
             if (force.hasData())
                 s += `   ${force.toString()} \n`;
         s += `----------------------------------------------------------------------------------------\n`;
         return s;
     }
 }
+_ForceRecorder_owner = new WeakMap(), _ForceRecorder_forces = new WeakMap(), _ForceRecorder_nbrReadings = new WeakMap();
 class Force {
-    constructor(recorder, forceID, forceName, weighting) {
-        this._forceID = -1;
-        this._forceName = '';
-        this._min = Number.MAX_VALUE;
-        this._max = 0;
-        this._s1 = 0;
-        this._s2 = 0;
-        this._n = 0;
-        this._recorder = recorder;
-        this._forceID = forceID;
-        this._forceName = forceName;
-        this._weight = weighting;
+    constructor(forceName, weighting) {
+        _Force_forceName.set(this, '');
+        _Force_min.set(this, Number.MAX_VALUE);
+        _Force_max.set(this, 0);
+        _Force_s1.set(this, 0);
+        _Force_s2.set(this, 0);
+        _Force_n.set(this, 0);
+        _Force_weight.set(this, void 0);
+        __classPrivateFieldSet(this, _Force_forceName, forceName, "f");
+        __classPrivateFieldSet(this, _Force_weight, weighting, "f");
     }
     clearData() {
-        this._min = Number.MAX_VALUE;
-        this._max = 0;
-        this._s1 = 0;
-        this._s2 = 0;
-        this._n = 0;
+        __classPrivateFieldSet(this, _Force_min, Number.MAX_VALUE, "f");
+        __classPrivateFieldSet(this, _Force_max, 0, "f");
+        __classPrivateFieldSet(this, _Force_s1, 0, "f");
+        __classPrivateFieldSet(this, _Force_s2, 0, "f");
+        __classPrivateFieldSet(this, _Force_n, 0, "f");
     }
     addData(forceMagnitude) {
-        if (forceMagnitude < this._min)
-            this._min = forceMagnitude;
-        if (forceMagnitude > this._max)
-            this._max = forceMagnitude;
-        this._s1 += forceMagnitude;
-        this._s2 += forceMagnitude * forceMagnitude;
-        this._n++;
+        var _a;
+        if (forceMagnitude < __classPrivateFieldGet(this, _Force_min, "f"))
+            __classPrivateFieldSet(this, _Force_min, forceMagnitude, "f");
+        if (forceMagnitude > __classPrivateFieldGet(this, _Force_max, "f"))
+            __classPrivateFieldSet(this, _Force_max, forceMagnitude, "f");
+        __classPrivateFieldSet(this, _Force_s1, __classPrivateFieldGet(this, _Force_s1, "f") + forceMagnitude, "f");
+        __classPrivateFieldSet(this, _Force_s2, __classPrivateFieldGet(this, _Force_s2, "f") + forceMagnitude * forceMagnitude, "f");
+        __classPrivateFieldSet(this, _Force_n, (_a = __classPrivateFieldGet(this, _Force_n, "f"), _a++, _a), "f");
     }
-    hasData() { return (this._n > 0); }
+    hasData() { return (__classPrivateFieldGet(this, _Force_n, "f") > 0); }
     getAverage() {
-        if (this._n > 0)
-            return this._s1 / this._n;
+        if (__classPrivateFieldGet(this, _Force_n, "f") > 0)
+            return __classPrivateFieldGet(this, _Force_s1, "f") / __classPrivateFieldGet(this, _Force_n, "f");
         return 0;
     }
     getStdDev() {
-        if (this._n > 0)
-            return Math.sqrt(this._n * this._s2 - this._s1 * this._s1) / this._n;
+        if (__classPrivateFieldGet(this, _Force_n, "f") > 0)
+            return Math.sqrt(__classPrivateFieldGet(this, _Force_n, "f") * __classPrivateFieldGet(this, _Force_s2, "f") - __classPrivateFieldGet(this, _Force_s1, "f") * __classPrivateFieldGet(this, _Force_s1, "f")) / __classPrivateFieldGet(this, _Force_n, "f");
         return 0;
     }
     toString() {
@@ -77,14 +92,15 @@ class Force {
                 s = ' ' + s;
             return s;
         }
-        let s = this._forceName;
-        s += `${fmt(this._min, 2, 12)}`;
-        s += `${fmt(this._max, 2, 12)}`;
+        let s = __classPrivateFieldGet(this, _Force_forceName, "f");
+        s += `${fmt(__classPrivateFieldGet(this, _Force_min, "f"), 2, 12)}`;
+        s += `${fmt(__classPrivateFieldGet(this, _Force_max, "f"), 2, 12)}`;
         s += `${fmt(this.getAverage(), 2, 12)}`;
         s += `${fmt(this.getStdDev(), 2, 12)}`;
-        s += `${fmt(this._n, 0, 8)}`;
-        s += `${fmt(this._weight, 2, 12)}`;
+        s += `${fmt(__classPrivateFieldGet(this, _Force_n, "f"), 0, 8)}`;
+        s += `${fmt(__classPrivateFieldGet(this, _Force_weight, "f"), 2, 12)}`;
         return s;
     }
 }
+_Force_forceName = new WeakMap(), _Force_min = new WeakMap(), _Force_max = new WeakMap(), _Force_s1 = new WeakMap(), _Force_s2 = new WeakMap(), _Force_n = new WeakMap(), _Force_weight = new WeakMap();
 //# sourceMappingURL=forcerecorder.js.map

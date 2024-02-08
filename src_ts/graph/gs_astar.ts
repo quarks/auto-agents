@@ -1,66 +1,90 @@
 class Astar {
-    _graph: Graph;
+    #graph: Graph;
 
-    _route: Array<GraphNode>;
-    get route(): Array<GraphNode> { return this._route; }
+    #route: Array<GraphNode>;
+    get route(): Array<GraphNode> { return this.#route; }
 
-    _testedEdges: Set<GraphEdge>;
-    get testedEdges(): Array<GraphEdge> { return [...this._testedEdges.values()]; }
+    #edges: Array<GraphEdge>;
+    get edges(): Array<GraphEdge> { return this.#edges };
 
-    _ash: Function;
+    #testedEdges: Set<GraphEdge>;
+    get testedEdges(): Array<GraphEdge> { return [...this.#testedEdges.values()]; }
+
+    #ash: Function;
 
     constructor(graph: Graph, ash = Euclidean()) {
-        this._graph = graph;
-        this._ash = ash;
-        this._route = [];
-        this._testedEdges = new Set();
+        this.#graph = graph;
+        this.#ash = ash;
+        this.#route = [];
+        this.#testedEdges = new Set();
     }
 
-    search(startID: number, targetID: number): Astar {
-        this._graph.nodes.forEach(n => n.resetSearchCosts());
-        this._route = [], this._testedEdges.clear();
-        let start = this._graph.node(startID), target = this._graph.node(targetID);
-        if (!start || !target) {
-            console.error(`Nodes ${startID} and/or ${targetID} do not exist in this graph.`);
+    search(nodeIDs: Array<number>): Astar {
+        function allNodesExist(graph: Graph, ids: Array<number>): boolean {
+            for (let id of ids) if (!graph.node(id)) return false;
+            return true;
+        }
+        if (!Array.isArray(nodeIDs) || nodeIDs.length <= 1) {
+            console.error(`Search error:  invalid array`);
             return this;
         }
-        let unsettledNodes: Array<GraphNode> = []; // Use as priority queue
-        let settledNodes: Set<GraphNode> = new Set();
-        let parent: Map<GraphNode, GraphNode> = new Map();
-        let next: GraphNode, edgeTo: GraphNode;
-
-        start.fullCost = this._ash(start, target);
-        unsettledNodes.push(start);
-
-        while (unsettledNodes.length > 0) {
-            next = unsettledNodes.shift();
-            if (next === target) {
-                this._route.push(target);
-                while (next !== start) {
-                    next = parent.get(next);
-                    this._route.push(next);
-                }
-                this._route.reverse();
-                return this;
-            }
-            settledNodes.add(next);
-            next.edges.forEach(e => {
-                edgeTo = this._graph.node(e.to);
-                let gCost = next.graphCost + e.cost;
-                let hCost = this._ash(edgeTo, target);
-                let edgeToCost = edgeTo.graphCost;
-                if (!settledNodes.has(edgeTo) && (edgeToCost == 0 || edgeTo.graphCost > gCost + hCost)) {
-                    edgeTo.graphCost = gCost;
-                    edgeTo.fullCost = gCost + hCost;
-                    parent.set(edgeTo, next);
-                    unsettledNodes.push(edgeTo); // Maintain priority queue
-                    unsettledNodes.sort((a, b) => a.fullCost - b.fullCost);
-                    this._testedEdges.add(e);
-                }
-            });
-
+        else if (!allNodesExist(this.#graph, nodeIDs)) {
+            console.error(`Search error:  non-existant nodes in route list`);
+            return this;
         }
+        this.#testedEdges.clear();
+        this.#route = this.#search(nodeIDs[0], nodeIDs[1]);
+        for (let i = 2; i < nodeIDs.length; i++) {
+            let pr = this.#search(nodeIDs[i - 1], nodeIDs[i]);
+            pr.shift();
+            this.#route.push(...pr);
+        }
+        this.#edges = [];
+        for (let i = 0; i < this.#route.length - 1; i++)
+            this.#edges.push(this.#route[i].edge(this.#route[i + 1].id));
         return this;
+    }
+
+    #search(startID: number, targetID: number): Array<GraphNode> {
+        this.#graph.nodes.forEach(n => n.resetSearchCosts());
+        let partRoute = [];
+        let start = this.#graph.node(startID), target = this.#graph.node(targetID);
+        if (start !== target) {
+            let unsettledNodes: Array<GraphNode> = []; // Use as priority queue
+            let settledNodes: Set<GraphNode> = new Set();
+            let parent: Map<GraphNode, GraphNode> = new Map();
+            let next: GraphNode, edgeTo: GraphNode;
+            start.fullCost = this.#ash(start, target);
+            unsettledNodes.push(start);
+            while (unsettledNodes.length > 0) {
+                next = unsettledNodes.shift();
+                if (next === target) {
+                    partRoute.push(target);
+                    while (next !== start) {
+                        next = parent.get(next);
+                        partRoute.push(next);
+                    }
+                    partRoute.reverse();
+                    return partRoute;
+                }
+                settledNodes.add(next);
+                next.edges.forEach(e => {
+                    edgeTo = this.#graph.node(e.to);
+                    let gCost = next.graphCost + e.cost;
+                    let hCost = this.#ash(edgeTo, target);
+                    let edgeToCost = edgeTo.graphCost;
+                    if (!settledNodes.has(edgeTo) && (edgeToCost == 0 || edgeTo.graphCost > gCost + hCost)) {
+                        edgeTo.graphCost = gCost;
+                        edgeTo.fullCost = gCost + hCost;
+                        parent.set(edgeTo, next);
+                        unsettledNodes.push(edgeTo); // Maintain priority queue
+                        unsettledNodes.sort((a, b) => a.fullCost - b.fullCost);
+                        this.#testedEdges.add(e);
+                    }
+                });
+            }
+        }
+        return partRoute;
     }
 }
 

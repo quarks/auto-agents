@@ -1,6 +1,6 @@
 let raw_data = [];
 let diags = [false, true, true, true];
-let mn = 0;
+let mn = 1;
 let showDrag = false;
 let route, testedEdges;
 let cellsize = 20, nodeRad = cellsize * 0.2;
@@ -62,8 +62,8 @@ function mousePressed() {
 }
 
 function mouseMoved() {
-    // let n = graph.nearestNode(mouseX, mouseY);
-    // console.log(n.id);
+    let n = graph.nearestNode(mouseX, mouseY);
+    //console.log(n.id);
 }
 
 function mouseDragged() {
@@ -73,10 +73,16 @@ function mouseDragged() {
 
 function mouseReleased() {
     showDrag = false;
-    let gs = new Astar(graph, Euclidean());
-    gs.search(startNode.id, endNode.id);
+    //let gs = new Astar(graph, Euclidean());
+    let gs = new Dijkstra(graph);
+    console.log(`Route from ${startNode.id}  to  ${endNode.id}`)
+    gs.search([startNode.id, endNode.id]);
+    //gs.search([243, 965, 197, 985]);
     route = gs.route;
     testedEdges = gs.testedEdges;
+    route.forEach(n => {
+        console.log(n.id)
+    });
     console.log(`Route length ${route.length}   Nbr edges tested ${testedEdges.length}`);
 }
 

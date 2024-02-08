@@ -56,7 +56,6 @@ class World {
             this._deaths.push(entity);
     }
 
-
     update(elapsedTime: number): void {
         // ======================================================================
         // Births and deaths

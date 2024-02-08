@@ -1,5 +1,5 @@
 let showDrag = false;
-let route, testedEdges;
+let route = [], testedEdges = [];
 let cellsize = 20, nodeRad = cellsize * 0.275;
 let rWt = cellsize * 0.2, eWt = cellsize * 0.025, eeWt = rWt * 0.85;
 let w, h, walls = [];
@@ -51,6 +51,11 @@ function keyTyped() {
     if (key === 'q') console.log(graph.getData().join('\n'));
 }
 
+function mouseMoved() {
+    // let n = graph.nearestNode(mouseX, mouseY);
+    // console.log(n.id);
+}
+
 function mousePressed() {
     startNode = graph.nearestNode(mouseX, mouseY);
     endNode = startNode;
@@ -63,13 +68,17 @@ function mouseDragged() {
 
 function mouseReleased() {
     showDrag = false;
-    let gs = new Astar(graph);
-    gs.search(startNode.id, endNode.id);
+    let gs = new Dijkstra(graph);
+    gs.search([startNode.id, endNode.id]);
     route = [...gs.route];
-    walker.setPos(new Vector2D(gs.route[0].x, gs.route[0].y));
-    gs.route.shift();
-    walker.pilot.pathOn(gs.route);
-    testedEdges = gs.testedEdges;
+    if (route.length > 0) {
+        edges = getRouteEdges(route);
+        gs.edges.forEach(e => console.log(e.toString()));
+        walker.setPos(new Vector2D(route[0].x, route[0].y));
+        gs.route.shift();
+        walker.pilot.pathOn(gs.route);
+        testedEdges = gs.testedEdges;
+    }
     console.log(`Route length ${route.length}   Nbr edges tested ${testedEdges.length}`);
 }
 
@@ -84,7 +93,6 @@ function drawRoute() {
         });
     }
 }
-
 
 function drawNodes() {
     stroke(0); strokeWeight(0.7); fill(nodeCol);

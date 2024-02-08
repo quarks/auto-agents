@@ -13,43 +13,41 @@ var _a, _Entity_NEXT_ID;
 class Entity {
     constructor(position, colRadius = 1) {
         var _b, _c, _d;
+        /** Position */
         this._pos = new Vector2D();
-        this._visible = true;
-        this._zorder = 0;
+        /** The colision radius */
         this._colRad = 0;
+        /** visibility */
+        this._visible = true;
+        /** The z-order display order property */
+        this._zorder = 0;
         this._id = (__classPrivateFieldSet(_b = Entity, _a, (_d = __classPrivateFieldGet(_b, _a, "f", _Entity_NEXT_ID), _c = _d++, _d), "f", _Entity_NEXT_ID), _c);
         this._pos = Vector2D.from(position);
         this._colRad = colRadius;
     }
-    /** Position coordinates */
-    get x() { return this._pos.x; }
-    get y() { return this._pos.y; }
-    /** Position */
+    get id() { return this._id; }
     get pos() { return this._pos; }
     set pos(v) { this._pos = v; }
     setPos(v) { this._pos = v; return this; }
-    /** The colision radius */
+    /** Position coordinates */
+    get x() { return this._pos.x; }
+    get y() { return this._pos.y; }
     get world() { return this._world; }
     set world(world) { this._world = world; }
-    setWorld(world) { this._world = world; return this; }
-    /** The colision radius */
     get colRad() { return this._colRad; }
     set colRad(value) { this._colRad = value; }
     setColRad(value) { this._colRad = value; return this; }
-    /** Get the id property */
-    get id() { return this._id; }
-    /** The tag property */
     get tag() { return this._tag; }
     set tag(value) { this._tag = value; }
     setTag(value) { this._tag = value; return this; }
-    /** The finite state machine */
     get fsm() { return this._fsm; }
     set fsm(value) { this._fsm = value; }
     setFsm(value) { this._fsm = value; return this; }
-    /** Set the renderer */
     set painter(painter) { this._painter = painter; }
     setPainter(painter) { this._painter = painter; return this; }
-    /** The z-order display order property */
+    show() { this._visible = true; }
+    hide() { this._visible = false; }
+    isVisible() { return this._visible; }
     get Z() { return this._zorder; }
     set Z(value) { this._zorder = value; }
     fitsInside(lowX, lowY, highX, highY) {
@@ -63,7 +61,8 @@ class Entity {
     changeState(newState) { this._fsm?.changeState(newState); }
     revertToPreviousState() { this._fsm?.revertToPreviousState(); }
     hasFSM() { return this._fsm ? true : false; }
-    render() { this._painter?.call(this); }
+    render() { if (this.isVisible)
+        this._painter?.call(this); }
     $$(len = 5) {
         console.log(this.$(len));
         return this.toString(len);

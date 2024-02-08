@@ -1,7 +1,7 @@
 class Graph {
 
-    _nodes = new Map<number, GraphNode>();
-    get nodes(): Array<GraphNode> { return [...this._nodes.values()] };
+    #nodes = new Map<number, GraphNode>();
+    get nodes(): Array<GraphNode> { return [...this.#nodes.values()] };
 
     get edges(): Array<GraphEdge> {
         let e = [];
@@ -9,25 +9,25 @@ class Graph {
         return e.flat();
     }
 
-    _floatingEdges = new Set<GraphEdge>();
+    #floatingEdges = new Set<GraphEdge>();
 
-    _name = '';
-    setName(n: string): Graph { this._name = n; return this; }
-    set name(n: string) { this._name = n; }
-    get name(): string { return this._name; }
+    #name = '';
+    setName(n: string): Graph { this.#name = n; return this; }
+    set name(n: string) { this.#name = n; }
+    get name(): string { return this.#name; }
 
     constructor(name = '') {
-        this._name = name;
+        this.#name = name;
     }
 
     /** Gets the node for a given id it it exists. */
     node(id: number) {
-        return this._nodes.get(id);
+        return this.#nodes.get(id);
     }
 
     /** Gets the node for a given id it it exists. */
     edge(from: number, to: number) {
-        return this._nodes.get(from)?.edge(to);
+        return this.#nodes.get(from)?.edge(to);
     }
 
     /**
@@ -50,8 +50,8 @@ class Graph {
      * @returns this graph
      */
     addNode(node: GraphNode): Graph {
-        console.assert(!this._nodes.has(node.id), `Duplicate node ID: ${node.id} - the original node has been overwritten`);
-        this._nodes.set(node.id, node);
+        console.assert(!this.#nodes.has(node.id), `Duplicate node ID: ${node.id} - the original node has been overwritten`);
+        this.#nodes.set(node.id, node);
         return this;
     }
 
@@ -63,8 +63,8 @@ class Graph {
     removeNode(id: number): Graph {
         let node = this.node(id);
         if (node) {
-            this._nodes.delete(node.id);
-            [...this._nodes.values()].forEach(n => n.removeEdge(node.id));
+            this.#nodes.delete(node.id);
+            [...this.#nodes.values()].forEach(n => n.removeEdge(node.id));
         }
         return this;
     }
@@ -94,13 +94,13 @@ class Graph {
      * @returns this graph
      */
     addEdge(edge: GraphEdge): Graph {
-        if (this._nodes.has(edge.from) && this._nodes.has(edge.to)) {
+        if (this.#nodes.has(edge.from) && this.#nodes.has(edge.to)) {
             if (edge.cost == 0)
                 edge.cost = Graph.dist(this.node(edge.from), this.node(edge.to));
             this.node(edge.from).addEdge(edge);
         }
         else
-            this._floatingEdges.add(edge);
+            this.#floatingEdges.add(edge);
         return this;
     }
 
@@ -122,7 +122,7 @@ class Graph {
         let pos = Float64Array.of(x, y, z);
         let nearestDist = Number.MAX_VALUE;
         let nearestNode: GraphNode;
-        this._nodes.forEach(n => {
+        this.#nodes.forEach(n => {
             let dist = Graph.distSq(n.pos, pos);
             if (dist < nearestDist) {
                 nearestDist = dist;
@@ -139,7 +139,7 @@ class Graph {
      */
     compact(): Graph {
         let nfe = 0, feadded = 0;
-        for (let fe of this._floatingEdges.values()) {
+        for (let fe of this.#floatingEdges.values()) {
             nfe++;
             let fromNode = this.node(fe.from), toNode = this.node(fe.to);
             if (fromNode && toNode) {
@@ -151,7 +151,7 @@ class Graph {
             console.log(`Compact:  ${feadded} of ${nfe} floating edges have been added to graph.`);
             if (feadded < nfe) {
                 console.log(`          ${nfe - feadded} orphan edge(s) have been deleted.`);
-                this._floatingEdges.clear();
+                this.#floatingEdges.clear();
             }
         }
         return this;
@@ -187,15 +187,22 @@ class Graph {
         let a = [];
         a.push(`GRAPH: "${this.name}"`);
         a.push('Nodes:');
-        for (let node of this._nodes.values()) {
+        for (let node of this.#nodes.values()) {
             a.push(`  ${node.toString()}`);
-            for (let edge of node._edges.values())
+            for (let edge of node.edges.values())
                 a.push(`        ${edge.toString()}`);
         }
         a.push('Floating Edges:');
-        for (let edge of this._floatingEdges.values())
+        for (let edge of this.#floatingEdges.values())
             a.push(`  ${edge.toString()}`);
         return a;
     }
 }
 
+function getRouteEdges(nodes: Array<GraphNode>): Array<GraphEdge> {
+    let edges = [];
+    for (let i = 0; i < nodes.length - 1; i++) {
+        edges.push(nodes[i].edge(nodes[i + 1].id));
+    }
+    return edges;
+}

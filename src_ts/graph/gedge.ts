@@ -6,32 +6,32 @@
  */
 class GraphEdge {
 
-    _from: number;
-    setFrom(v: number): GraphEdge { this._from = v; return this; }
-    set from(v: number) { this._from = v; }
-    get from(): number { return this._from }
+    #from: number;
+    setFrom(v: number): GraphEdge { this.#from = v; return this; }
+    set from(v: number) { this.#from = v; }
+    get from(): number { return this.#from }
 
-    _to: number;
-    setTo(v: number): GraphEdge { this._to = v; return this; }
-    set to(v: number) { this._to = v; }
-    get to(): number { return this._to; }
+    #to: number;
+    setTo(v: number): GraphEdge { this.#to = v; return this; }
+    set to(v: number) { this.#to = v; }
+    get to(): number { return this.#to; }
 
-    _name = '';
-    setName(n: string): GraphEdge { this._name = n; return this; }
-    set name(n: string) { this._name = n; }
-    get name(): string { return this._name; }
+    #name = '';
+    setName(n: string): GraphEdge { this.#name = n; return this; }
+    set name(n: string) { this.#name = n; }
+    get name(): string { return this.#name; }
 
-    _cost: number = 0;
-    setCost(n: number): GraphEdge { this._cost = n; return this; }
-    set cost(n: number) { this._cost = n; }
-    get cost(): number { return this._cost; }
+    #cost: number = 0;
+    setCost(n: number): GraphEdge { this.#cost = n; return this; }
+    set cost(n: number) { this.#cost = n; }
+    get cost(): number { return this.#cost; }
 
     /** If no cost provided cost = distance between nodes   */
     constructor(from: number, to: number, cost: number = 0, name = '') {
-        this._from = from;
-        this._to = to;
-        this._cost = cost;
-        this._name = name;
+        this.#from = from;
+        this.#to = to;
+        this.#cost = cost;
+        this.#name = name;
     }
 
     toString() {

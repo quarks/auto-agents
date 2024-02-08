@@ -1,25 +1,55 @@
 class Dijkstra {
-    _graph: Graph;
+    #graph: Graph;
 
-    _route: Array<GraphNode>;
-    get route(): Array<GraphNode> { return this._route; }
+    #route: Array<GraphNode>;
+    get route(): Array<GraphNode> { return this.#route; }
 
-    _testedEdges: Set<GraphEdge>;
-    get testedEdges(): Array<GraphEdge> { return [...this._testedEdges.values()]; }
+    #edges: Array<GraphEdge>;
+    get edges(): Array<GraphEdge> { return this.#edges };
+
+    #testedEdges: Set<GraphEdge>;
+    get testedEdges(): Array<GraphEdge> { return [...this.#testedEdges.values()]; }
 
     constructor(graph: Graph) {
-        this._graph = graph;
-        this._route = [];
-        this._testedEdges = new Set();
+        this.#graph = graph;
+        this.#route = [];
+        this.#testedEdges = new Set();
     }
 
-    search(startID: number, targetID: number): Dijkstra {
-        this._graph.nodes.forEach(n => n.resetSearchCosts());
-        this._route = [], this._testedEdges.clear();
-        let start = this._graph.node(startID), target = this._graph.node(targetID);
+    search(nodeIDs: Array<number>): Dijkstra {
+        function allNodesExist(graph: Graph, ids: Array<number>): boolean {
+            for (let id of ids) if (!graph.node(id)) return false;
+            return true;
+        }
+        if (!Array.isArray(nodeIDs) || nodeIDs.length <= 1) {
+            console.error(`Search error:  invalid array`);
+            return this;
+        }
+        else if (!allNodesExist(this.#graph, nodeIDs)) {
+            console.error(`Search error:  non-existant nodes in route list`);
+            return this;
+        }
+        this.#testedEdges.clear();
+        this.#route = this.#search(nodeIDs[0], nodeIDs[1]);
+        for (let i = 2; i < nodeIDs.length; i++) {
+            let pr = this.#search(nodeIDs[i - 1], nodeIDs[i]);
+            pr.shift();
+            this.#route.push(...pr);
+        }
+        this.#edges = [];
+        for (let i = 0; i < this.#route.length - 1; i++)
+            this.#edges.push(this.#route[i].edge(this.#route[i + 1].id));
+        return this;
+    }
+
+    #search(startID: number, targetID: number): Array<GraphNode> {
+        this.#graph.nodes.forEach(n => n.resetSearchCosts());
+        let partroute = [];
+        this.#testedEdges.clear();
+        let start = this.#graph.node(startID), target = this.#graph.node(targetID);
         if (!start || !target) {
             console.error(`Nodes ${startID} and/or ${targetID} do not exist in this graph.`);
-            return this;
+            return partroute;
         }
         let unsettledNodes: Array<GraphNode> = []; // Use as priority queue
         let settledNodes: Set<GraphNode> = new Set();
@@ -30,17 +60,17 @@ class Dijkstra {
         while (unsettledNodes.length > 0) {
             next = unsettledNodes.shift();
             if (next == target) {
-                this._route.push(target);
+                partroute.push(target);
                 while (next !== start) {
                     next = parent.get(next);
-                    this._route.push(next);
+                    partroute.push(next);
                 }
-                this._route.reverse();
-                return this;
+                partroute.reverse();
+                return partroute;
             }
             settledNodes.add(next);
             next.edges.forEach(e => {
-                edgeTo = this._graph.node(e.to);
+                edgeTo = this.#graph.node(e.to);
                 let newCost = next.graphCost + e.cost;
                 let edgeToCost = edgeTo.graphCost;
                 if (!settledNodes.has(edgeTo) && (edgeToCost == 0 || edgeTo.graphCost > newCost)) {
@@ -48,10 +78,10 @@ class Dijkstra {
                     parent.set(edgeTo, next);
                     unsettledNodes.push(edgeTo); // Maintain priority queue
                     unsettledNodes.sort((a, b) => a.graphCost - b.graphCost);
-                    this._testedEdges.add(e);
+                    this.#testedEdges.add(e);
                 }
             });
         }
-        return this;
+        return partroute;
     }
 }

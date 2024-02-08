@@ -433,16 +433,28 @@ class AutoPilot {
      * ======================================================================
      */
     wander(owner: Vehicle, elapsedTime: number) {
-        function rnd(n: number) { return (Math.random() - Math.random()) * n; }
-        let delta = this.__wanderJitter;
-        // Add small displacement to wander target
-        this._wanderTarget = this._wanderTarget.add(rnd(delta), rnd(delta));
-        // Project target on to wander circle
-        this._wanderTarget = this._wanderTarget.resize(this.__wanderRadius);
-        // Get local target position
-        let targetLocal = this._wanderTarget.add(this.__wanderDist, 0);
-        // Calculate the world position based on owner
-        let targetWorld = Transform.pointToWorldSpace(targetLocal, owner.heading.normalize(), owner.side.normalize(), owner.pos);
+        function rnd() { return (Math.random() - Math.random()); }
+        // this behaviour is dependent on the update rate, so this line must
+        // be included when using time independent frame rate.
+        this._wanderAngleDelta = this.__wanderJitter * elapsedTime;
+        this._wanderAngle += this._wanderAngleDelta * rnd();
+        // Not really essential considering the range of the type double.
+        if (this._wanderAngle < WANDER_MIN_ANGLE)
+            this._wanderAngle += WANDER_ANGLE_RANGE;
+        else if (this._wanderAngle > WANDER_MAX_ANGLE)
+            this._wanderAngle -= WANDER_ANGLE_RANGE;
+        // Calculate position on wander circle
+        this._wanderTarget = new Vector2D(this.__wanderRadius * Math.cos(this._wanderAngle),
+            this.__wanderRadius * Math.sin(this._wanderAngle));
+        // Add wander distance
+        this._wanderTarget = this._wanderTarget.add(this.__wanderDist, 0);
+
+        // project the target into world space
+        let targetWorld = Transform.pointToWorldSpace(this._wanderTarget,
+            owner.heading.normalize(),
+            owner.side.normalize(),
+            owner.pos);
+        // and steer towards it
         return targetWorld.sub(owner.pos);
     }
 
@@ -476,12 +488,18 @@ class AutoPilot {
     get wanderDist() { return this.__wanderDist; }
 
     // Maximum jitter per update
-    __wanderJitter = 4;
+    __wanderJitter = 40;
     setWanderJitter(n: number): AutoPilot { this.__wanderJitter = n; return this; }
     set wanderJitter(n: number) { this.__wanderJitter = n; }
     get wanderJitter() { return this.__wanderJitter; }
 
-    // The target lies on the circumference of the wander circle
+    // The following fields have public getters for drawing hints
+    _wanderAngle = 0;
+    get wanderAngle(): number { return this._wanderAngle; }
+
+    _wanderAngleDelta = 0;
+    get wanderAngleDelta(): number { return this._wanderAngleDelta; }
+
     _wanderTarget: Vector2D = new Vector2D();
     get wanderTarget(): Vector2D { return this._wanderTarget; }
 

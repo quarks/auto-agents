@@ -14,50 +14,49 @@
  *
  */
 class GraphNode {
+    #edges = new Map<number, GraphEdge>();
+    get edges(): Array<GraphEdge> { return [...this.#edges.values()]; }
 
-    _edges = new Map<number, GraphEdge>();
-    get edges(): Array<GraphEdge> { return [...this._edges.values()]; }
-
-    _id: number;
-    get id(): number { return this._id; }
+    #id: number;
+    get id(): number { return this.#id; }
 
     _name = '';
     setName(n: string): GraphNode { this._name = n; return this; }
     set name(n: string) { this._name = n; }
     get name(): string { return this._name; }
 
-    _p = new Float64Array(3);
-    get pos(): Float64Array { return this._p; }
+    #p = new Float64Array(3);
+    get pos(): Float64Array { return this.#p; }
 
-    setX(n: number): GraphNode { this._p[0] = n; return this; }
-    set x(n: number) { this._p[0] = n; }
-    get x(): number { return this._p[0]; }
+    setX(n: number): GraphNode { this.#p[0] = n; return this; }
+    set x(n: number) { this.#p[0] = n; }
+    get x(): number { return this.#p[0]; }
 
-    setY(n: number): GraphNode { this._p[1] = n; return this; }
-    set y(n: number) { this._p[1] = n; }
-    get y(): number { return this._p[1]; }
+    setY(n: number): GraphNode { this.#p[1] = n; return this; }
+    set y(n: number) { this.#p[1] = n; }
+    get y(): number { return this.#p[1]; }
 
-    setZ(n: number): GraphNode { this._p[2] = n; return this; }
-    set z(n: number) { this._p[2] = n; }
-    get z(): number { return this._p[2]; }
+    setZ(n: number): GraphNode { this.#p[2] = n; return this; }
+    set z(n: number) { this.#p[2] = n; }
+    get z(): number { return this.#p[2]; }
 
     // Used in the Dijkstra and A* search algorithms
-    _graphCost: number = 0;
-    set graphCost(n: number) { this._graphCost = n; }
-    get graphCost(): number { return this._graphCost; }
+    #graphCost: number = 0;
+    set graphCost(n: number) { this.#graphCost = n; }
+    get graphCost(): number { return this.#graphCost; }
 
-    _fullCost: number = 0;
-    set fullCost(n: number) { this._fullCost = n; }
-    get fullCost(): number { return this._fullCost; }
+    #fullCost: number = 0;
+    set fullCost(n: number) { this.#fullCost = n; }
+    get fullCost(): number { return this.#fullCost; }
 
 
     /** Create a node with a unique ID and an optional position */
     constructor(id: number, position: Array<number> = [0, 0, 0], name = '') {
-        this._id = id;
+        this.#id = id;
         let len = position.length;
-        this._p[0] = len > 0 ? position[0] : 0;
-        this._p[1] = len > 1 ? position[1] : 0;
-        this._p[2] = len > 2 ? position[2] : 0;
+        this.#p[0] = len > 0 ? position[0] : 0;
+        this.#p[1] = len > 1 ? position[1] : 0;
+        this.#p[2] = len > 2 ? position[2] : 0;
         this._name = name;
     }
 
@@ -67,8 +66,8 @@ class GraphNode {
      * @param edge the edge to add
      */
     addEdge(edge: GraphEdge) {
-        console.assert(!this._edges.has(edge.to), `Duplicate edge from: ${this.id} to ${edge.to} - the original edge has been overwritten`);
-        this._edges.set(edge.to, edge);
+        console.assert(!this.#edges.has(edge.to), `Duplicate edge from: ${this.id} to ${edge.to} - the original edge has been overwritten`);
+        this.#edges.set(edge.to, edge);
     }
 
     /**
@@ -76,11 +75,11 @@ class GraphNode {
      * @param id the destination node ID
      */
     removeEdge(id: number) {
-        this._edges.delete(id);
+        this.#edges.delete(id);
     }
 
     edge(to: number): GraphEdge {
-        return this._edges.get(to);
+        return this.#edges.get(to);
     }
 
     resetSearchCosts() {

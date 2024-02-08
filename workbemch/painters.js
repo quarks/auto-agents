@@ -222,11 +222,31 @@ function showVelocity(p = p5.instance) {
 }
 
 function showWanderCircle(p = p5.instance) {
-    let wd = this.pilot.wanderDist, wr2 = 2 * this.pilot.wanderRadius;
+    let pt = this.pilot;
+    let wd = pt.wanderDist, wr2 = 2 * pt.wanderRadius;
+    let wa = pt.wanderAngle;
     p.push();
     p.rotate(this.headingAngle);
+    p.translate(wd, 0);
     p.strokeWeight(2); p.stroke(0, 32); p.fill(0, 10);
-    p.ellipse(wd, 0, wr2, wr2);
+    p.ellipse(0, 0, wr2, wr2);
+    p.rotate(wa);
+    p.stroke(255, 0, 0, 48); p.fill(255, 0, 0, 24);
+    p.arc(0, 0, wr2, wr2, -this.pilot.wanderAngleDelta, this.pilot.wanderAngleDelta, p.PIE);
+    p.pop();
+}
+
+function showWanderForce(p = p5.instance) {
+    let pt = this.pilot;
+    let wt = pt.wanderTarget;
+    let wta = Math.atan2(wt.y, wt.x);
+    p.push();
+    p.rotate(this.headingAngle);
+    p.noFill(); p.strokeWeight(2); p.stroke(200, 0, 0);
+    p.line(0, 0, wt.x, wt.y);
+    p.translate(wt.x, wt.y); p.rotate(wta);
+    p.noStroke(); p.fill(200, 0, 0); p.noStroke();
+    p.triangle(-14, -5, -14, 5, 0, 0);
     p.pop();
 }
 
@@ -238,19 +258,6 @@ function showFleeCircle(p = p5.instance) {
     p.pop();
 }
 
-function showWanderForce(p = p5.instance) {
-    let pt = this.pilot;
-    let wd = pt.wanderDist, wt = pt.wanderTarget;
-    let wta = Math.atan2(wt.y, wd + wt.x);
-    p.push();
-    p.rotate(this.headingAngle);
-    p.noFill(); p.strokeWeight(2); p.stroke(200, 0, 0);
-    p.line(0, 0, wd + wt.x, wt.y);
-    p.translate(wd + wt.x, wt.y); p.rotate(wta);
-    p.noStroke(); p.fill(200, 0, 0); p.noStroke();
-    p.triangle(-14, -5, -14, 5, 0, 0);
-    p.pop();
-}
 
 function colorizeEntities(tree, painters) {
     function colourize(part) {
