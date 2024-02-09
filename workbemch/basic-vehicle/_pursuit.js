@@ -9,7 +9,7 @@ let demo = function (p) {
         let p5canvas = p.createCanvas(640, 400, p);
         p5canvas.parent('sketch');
         world = new World(400, 400, 1);
-        world._domain.constraint = WRAP;
+        world.domain.constraint = WRAP;
         p.makeAgents();
         trail = new Trail(600, p.color(0, 180, 0), 0.95);
     }
@@ -19,14 +19,12 @@ let demo = function (p) {
         trail.add(predator.pos);
         p.background(220, 160, 220);
         p.noStroke(); p.fill(200, 255, 200);
-        let d = world._domain;
+        let d = world.domain;
         p.rect(d.lowX, d.lowY, d.width, d.height);
         world.render();
         if (showTrail) trail.render();
         p.stroke(128, 0, 128); p.strokeWeight(4); p.fill(255, 220);
         p.rect(410, 10, 220, 380, 10);
-
-
         gui?.draw();
 
         if (sampleForces && p.frameCount >= sampleEnd) {
@@ -34,7 +32,6 @@ let demo = function (p) {
             console.log(`Sampling stopped on frame ${p.frameCount}  @ ${p.millis()}`);
             console.log(predator.recorder.toString());
         }
-
     }
 
     p.keyTyped = function () {
@@ -55,7 +52,6 @@ let demo = function (p) {
         prey.vel = Vector2D.fromRandom(10, 20);
         prey.painter = vcePerson(p.color(200, 200, 255), p.color(20, 20, 160), p);
         prey.maxSpeed = 50;
-        prey.addAutoPilot(world);
         prey.pilot.wanderOn();
         prey.pilot.wanderDist = 70;
         prey.pilot.wanderRadius = 20;
@@ -66,7 +62,6 @@ let demo = function (p) {
         predator.vel = new Vector2D(20, 30);
         predator.painter = vcePerson(p.color(255, 200, 255), p.color(160, 20, 160), p);
         predator.maxSpeed = 55;
-        predator.addAutoPilot(world);
         predator.pilot.pursuitOn(prey);
         predator.forceRecorderOn();
         world.birth(predator);

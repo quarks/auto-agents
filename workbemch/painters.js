@@ -7,7 +7,7 @@ let showColCircle = true;
 function entBasic(colF, colS, p = p5.instance) {
     return (function () {
         p.push();
-        p.translate(this._pos.x, this._pos.y);
+        p.translate(this.pos.x, this.pos.y);
         let size = 2 * this.colRad;
         p.fill(colF); p.stroke(colS); p.strokeWeight(1.1);
         p.ellipse(0, 0, size, size);
@@ -19,7 +19,7 @@ function entPerson(colF, colS, p = p5.instance) {
     let body = [0.15, -0.5, 0.15, 0.5, -0.18, 0.3, -0.18, -0.3];
     return (function () {
         p.push();
-        p.translate(this._pos.x, this._pos.y);
+        p.translate(this.pos.x, this.pos.y);
         let size = 2 * this.colRad;
         p.fill(colF); p.stroke(colS); p.strokeWeight(1.1);
         p.beginShape();
@@ -41,7 +41,7 @@ function entObsAnim(p = p5.instance) {
         let size = 2 * this.colRad;
         a += 0.01;
         p.push();
-        p.translate(this._pos.x, this._pos.y); p.rotate(a);
+        p.translate(this.pos.x, this.pos.y); p.rotate(a);
         p.noStroke();
         for (let i = 0; i < 8; i++) {
             p.fill(col[i % 4]);
@@ -58,18 +58,18 @@ function entWall(col, weight, p = p5.instance) {
     return (function () {
         p.push();
         p.stroke(col); p.strokeWeight(weight);
-        p.line(this._pos.x, this._pos.y, this._end.x, this._end.y);
+        p.line(this.pos.x, this.pos.y, this.end.x, this.end.y);
         p.stroke(120); p.strokeWeight(weight / 4);
         if (this.repelSide == OUTSIDE || this.repelSide == BOTH_SIDES) {
             p.push();
             p.translate(this.norm.x * 3, this.norm.y * 3);
-            p.line(this._pos.x, this._pos.y, this._end.x, this._end.y);
+            p.line(this.pos.x, this.pos.y, this.end.x, this.end.y);
             p.pop();
         }
         if (this.repelSide == INSIDE || this.repelSide == BOTH_SIDES) {
             p.push();
             p.translate(this.norm.x * -3, this.norm.y * -3);
-            p.line(this._pos.x, this._pos.y, this._end.x, this._end.y);
+            p.line(this.pos.x, this.pos.y, this.end.x, this.end.y);
             p.pop();
         }
         p.pop();
@@ -124,7 +124,7 @@ function mvrPerson(colF, colS, p = p5.instance) {
     let body = [0.15, -0.5, 0.15, 0.5, -0.18, 0.3, -0.18, -0.3];
     return (function () {
         p.push();
-        p.translate(this._pos.x, this._pos.y);
+        p.translate(this.pos.x, this.pos.y);
         p.rotate(this.headingAngle)
         let size = 2 * this.colRad;
         if (showColCircle) {
@@ -146,7 +146,7 @@ function mvrArrow(colF, colS, p = p5.instance) {
     let body = [-0.7, -0.45, -0.7, 0.45, 0.85, 0];
     return (function () {
         p.push();
-        p.translate(this._pos.x, this._pos.y);
+        p.translate(this.pos.x, this.pos.y);
         p.rotate(this.headingAngle)
         let size = this.colRad;
         if (showColCircle) {

@@ -1,35 +1,32 @@
 class Vehicle extends Mover {
 
-    _autopilot: AutoPilot;
-    get pilot() { return this._autopilot; }
-    addAutoPilot(world: World) {
-        this._autopilot = new AutoPilot(this, world);
-    }
+    #autopilot: AutoPilot;
+    get pilot() { return this.#autopilot; }
 
-    _forceRecorder: ForceRecorder;
-    get recorder() { return this._forceRecorder; }
+    #forceRecorder: ForceRecorder;
+    get recorder() { return this.#forceRecorder; }
 
-    _force = new Vector2D();
-    setForce(force: Vector2D): Vehicle { this._force.set(force); return this; }
-    set force(force: Vector2D) { this._force.set(force); }
-    get force() { return this._force; }
+    #force = new Vector2D();
+    setForce(force: Vector2D): Vehicle { this.#force.set(force); return this; }
+    set force(force: Vector2D) { this.#force.set(force); }
+    get force() { return this.#force; }
 
-    _accel = new Vector2D();
-    setAccel(accel: Vector2D): Vehicle { this._accel.set(accel); return this; }
-    set accel(accel: Vector2D) { this._accel.set(accel); }
-    get accel() { return this._accel; }
+    #accel = new Vector2D();
+    setAccel(accel: Vector2D): Vehicle { this.#accel.set(accel); return this; }
+    set accel(accel: Vector2D) { this.#accel.set(accel); }
+    get accel() { return this.#accel; }
 
-    constructor(position: Vector2D, radius: number, world?: World) {
+    constructor(position: Vector2D, radius: number) {
         super(position, radius);
-        if (world) this._autopilot = new AutoPilot(this, world);
+        this.#autopilot = new AutoPilot(this);
     }
 
     fits_inside(lowX: number, lowY: number, highX: number, highY: number): boolean {
         let fits: boolean =
-            (this._pos.x - this._colRad >= lowX)
-            && (this._pos.x + this._colRad <= highX)
-            && (this._pos.y - this._colRad >= lowY)
-            && (this._pos.y + this._colRad <= highY);
+            (this.pos.x - this._colRad >= lowX)
+            && (this.pos.x + this._colRad <= highX)
+            && (this.pos.y - this._colRad >= lowY)
+            && (this.pos.y + this._colRad <= highY);
         return fits;
     }
 
@@ -47,13 +44,13 @@ class Vehicle extends Mover {
      */
     forceRecorderOn(): Vehicle {
         if (this.pilot)
-            this._forceRecorder = new ForceRecorder(this, this.pilot._weight);
+            this.#forceRecorder = new ForceRecorder(this, this.pilot._weight);
         return this;
     }
 
     forceRecorderOff(): Vehicle {
         console.log(this.recorder.toString())
-        this._forceRecorder = undefined;
+        this.#forceRecorder = undefined;
         return this;
     }
     /** Display the steering force data for this Vehicle.   */
@@ -73,32 +70,32 @@ class Vehicle extends Mover {
      */
     update(elapsedTime: number, world: World): void {
         // Remember the starting position
-        this._prevPos.set(this._pos);
+        this.prevPos.set(this.pos);
         // Init accumulator variables
-        this._force.set([0, 0]); this._accel.set([0, 0]);
-        if (this._autopilot) {
-            this._force.set(this._autopilot.calculateForce(elapsedTime, world));
-            this._force = this._force.truncate(this._maxForce);
-            this._accel = this._force.mult(elapsedTime / this._mass);
-            this.vel = this.vel.add(this._accel);
+        this.#force.set([0, 0]); this.#accel.set([0, 0]);
+        if (this.#autopilot) {
+            this.#force.set(this.#autopilot.calculateForce(elapsedTime, world));
+            this.#force = this.#force.truncate(this.maxForce);
+            this.#accel = this.#force.mult(elapsedTime / this.mass);
+            this.vel = this.vel.add(this.#accel);
         }
         // Make sure we don't exceed maximum speed
-        this._vel = this._vel.truncate(this._maxSpeed);
+        this.vel = this.vel.truncate(this.maxSpeed);
         // Change position according to velocity and elapsed time
-        this._pos = this._pos.add(this._vel.mult(elapsedTime));
+        this.pos = this.pos.add(this.vel.mult(elapsedTime));
         // Apply domain constraints
-        this.applyDomainConstraint(this._domain ? this._domain : world._domain);
+        this.applyDomainConstraint(this.domain ? this.domain : world.domain);
         // Update heading
-        if (this._vel.lengthSq() > 0.02)
-            this.rotateHeadingToAlignWith(elapsedTime, this._vel);
+        if (this.vel.lengthSq() > 0.02)
+            this.rotateHeadingToAlignWith(elapsedTime, this.vel);
         else {
-            this._vel.set([0, 0]);
-            if (this._headingAtRest)
-                this.rotateHeadingToAlignWith(elapsedTime, this._headingAtRest);
+            this.vel.set([0, 0]);
+            if (this.headingAtRest)
+                this.rotateHeadingToAlignWith(elapsedTime, this.headingAtRest);
         }
         // Ensure heading and side are normalised
-        this._heading = this._heading.normalize();
-        this._side.set([-this._heading.y, this._heading.x]);
+        this.heading = this.heading.normalize();
+        this.side.set([-this.heading.y, this.heading.x]);
     }
 
 }

@@ -1,13 +1,13 @@
 class Wall extends Entity {
 
-    _end: Vector2D;
-    get end() { return this._end };
-    get start() { return this._pos };
+    #end: Vector2D;
+    get end() { return this.#end };
+    get start() { return this.pos };
 
-    _norm: Vector2D;
-    get norm() { return this._norm };
+    #norm: Vector2D;
+    get norm() { return this.#norm };
 
-    __repelSide: symbol;
+    #repelSide: symbol;
 
     setRepelSide(s: symbol) { this.repelSide = s; return this; }
     set repelSide(s: symbol) {
@@ -15,19 +15,19 @@ class Wall extends Entity {
             case OUTSIDE:
             case INSIDE:
             case BOTH_SIDES:
-                this.__repelSide = s;
+                this.#repelSide = s;
                 break;
             default:
-                this.__repelSide == NO_SIDE;
+                this.#repelSide == NO_SIDE;
         }
     }
-    get repelSide() { return this.__repelSide; }
+    get repelSide() { return this.#repelSide; }
 
     constructor(start: _XY_, end: _XY_, repelSide = OUTSIDE) {
         super(start, 1);
-        this._end = Vector2D.from(end);
-        this._norm = new Vector2D(-(end.y - start.y), end.x - start.x);
-        this._norm = this._norm.normalize();
+        this.#end = Vector2D.from(end);
+        this.#norm = new Vector2D(-(end.y - start.y), end.x - start.x);
+        this.#norm = this.#norm.normalize();
         this.repelSide = repelSide;
     }
 

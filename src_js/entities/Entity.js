@@ -9,60 +9,70 @@ var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
     return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
 };
-var _a, _Entity_NEXT_ID;
+var _a, _Entity_NEXT_ID, _Entity_id, _Entity_pos, _Entity_world, _Entity_tag, _Entity_fsm, _Entity_painter, _Entity_visible, _Entity_zorder;
 class Entity {
     constructor(position, colRadius = 1) {
         var _b, _c, _d;
+        /** Every entity should be given a unique ID number */
+        _Entity_id.set(this, void 0);
         /** Position */
-        this._pos = new Vector2D();
+        _Entity_pos.set(this, new Vector2D());
+        /** The colision radius */
+        _Entity_world.set(this, void 0);
         /** The colision radius */
         this._colRad = 0;
+        /** The tag property */
+        _Entity_tag.set(this, void 0);
+        /** The finite state machine */
+        _Entity_fsm.set(this, void 0);
+        /** Set the renderer */
+        _Entity_painter.set(this, void 0);
         /** visibility */
-        this._visible = true;
+        _Entity_visible.set(this, true);
         /** The z-order display order property */
-        this._zorder = 0;
-        this._id = (__classPrivateFieldSet(_b = Entity, _a, (_d = __classPrivateFieldGet(_b, _a, "f", _Entity_NEXT_ID), _c = _d++, _d), "f", _Entity_NEXT_ID), _c);
-        this._pos = Vector2D.from(position);
+        _Entity_zorder.set(this, 0);
+        __classPrivateFieldSet(this, _Entity_id, (__classPrivateFieldSet(_b = Entity, _a, (_d = __classPrivateFieldGet(_b, _a, "f", _Entity_NEXT_ID), _c = _d++, _d), "f", _Entity_NEXT_ID), _c), "f");
+        __classPrivateFieldSet(this, _Entity_pos, Vector2D.from(position), "f");
         this._colRad = colRadius;
     }
-    get id() { return this._id; }
-    get pos() { return this._pos; }
-    set pos(v) { this._pos = v; }
-    setPos(v) { this._pos = v; return this; }
+    get id() { return __classPrivateFieldGet(this, _Entity_id, "f"); }
+    get pos() { return __classPrivateFieldGet(this, _Entity_pos, "f"); }
+    set pos(v) { __classPrivateFieldSet(this, _Entity_pos, v, "f"); }
+    setPos(v) { __classPrivateFieldSet(this, _Entity_pos, v, "f"); return this; }
     /** Position coordinates */
-    get x() { return this._pos.x; }
-    get y() { return this._pos.y; }
-    get world() { return this._world; }
-    set world(world) { this._world = world; }
+    get x() { return __classPrivateFieldGet(this, _Entity_pos, "f").x; }
+    get y() { return __classPrivateFieldGet(this, _Entity_pos, "f").y; }
+    get world() { return __classPrivateFieldGet(this, _Entity_world, "f"); }
+    set world(world) { __classPrivateFieldSet(this, _Entity_world, world, "f"); }
     get colRad() { return this._colRad; }
     set colRad(value) { this._colRad = value; }
     setColRad(value) { this._colRad = value; return this; }
-    get tag() { return this._tag; }
-    set tag(value) { this._tag = value; }
-    setTag(value) { this._tag = value; return this; }
-    get fsm() { return this._fsm; }
-    set fsm(value) { this._fsm = value; }
-    setFsm(value) { this._fsm = value; return this; }
-    set painter(painter) { this._painter = painter; }
-    setPainter(painter) { this._painter = painter; return this; }
-    show() { this._visible = true; }
-    hide() { this._visible = false; }
-    isVisible() { return this._visible; }
-    get Z() { return this._zorder; }
-    set Z(value) { this._zorder = value; }
+    get tag() { return __classPrivateFieldGet(this, _Entity_tag, "f"); }
+    set tag(value) { __classPrivateFieldSet(this, _Entity_tag, value, "f"); }
+    setTag(value) { __classPrivateFieldSet(this, _Entity_tag, value, "f"); return this; }
+    get fsm() { return __classPrivateFieldGet(this, _Entity_fsm, "f"); }
+    set fsm(value) { __classPrivateFieldSet(this, _Entity_fsm, value, "f"); }
+    setFsm(value) { __classPrivateFieldSet(this, _Entity_fsm, value, "f"); return this; }
+    set painter(painter) { __classPrivateFieldSet(this, _Entity_painter, painter, "f"); }
+    setPainter(painter) { __classPrivateFieldSet(this, _Entity_painter, painter, "f"); return this; }
+    show() { __classPrivateFieldSet(this, _Entity_visible, true, "f"); }
+    hide() { __classPrivateFieldSet(this, _Entity_visible, false, "f"); }
+    isVisible() { return __classPrivateFieldGet(this, _Entity_visible, "f"); }
+    get Z() { return __classPrivateFieldGet(this, _Entity_zorder, "f"); }
+    set Z(value) { __classPrivateFieldSet(this, _Entity_zorder, value, "f"); }
     fitsInside(lowX, lowY, highX, highY) {
-        let p = this._pos, cr = this._colRad;
+        let p = __classPrivateFieldGet(this, _Entity_pos, "f"), cr = this._colRad;
         return p.x - cr >= lowX && p.x + cr <= highX && p.y - cr >= lowY && p.y + cr <= highY;
     }
     isEitherSide(p0, p1) {
         return Geom2D.line_circle(p0.x, p0.y, p1.x, p1.y, this.pos.x, this.pos.y, this.colRad);
     }
     update(elapsedTime, world) { }
-    changeState(newState) { this._fsm?.changeState(newState); }
-    revertToPreviousState() { this._fsm?.revertToPreviousState(); }
-    hasFSM() { return this._fsm ? true : false; }
+    changeState(newState) { __classPrivateFieldGet(this, _Entity_fsm, "f")?.changeState(newState); }
+    revertToPreviousState() { __classPrivateFieldGet(this, _Entity_fsm, "f")?.revertToPreviousState(); }
+    hasFSM() { return __classPrivateFieldGet(this, _Entity_fsm, "f") ? true : false; }
     render() { if (this.isVisible)
-        this._painter?.call(this); }
+        __classPrivateFieldGet(this, _Entity_painter, "f")?.call(this); }
     $$(len = 5) {
         console.log(this.$(len));
         return this.toString(len);
@@ -82,6 +92,6 @@ class Entity {
         return s;
     }
 }
-_a = Entity;
+_a = Entity, _Entity_id = new WeakMap(), _Entity_pos = new WeakMap(), _Entity_world = new WeakMap(), _Entity_tag = new WeakMap(), _Entity_fsm = new WeakMap(), _Entity_painter = new WeakMap(), _Entity_visible = new WeakMap(), _Entity_zorder = new WeakMap();
 _Entity_NEXT_ID = { value: 0 };
 //# sourceMappingURL=entity.js.map

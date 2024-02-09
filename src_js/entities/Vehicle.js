@@ -1,27 +1,37 @@
+var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
+    if (kind === "m") throw new TypeError("Private method is not writable");
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
+    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
+};
+var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
+};
+var _Vehicle_autopilot, _Vehicle_forceRecorder, _Vehicle_force, _Vehicle_accel;
 class Vehicle extends Mover {
-    constructor(position, radius, world) {
+    constructor(position, radius) {
         super(position, radius);
-        this._force = new Vector2D();
-        this._accel = new Vector2D();
-        if (world)
-            this._autopilot = new AutoPilot(this, world);
+        _Vehicle_autopilot.set(this, void 0);
+        _Vehicle_forceRecorder.set(this, void 0);
+        _Vehicle_force.set(this, new Vector2D());
+        _Vehicle_accel.set(this, new Vector2D());
+        __classPrivateFieldSet(this, _Vehicle_autopilot, new AutoPilot(this), "f");
     }
-    get pilot() { return this._autopilot; }
-    addAutoPilot(world) {
-        this._autopilot = new AutoPilot(this, world);
-    }
-    get recorder() { return this._forceRecorder; }
-    setForce(force) { this._force.set(force); return this; }
-    set force(force) { this._force.set(force); }
-    get force() { return this._force; }
-    setAccel(accel) { this._accel.set(accel); return this; }
-    set accel(accel) { this._accel.set(accel); }
-    get accel() { return this._accel; }
+    get pilot() { return __classPrivateFieldGet(this, _Vehicle_autopilot, "f"); }
+    get recorder() { return __classPrivateFieldGet(this, _Vehicle_forceRecorder, "f"); }
+    setForce(force) { __classPrivateFieldGet(this, _Vehicle_force, "f").set(force); return this; }
+    set force(force) { __classPrivateFieldGet(this, _Vehicle_force, "f").set(force); }
+    get force() { return __classPrivateFieldGet(this, _Vehicle_force, "f"); }
+    setAccel(accel) { __classPrivateFieldGet(this, _Vehicle_accel, "f").set(accel); return this; }
+    set accel(accel) { __classPrivateFieldGet(this, _Vehicle_accel, "f").set(accel); }
+    get accel() { return __classPrivateFieldGet(this, _Vehicle_accel, "f"); }
     fits_inside(lowX, lowY, highX, highY) {
-        let fits = (this._pos.x - this._colRad >= lowX)
-            && (this._pos.x + this._colRad <= highX)
-            && (this._pos.y - this._colRad >= lowY)
-            && (this._pos.y + this._colRad <= highY);
+        let fits = (this.pos.x - this._colRad >= lowX)
+            && (this.pos.x + this._colRad <= highX)
+            && (this.pos.y - this._colRad >= lowY)
+            && (this.pos.y + this._colRad <= highY);
         return fits;
     }
     /**
@@ -38,12 +48,12 @@ class Vehicle extends Mover {
      */
     forceRecorderOn() {
         if (this.pilot)
-            this._forceRecorder = new ForceRecorder(this, this.pilot._weight);
+            __classPrivateFieldSet(this, _Vehicle_forceRecorder, new ForceRecorder(this, this.pilot._weight), "f");
         return this;
     }
     forceRecorderOff() {
         console.log(this.recorder.toString());
-        this._forceRecorder = undefined;
+        __classPrivateFieldSet(this, _Vehicle_forceRecorder, undefined, "f");
         return this;
     }
     /** Display the steering force data for this Vehicle.   */
@@ -61,33 +71,34 @@ class Vehicle extends Mover {
      */
     update(elapsedTime, world) {
         // Remember the starting position
-        this._prevPos.set(this._pos);
+        this.prevPos.set(this.pos);
         // Init accumulator variables
-        this._force.set([0, 0]);
-        this._accel.set([0, 0]);
-        if (this._autopilot) {
-            this._force.set(this._autopilot.calculateForce(elapsedTime, world));
-            this._force = this._force.truncate(this._maxForce);
-            this._accel = this._force.mult(elapsedTime / this._mass);
-            this.vel = this.vel.add(this._accel);
+        __classPrivateFieldGet(this, _Vehicle_force, "f").set([0, 0]);
+        __classPrivateFieldGet(this, _Vehicle_accel, "f").set([0, 0]);
+        if (__classPrivateFieldGet(this, _Vehicle_autopilot, "f")) {
+            __classPrivateFieldGet(this, _Vehicle_force, "f").set(__classPrivateFieldGet(this, _Vehicle_autopilot, "f").calculateForce(elapsedTime, world));
+            __classPrivateFieldSet(this, _Vehicle_force, __classPrivateFieldGet(this, _Vehicle_force, "f").truncate(this.maxForce), "f");
+            __classPrivateFieldSet(this, _Vehicle_accel, __classPrivateFieldGet(this, _Vehicle_force, "f").mult(elapsedTime / this.mass), "f");
+            this.vel = this.vel.add(__classPrivateFieldGet(this, _Vehicle_accel, "f"));
         }
         // Make sure we don't exceed maximum speed
-        this._vel = this._vel.truncate(this._maxSpeed);
+        this.vel = this.vel.truncate(this.maxSpeed);
         // Change position according to velocity and elapsed time
-        this._pos = this._pos.add(this._vel.mult(elapsedTime));
+        this.pos = this.pos.add(this.vel.mult(elapsedTime));
         // Apply domain constraints
-        this.applyDomainConstraint(this._domain ? this._domain : world._domain);
+        this.applyDomainConstraint(this.domain ? this.domain : world.domain);
         // Update heading
-        if (this._vel.lengthSq() > 0.02)
-            this.rotateHeadingToAlignWith(elapsedTime, this._vel);
+        if (this.vel.lengthSq() > 0.02)
+            this.rotateHeadingToAlignWith(elapsedTime, this.vel);
         else {
-            this._vel.set([0, 0]);
-            if (this._headingAtRest)
-                this.rotateHeadingToAlignWith(elapsedTime, this._headingAtRest);
+            this.vel.set([0, 0]);
+            if (this.headingAtRest)
+                this.rotateHeadingToAlignWith(elapsedTime, this.headingAtRest);
         }
         // Ensure heading and side are normalised
-        this._heading = this._heading.normalize();
-        this._side.set([-this._heading.y, this._heading.x]);
+        this.heading = this.heading.normalize();
+        this.side.set([-this.heading.y, this.heading.x]);
     }
 }
+_Vehicle_autopilot = new WeakMap(), _Vehicle_forceRecorder = new WeakMap(), _Vehicle_force = new WeakMap(), _Vehicle_accel = new WeakMap();
 //# sourceMappingURL=vehicle.js.map

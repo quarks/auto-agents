@@ -1,15 +1,35 @@
+var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
+    if (kind === "m") throw new TypeError("Private method is not writable");
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
+    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
+};
+var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
+};
+var _Domain_lowX, _Domain_highX, _Domain_lowY, _Domain_highY, _Domain_cX, _Domain_cY, _Domain_width, _Domain_height, _Domain_constraint;
 class Domain {
     constructor(lowX, lowY, highX, highY, constraint = REBOUND) {
-        this._constraint = REBOUND;
-        this._lowX = lowX;
-        this._lowY = lowY;
-        this._highX = highX;
-        this._highY = highY;
-        this._width = highX - lowX;
-        this._height = highY - lowY;
-        this._cX = (lowX + highX) / 2;
-        this._cY = (lowY + highY) / 2;
-        this._constraint = constraint;
+        _Domain_lowX.set(this, void 0);
+        _Domain_highX.set(this, void 0);
+        _Domain_lowY.set(this, void 0);
+        _Domain_highY.set(this, void 0);
+        _Domain_cX.set(this, void 0);
+        _Domain_cY.set(this, void 0);
+        _Domain_width.set(this, void 0);
+        _Domain_height.set(this, void 0);
+        _Domain_constraint.set(this, REBOUND);
+        __classPrivateFieldSet(this, _Domain_lowX, lowX, "f");
+        __classPrivateFieldSet(this, _Domain_lowY, lowY, "f");
+        __classPrivateFieldSet(this, _Domain_highX, highX, "f");
+        __classPrivateFieldSet(this, _Domain_highY, highY, "f");
+        __classPrivateFieldSet(this, _Domain_width, highX - lowX, "f");
+        __classPrivateFieldSet(this, _Domain_height, highY - lowY, "f");
+        __classPrivateFieldSet(this, _Domain_cX, (lowX + highX) / 2, "f");
+        __classPrivateFieldSet(this, _Domain_cY, (lowY + highY) / 2, "f");
+        __classPrivateFieldSet(this, _Domain_constraint, constraint, "f");
     }
     /**
      * Create a Domain object given the top-left and bottom-right coordinates.
@@ -19,41 +39,41 @@ class Domain {
      * @param highY
      */
     // Domain attribute getters
-    get lowX() { return this._lowX; }
-    get highX() { return this._highX; }
-    get lowY() { return this._lowY; }
-    get highY() { return this._highY; }
-    get cX() { return this._cX; }
-    get cY() { return this._cY; }
-    get width() { return this._width; }
-    get height() { return this._height; }
-    get constraint() { return this._constraint; }
+    get lowX() { return __classPrivateFieldGet(this, _Domain_lowX, "f"); }
+    get highX() { return __classPrivateFieldGet(this, _Domain_highX, "f"); }
+    get lowY() { return __classPrivateFieldGet(this, _Domain_lowY, "f"); }
+    get highY() { return __classPrivateFieldGet(this, _Domain_highY, "f"); }
+    get cX() { return __classPrivateFieldGet(this, _Domain_cX, "f"); }
+    get cY() { return __classPrivateFieldGet(this, _Domain_cY, "f"); }
+    get width() { return __classPrivateFieldGet(this, _Domain_width, "f"); }
+    get height() { return __classPrivateFieldGet(this, _Domain_height, "f"); }
+    get constraint() { return __classPrivateFieldGet(this, _Domain_constraint, "f"); }
     set constraint(c) {
         if (c == REBOUND || c == WRAP || c == PASS_THROUGH)
-            this._constraint = c;
+            __classPrivateFieldSet(this, _Domain_constraint, c, "f");
     }
     setConstraint(c) {
         if (c == REBOUND || c == WRAP || c == PASS_THROUGH)
-            this._constraint = c;
+            __classPrivateFieldSet(this, _Domain_constraint, c, "f");
     }
     /** returns a copy of this domain object */
     copy() {
-        return new Domain(this._lowX, this._lowY, this._highX, this._highY, this._constraint);
+        return new Domain(__classPrivateFieldGet(this, _Domain_lowX, "f"), __classPrivateFieldGet(this, _Domain_lowY, "f"), __classPrivateFieldGet(this, _Domain_highX, "f"), __classPrivateFieldGet(this, _Domain_highY, "f"), __classPrivateFieldGet(this, _Domain_constraint, "f"));
     }
     /**
      * Create a Domain that is a copy of another one.
      * @param d domain to be copied
      */
     set_d(d) {
-        this._lowX = d._lowX;
-        this._lowY = d._lowY;
-        this._highX = d._highX;
-        this._highY = d._highY;
-        this._width = d._width;
-        this._height = d._height;
-        this._cX = d._cX;
-        this._cY = d._cY;
-        this._constraint = d._constraint;
+        __classPrivateFieldSet(this, _Domain_lowX, __classPrivateFieldGet(d, _Domain_lowX, "f"), "f");
+        __classPrivateFieldSet(this, _Domain_lowY, __classPrivateFieldGet(d, _Domain_lowY, "f"), "f");
+        __classPrivateFieldSet(this, _Domain_highX, __classPrivateFieldGet(d, _Domain_highX, "f"), "f");
+        __classPrivateFieldSet(this, _Domain_highY, __classPrivateFieldGet(d, _Domain_highY, "f"), "f");
+        __classPrivateFieldSet(this, _Domain_width, __classPrivateFieldGet(d, _Domain_width, "f"), "f");
+        __classPrivateFieldSet(this, _Domain_height, __classPrivateFieldGet(d, _Domain_height, "f"), "f");
+        __classPrivateFieldSet(this, _Domain_cX, __classPrivateFieldGet(d, _Domain_cX, "f"), "f");
+        __classPrivateFieldSet(this, _Domain_cY, __classPrivateFieldGet(d, _Domain_cY, "f"), "f");
+        __classPrivateFieldSet(this, _Domain_constraint, __classPrivateFieldGet(d, _Domain_constraint, "f"), "f");
     }
     /**
      * Set the domain size.
@@ -63,14 +83,14 @@ class Domain {
      * @param height domain height
      */
     set_xywh(lowX, lowY, width, height) {
-        this._lowX = lowX;
-        this._lowY = lowY;
-        this._width = width;
-        this._height = height;
-        this._highX = lowX + width;
-        this._highY = lowY + height;
-        this._cX = (this._lowX + this._highX) / 2;
-        this._cY = (this._lowY + this._highY) / 2;
+        __classPrivateFieldSet(this, _Domain_lowX, lowX, "f");
+        __classPrivateFieldSet(this, _Domain_lowY, lowY, "f");
+        __classPrivateFieldSet(this, _Domain_width, width, "f");
+        __classPrivateFieldSet(this, _Domain_height, height, "f");
+        __classPrivateFieldSet(this, _Domain_highX, lowX + width, "f");
+        __classPrivateFieldSet(this, _Domain_highY, lowY + height, "f");
+        __classPrivateFieldSet(this, _Domain_cX, (__classPrivateFieldGet(this, _Domain_lowX, "f") + __classPrivateFieldGet(this, _Domain_highX, "f")) / 2, "f");
+        __classPrivateFieldSet(this, _Domain_cY, (__classPrivateFieldGet(this, _Domain_lowY, "f") + __classPrivateFieldGet(this, _Domain_highY, "f")) / 2, "f");
     }
     /**
      * Centre the domain about the given world position.
@@ -78,26 +98,26 @@ class Domain {
      * @param wy world y position
      */
     move_centre_xy_to(wx, wy) {
-        this._cX = wx;
-        this._cY = wy;
-        this._lowX = this._cX - this._width / 2;
-        this._lowY = this._cY - this._height / 2;
-        this._highX = this._lowX + this._width;
-        this._highY = this._lowY + this._height;
+        __classPrivateFieldSet(this, _Domain_cX, wx, "f");
+        __classPrivateFieldSet(this, _Domain_cY, wy, "f");
+        __classPrivateFieldSet(this, _Domain_lowX, __classPrivateFieldGet(this, _Domain_cX, "f") - __classPrivateFieldGet(this, _Domain_width, "f") / 2, "f");
+        __classPrivateFieldSet(this, _Domain_lowY, __classPrivateFieldGet(this, _Domain_cY, "f") - __classPrivateFieldGet(this, _Domain_height, "f") / 2, "f");
+        __classPrivateFieldSet(this, _Domain_highX, __classPrivateFieldGet(this, _Domain_lowX, "f") + __classPrivateFieldGet(this, _Domain_width, "f"), "f");
+        __classPrivateFieldSet(this, _Domain_highY, __classPrivateFieldGet(this, _Domain_lowY, "f") + __classPrivateFieldGet(this, _Domain_height, "f"), "f");
     }
     /**
      * Centre the domain about the given horizontal position.
      * @param wx world x position
      */
     move_centre_x_to(wx) {
-        this.move_centre_xy_to(wx, this._cY);
+        this.move_centre_xy_to(wx, __classPrivateFieldGet(this, _Domain_cY, "f"));
     }
     /**
      * Centre the domain about the given vertical position.
      * @param wy world y position
      */
     move_centre_y_to(wy) {
-        this.move_centre_xy_to(this._cX, wy);
+        this.move_centre_xy_to(__classPrivateFieldGet(this, _Domain_cX, "f"), wy);
     }
     /**
      * Centre the domain about the given position.
@@ -105,12 +125,12 @@ class Domain {
      * @param wy world y centre position
      */
     move_centre_xy_by(wx, wy) {
-        this._cX -= wx;
-        this._cY -= wy;
-        this._lowX -= wx;
-        this._lowY -= wy;
-        this._highX = this._lowX + this._width;
-        this._highY = this._lowY + this._height;
+        __classPrivateFieldSet(this, _Domain_cX, __classPrivateFieldGet(this, _Domain_cX, "f") - wx, "f");
+        __classPrivateFieldSet(this, _Domain_cY, __classPrivateFieldGet(this, _Domain_cY, "f") - wy, "f");
+        __classPrivateFieldSet(this, _Domain_lowX, __classPrivateFieldGet(this, _Domain_lowX, "f") - wx, "f");
+        __classPrivateFieldSet(this, _Domain_lowY, __classPrivateFieldGet(this, _Domain_lowY, "f") - wy, "f");
+        __classPrivateFieldSet(this, _Domain_highX, __classPrivateFieldGet(this, _Domain_lowX, "f") + __classPrivateFieldGet(this, _Domain_width, "f"), "f");
+        __classPrivateFieldSet(this, _Domain_highY, __classPrivateFieldGet(this, _Domain_lowY, "f") + __classPrivateFieldGet(this, _Domain_height, "f"), "f");
     }
     /**
      * Move the domain centre horizontally by the world distance given.
@@ -137,7 +157,7 @@ class Domain {
             y = x.y;
             x = x.x;
         }
-        return (x >= this._lowX && x <= this._highX && y >= this._lowY && y <= this._highY);
+        return (x >= __classPrivateFieldGet(this, _Domain_lowX, "f") && x <= __classPrivateFieldGet(this, _Domain_highX, "f") && y >= __classPrivateFieldGet(this, _Domain_lowY, "f") && y <= __classPrivateFieldGet(this, _Domain_highY, "f"));
     }
     /**
      * See if this point is within a box scaled by the second parameter. <br>
@@ -158,10 +178,11 @@ class Domain {
      * Return the Domain as a String
      */
     toString() {
-        let s = `Domain from ${this._lowX}, ${this._lowY} to ${this._highX}, ${this._highY}  `;
-        s += `Size ${this._width}, ${this._height}  `;
-        s += `Constraint: ${Symbol.keyFor(this._constraint)}`;
+        let s = `Domain from ${__classPrivateFieldGet(this, _Domain_lowX, "f")}, ${__classPrivateFieldGet(this, _Domain_lowY, "f")} to ${__classPrivateFieldGet(this, _Domain_highX, "f")}, ${__classPrivateFieldGet(this, _Domain_highY, "f")}  `;
+        s += `Size ${__classPrivateFieldGet(this, _Domain_width, "f")}, ${__classPrivateFieldGet(this, _Domain_height, "f")}  `;
+        s += `Constraint: ${Symbol.keyFor(__classPrivateFieldGet(this, _Domain_constraint, "f"))}`;
         return s;
     }
 }
+_Domain_lowX = new WeakMap(), _Domain_highX = new WeakMap(), _Domain_lowY = new WeakMap(), _Domain_highY = new WeakMap(), _Domain_cX = new WeakMap(), _Domain_cY = new WeakMap(), _Domain_width = new WeakMap(), _Domain_height = new WeakMap(), _Domain_constraint = new WeakMap();
 //# sourceMappingURL=domain.js.map

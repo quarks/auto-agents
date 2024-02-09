@@ -1,18 +1,22 @@
 class World {
-    _births: Array<Entity>;
-    _deaths: Array<Entity>;
+    #births: Array<Entity>;
+    get births(): Array<Entity> { return this.#births; }
 
-    _domain: Domain;
-    get domain(): Domain { return this._domain; }
+    #deaths: Array<Entity>;
+    get deaths(): Array<Entity> { return this.#deaths; }
 
-    _population: Map<number, Entity>;
-    get population(): Array<Entity> { return [...this._population.values()]; }
+    #domain: Domain;
+    get domain(): Domain { return this.#domain; }
 
-    _postman: Dispatcher;
-    get postman(): Dispatcher { return this._postman; }
+    #population: Map<number, Entity>;
+    get populationMap(): Map<number, Entity> { return this.#population; }
+    get population(): Array<Entity> { return [...this.#population.values()]; }
 
-    _painter: Function;
-    set painter(painter: Function) { this._painter = painter; }
+    #postman: Dispatcher;
+    get postman(): Dispatcher { return this.#postman; }
+
+    #painter: Function;
+    set painter(painter: Function) { this.#painter = painter; }
 
     _width: number;
     get width(): number { return this._width }
@@ -34,11 +38,11 @@ class World {
     constructor(wsizeX: number, wsizeY: number, depth: number = 1, border = 0) {
         this._width = wsizeX;
         this._height = wsizeY;
-        this._postman = new Dispatcher(this);
-        this._population = new Map<number, Entity>();
-        this._births = [];
-        this._deaths = [];
-        this._domain = new Domain(0, 0, wsizeX, wsizeY);
+        this.#postman = new Dispatcher(this);
+        this.#population = new Map<number, Entity>();
+        this.#births = [];
+        this.#deaths = [];
+        this.#domain = new Domain(0, 0, wsizeX, wsizeY);
         let ts = Math.max(wsizeX, wsizeY) + 2 * border;
         this._tree = QPart.makeTree(-(ts - wsizeX) / 2, -(ts - wsizeY) / 2, ts, depth);
     }
@@ -46,30 +50,30 @@ class World {
     birth(entity: Entity) {
         if (entity instanceof Obstacle)
             this._maxObstacleSize = Math.max(this._maxObstacleSize, entity.colRad);
-        if (entity) this._births.push(entity);
+        if (entity) this.#births.push(entity);
     }
 
     death(entity: Entity | number) {
         if (Number.isFinite(entity))
-            entity = this._population.get(Number(entity));
+            entity = this.#population.get(Number(entity));
         if (entity instanceof Entity)
-            this._deaths.push(entity);
+            this.#deaths.push(entity);
     }
 
     update(elapsedTime: number): void {
         // ======================================================================
         // Births and deaths
-        while (this._deaths.length > 0) this._subEntity(this._deaths.pop());
-        while (this._births.length > 0) this._addEntity(this._births.pop());
+        while (this.#deaths.length > 0) this._subEntity(this.#deaths.pop());
+        while (this.#births.length > 0) this._addEntity(this.#births.pop());
         // ======================================================================
         // Process telegrams
-        this._postman?.update();
+        this.#postman?.update();
         // ======================================================================
         // Update FSMs
-        [...this._population.values()].forEach(v => v.fsm?.update(elapsedTime, this));
+        [...this.#population.values()].forEach(v => v.fsm?.update(elapsedTime, this));
         // ======================================================================
         // Update all entities
-        [...this._population.values()].forEach(v => v.update(elapsedTime, this));
+        [...this.#population.values()].forEach(v => v.update(elapsedTime, this));
         // ======================================================================
         // Ensure Zero Overlap?
         if (this._preventOverlap) this._ensureNoOverlap();
@@ -79,8 +83,8 @@ class World {
     }
 
     render() {
-        this._painter?.call(this);
-        for (let e of this._population.values()) e.render();
+        this.#painter?.call(this);
+        for (let e of this.#population.values()) e.render();
     }
 
     quadtreeAnalysis(): Array<string> {
@@ -140,13 +144,13 @@ class World {
     }
 
     _addEntity(entity: Entity) {
-        this._population.set(entity.id, entity);
+        this.#population.set(entity.id, entity);
         this._tree.addEntity(entity);
         entity.world = this;
     }
 
     _subEntity(entity: Entity) {
-        this._population.delete(entity.id);
+        this.#population.delete(entity.id);
         this._tree.subEntity(entity);
         entity.world = undefined;
     }

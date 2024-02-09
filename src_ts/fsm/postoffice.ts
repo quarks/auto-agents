@@ -1,27 +1,29 @@
 class Telegram {
 
-    _sender: number;
-    _receiver: number;
-    _msg: number;
-    _despatchAt: number;
-    _extraInfo: object;
+    #sender: number;
+    #receiver: number;
+    #msg: number;
+    #despatchAt: number;
+    #extraInfo: object;
 
-    get message(): number { return this._msg; }
-    get sender(): number { return this._sender; }
-    get receiver(): number { return this._receiver; }
+    get sender(): number { return this.#sender; }
+    get receiver(): number { return this.#receiver; }
+    get message(): number { return this.#msg; }
+    get despatchAt(): number { return this.#despatchAt; }
+    get extraInfo(): object { return this.#extraInfo; }
 
     constructor(despatchAt = -1, sender = -1, receiver = -1, msg = -1, extraInfo: object) {
-        this._despatchAt = despatchAt;
-        this._sender = sender;
-        this._receiver = receiver;
-        this._msg = msg;
-        this._extraInfo = extraInfo;
+        this.#despatchAt = despatchAt;
+        this.#sender = sender;
+        this.#receiver = receiver;
+        this.#msg = msg;
+        this.#extraInfo = extraInfo;
     }
 
     equals(tgram: Telegram): boolean {
-        if (this._sender == tgram._sender && this._receiver == tgram._receiver &&
-            this._msg == tgram._msg &&
-            Math.abs(this._despatchAt - tgram._despatchAt) < SAFE_TIME_INTERVAL)
+        if (this.#sender == tgram.#sender && this.#receiver == tgram.#receiver &&
+            this.#msg == tgram.#msg &&
+            Math.abs(this.#despatchAt - tgram.#despatchAt) < SAFE_TIME_INTERVAL)
             return true;
         return false;
     }
@@ -48,7 +50,7 @@ class Dispatcher {
      * @param extraInfo optional object holding any extra information
      */
     postTelegram(delay: number, sender: number, receiver: number, msg: number, extraInfo?: object) {
-        if (this._world._population.has(receiver) && this._world._population.get(receiver).hasFSM()) {
+        if (this._world.populationMap.has(receiver) && this._world.populationMap.get(receiver).hasFSM()) {
             let tgram = new Telegram(Date.now() + delay, sender, receiver, msg, extraInfo);
             this._telegrams.push(tgram);
         }
@@ -59,7 +61,7 @@ class Dispatcher {
      * @param tgram telegram
      */
     sendTelegram(tgram: Telegram) {
-        let entity = this._world._population.get(tgram._receiver);
+        let entity = this._world.populationMap.get(tgram.receiver);
         if (entity && entity.hasFSM()) {
             entity.fsm.onMessage(tgram);
         }
@@ -67,10 +69,10 @@ class Dispatcher {
 
     update() {
         let time = Date.now();
-        let toSend = this._telegrams.filter(x => x._despatchAt <= time);
+        let toSend = this._telegrams.filter(x => x.despatchAt <= time);
         for (let tgram of toSend)
             this.sendTelegram(tgram);
         if (toSend.length > 0)
-            this._telegrams = this._telegrams.filter(x => x._despatchAt > time);
+            this._telegrams = this._telegrams.filter(x => x.despatchAt > time);
     }
 }

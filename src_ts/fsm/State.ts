@@ -1,6 +1,8 @@
 abstract class State {
 
-    _name: string;
+    #name: string;
+    set name(n: string) { this.#name = n; }
+    get name(): string { return this.#name; }
 
     //this will execute when the state is entered
     abstract enter(user: Entity): void;
@@ -17,10 +19,9 @@ abstract class State {
     onMessage(user: Entity, tgram: Telegram): boolean { return false; };
 
     constructor(name?: string) {
-        if (!name)
-            name = this.constructor.name;
-        this._name = name;
-        console.log(`State name : ${this._name}`);
+        if (!name) name = this.constructor.name;
+        this.#name = name;
+        // console.log(`State name : ${this.#name}`);
     }
 
 }

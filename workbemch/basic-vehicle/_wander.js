@@ -8,7 +8,7 @@ let wanderdemo = function (p) {
         let p5canvas = p.createCanvas(640, 400, p);
         p5canvas.parent('sketch');
         world = new World(400, 400, 1);
-        world._domain.constraint = WRAP;
+        world.domain.constraint = WRAP;
         p.makeWanderer();
         trail = new Trail(300, p.color(0, 180, 0), 0.95);
 
@@ -28,7 +28,7 @@ let wanderdemo = function (p) {
         trail.add(wanderer.pos);
         p.background(220, 160, 220);
         p.noStroke(); p.fill(200, 255, 200);
-        let d = world._domain;
+        let d = world.domain;
         p.rect(d.lowX, d.lowY, d.width, d.height);
         world.render();
         if (hintTrail) trail.render();

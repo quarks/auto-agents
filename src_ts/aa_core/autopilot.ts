@@ -1,14 +1,14 @@
 class AutoPilot {
-    _owner: Vehicle;
-    get owner(): Vehicle { return this._owner; }
-    set owner(owner: Vehicle) { this._owner = owner; }
+    #owner: Vehicle;
+    get owner(): Vehicle { return this.#owner; }
+    set owner(owner: Vehicle) { this.#owner = owner; }
 
-    _world: World;
-    _flags = 0;
+    // _world: World;
+    #flags = 0;
 
-    constructor(owner: Vehicle, world: World) {
-        this._owner = owner;
-        this._world = world;
+    constructor(owner: Vehicle) { // }, world: World) {
+        this.#owner = owner;
+        // this._world = world;
     }
 
     // ########################################################################
@@ -22,9 +22,10 @@ class AutoPilot {
     testNeighbours: Array<Vehicle>;
 
     // Extra variables needed to draw hints
-    _boxLength = 0;
-    set boxLength(n: number) { this._boxLength = n; }
-    get boxLength(): number { return this._boxLength; }
+    #boxLength = 0;
+    setBoxLength(n: number): AutoPilot { this.#boxLength = n; return this; }
+    set boxLength(n: number) { this.#boxLength = n; }
+    get boxLength(): number { return this.#boxLength; }
 
     /**
      * Set any of the properties 
@@ -45,11 +46,10 @@ class AutoPilot {
 
     /**
      * Switch off all steering behaviours
-     * 
      * @return this auto-pilot object
      */
     allOff(): AutoPilot {
-        this._flags = 0;
+        this.#flags = 0;
         return this;
     }
 
@@ -71,24 +71,24 @@ class AutoPilot {
 
     /** Switch off seek behaviour   */
     seekOff(): AutoPilot {
-        this._flags &= (ALL_SB_MASK - SEEK);
+        this.#flags &= (ALL_SB_MASK - SEEK);
         return this;
     }
 
     /** Switch on seek behaviour and change target if anothe is provided    */
     seekOn(target?: Array<number> | _XY_): AutoPilot {
-        this._flags |= SEEK;
+        this.#flags |= SEEK;
         if (target) this.target.set(target);
         return this;
     }
 
     /** Is seek switched on?   */
-    get isSeekOn(): boolean { return (this._flags & SEEK) != 0; }
+    get isSeekOn(): boolean { return (this.#flags & SEEK) != 0; }
 
-    _target = new Vector2D();   // Target for both arrive and seek behaviours
-    setTarget(t: Vector2D): AutoPilot { this._target.set(t); return this; }
-    set target(t: Vector2D) { this._target.set(t); }
-    get target(): Vector2D { return this._target; }
+    #target = new Vector2D();   // Target for both arrive and seek behaviours
+    setTarget(t: Vector2D): AutoPilot { this.#target.set(t); return this; }
+    set target(t: Vector2D) { this.#target.set(t); }
+    get target(): Vector2D { return this.#target; }
 
     /*
      * ======================================================================
@@ -97,7 +97,7 @@ class AutoPilot {
      */
     flee(owner: Vehicle, target: Vector2D) {
         let panicDist = Vector2D.dist(owner.pos, target);
-        if (panicDist >= this.__fleeRadius)
+        if (panicDist >= this.#fleeRadius)
             return Vector2D.ZERO;
         let desiredVelocity = this.owner.pos.sub(target);
         desiredVelocity = desiredVelocity.normalize();
@@ -107,29 +107,30 @@ class AutoPilot {
 
     /** Switch off flee behaviour   */
     fleeOff(): AutoPilot {
-        this._flags &= (ALL_SB_MASK - FLEE);
+        this.#flags &= (ALL_SB_MASK - FLEE);
         return this;
     }
 
     /** Switch on flee behaviour and change flee target if provided.    */
-    fleeOn(target?: Array<number> | _XY_): AutoPilot {
-        this._flags |= FLEE;
-        if (target) this.__fleeTarget.set(target);
+    fleeOn(target: Array<number> | _XY_, fleeRadius?: number): AutoPilot {
+        this.#flags |= FLEE;
+        this.#fleeTarget.set(target);
+        if (fleeRadius) this.#fleeRadius = fleeRadius;
         return this;
     }
 
     /** Is seek switched on?   */
-    get isFleeOn(): boolean { return (this._flags & FLEE) != 0; }
+    get isFleeOn(): boolean { return (this.#flags & FLEE) != 0; }
 
-    __fleeTarget = new Vector2D();
-    setFleeTarget(t: Vector2D): AutoPilot { this.__fleeTarget.set(t); return this; }
-    set fleeTarget(t: Vector2D) { this.__fleeTarget.set(t); }
-    get fleeTarget(): Vector2D { return this.__fleeTarget; }
+    #fleeTarget = new Vector2D();
+    setFleeTarget(t: Vector2D): AutoPilot { this.#fleeTarget.set(t); return this; }
+    set fleeTarget(t: Vector2D) { this.#fleeTarget.set(t); }
+    get fleeTarget(): Vector2D { return this.#fleeTarget; }
 
     // Panic distance squared for flee to be effective
-    __fleeRadius = 100;
-    get fleeRadius(): number { return this.__fleeRadius; }
-    set fleeRadius(n: number) { this.__fleeRadius = n; }
+    #fleeRadius = 100;
+    get fleeRadius(): number { return this.#fleeRadius; }
+    set fleeRadius(n: number) { this.#fleeRadius = n; }
 
 
     /*
@@ -137,9 +138,9 @@ class AutoPilot {
      * ARRIVE
      * ======================================================================
      */
-    arrive(owner: Vehicle, target: Vector2D, tweak = this._arriveRate) {
+    arrive(owner: Vehicle, target: Vector2D, tweak = this.#arriveRate) {
         let toTarget = target.sub(owner.pos), dist = toTarget.length();
-        if (dist > this._arriveDist) {
+        if (dist > this.#arriveDist) {
             let rate = dist / DECEL_TWEEK[tweak];
             let speed = Math.min(owner.maxSpeed, rate);
             let desiredVelocity = toTarget.mult(speed / dist);
@@ -150,7 +151,7 @@ class AutoPilot {
 
     /** Switch off arrive  behaviour   */
     arriveOff(): AutoPilot {
-        this._flags &= (ALL_SB_MASK - ARRIVE); return this;
+        this.#flags &= (ALL_SB_MASK - ARRIVE); return this;
     }
 
     /**
@@ -159,28 +160,28 @@ class AutoPilot {
      * @param rate rate of approach (SLOW, NORMAL or FAST)
      */
     arriveOn(target?: Array<number>, rate?: number): AutoPilot {
-        this._flags |= ARRIVE;
+        this.#flags |= ARRIVE;
         if (target) this.target.set(target);
-        if (rate) this._arriveRate = rate;
+        if (rate) this.#arriveRate = rate;
         return this;
     }
 
     /** Is arrive switched on?   */
-    get isArriveOn(): boolean { return (this._flags & ARRIVE) != 0; }
+    get isArriveOn(): boolean { return (this.#flags & ARRIVE) != 0; }
 
 
     // Deceleration rate for arrive
-    _arriveRate: number = NORMAL;
+    #arriveRate: number = NORMAL;
     setArriveRate(n: number): AutoPilot {
-        if (n == SLOW || n == FAST) this._arriveRate = n; else this._arriveRate = NORMAL;
+        if (n == SLOW || n == FAST) this.#arriveRate = n; else this.#arriveRate = NORMAL;
         return this;
     }
-    set arriveRate(n: number) { this._arriveRate = n; }
-    get arriveRate(): number { return this._arriveRate; }
+    set arriveRate(n: number) { this.#arriveRate = n; }
+    get arriveRate(): number { return this.#arriveRate; }
 
-    _arriveDist = 1;
-    set arriveDist(n: number) { this._arriveDist = n; }
-    get arriveDist(): number { return this._arriveDist; }
+    #arriveDist = 1;
+    set arriveDist(n: number) { this.#arriveDist = n; }
+    get arriveDist(): number { return this.#arriveDist; }
 
 
     /*
@@ -197,7 +198,7 @@ class AutoPilot {
 
     /** Switch off evade  */
     evadeOff(): AutoPilot {
-        this._flags &= (ALL_SB_MASK - EVADE); return this;
+        this.#flags &= (ALL_SB_MASK - EVADE); return this;
     }
 
     /**
@@ -205,18 +206,18 @@ class AutoPilot {
      * @returns this auto-pilot object
      */
     evadeOn(agent: Mover): AutoPilot {
-        this._flags |= EVADE;
+        this.#flags |= EVADE;
         this.evadeAgent = agent;
         return this;
     }
 
     /** Is evade switched on?   */
-    get isEvadeOn(): boolean { return (this._flags & EVADE) != 0; }
+    get isEvadeOn(): boolean { return (this.#flags & EVADE) != 0; }
 
-    _evadeAgent: Mover;
-    setEvadeAgent(a: Mover): AutoPilot { this._evadeAgent = a; return this; }
-    set evadeAgent(a: Mover) { this._evadeAgent = a; }
-    get evadeAgent(): Mover { return this._evadeAgent; }
+    #evadeAgent: Mover;
+    setEvadeAgent(a: Mover): AutoPilot { this.#evadeAgent = a; return this; }
+    set evadeAgent(a: Mover) { this.#evadeAgent = a; }
+    get evadeAgent(): Mover { return this.#evadeAgent; }
 
 
     /*
@@ -231,14 +232,12 @@ class AutoPilot {
         let pos = owner.pos;
         let result = world.tree.getItemsInRegion(pos.x - sd, pos.y - sd, pos.x + sd, pos.y + sd);
         let obs = result.entities.filter(e => e instanceof Obstacle);
-        console.log(`Found ${obs.length} obstacles for hiding behind`)
+        // console.log(`Found ${obs.length} obstacles for hiding behind`);
         let distToNearest = Number.MAX_VALUE;
         let bestHidingSpot: Vector2D;
-
         for (let ob of obs) {
             let spot = this.getHidingPosition(owner, hideFrom, ob);
             let dist = Vector2D.distSq(spot, owner.pos);
-
             if (dist < distToNearest) {
                 distToNearest = dist;
                 bestHidingSpot = spot;
@@ -259,7 +258,7 @@ class AutoPilot {
 
     /** Switch off evade  */
     hideOff(): AutoPilot {
-        this._flags &= (ALL_SB_MASK - HIDE); return this;
+        this.#flags &= (ALL_SB_MASK - HIDE); return this;
     }
 
     /**
@@ -267,20 +266,20 @@ class AutoPilot {
      * @returns this auto-pilot object
      */
     hideOn(agent: Mover): AutoPilot {
-        this._flags |= HIDE;
+        this.#flags |= HIDE;
         this.hideFromAgent = agent;
         return this;
     }
 
     /** Is hide switched on?   */
-    get isHideOn(): boolean { return (this._flags & HIDE) != 0; }
+    get isHideOn(): boolean { return (this.#flags & HIDE) != 0; }
 
-    _hideFromAgent: Mover;
-    setHideFromAgent(m: Mover): AutoPilot { this._hideFromAgent = m; return this; }
-    set hideFromAgent(m: Mover) { this._hideFromAgent = m; }
-    get hideFromAgent(): Mover { return this._hideFromAgent; }
+    #hideFromAgent: Mover;
+    setHideFromAgent(m: Mover): AutoPilot { this.#hideFromAgent = m; return this; }
+    set hideFromAgent(m: Mover) { this.#hideFromAgent = m; }
+    get hideFromAgent(): Mover { return this.#hideFromAgent; }
 
-    __hideSearchRange: number
+    __hideSearchRange: number = 100;
     setHideSearchRange(n: number): AutoPilot { this.__hideSearchRange = n; return this; }
     set hideSearchRange(n: number) { this.__hideSearchRange = n; }
     get hideSearchRange(): number { return this.__hideSearchRange; }
@@ -310,23 +309,23 @@ class AutoPilot {
 
     /** Switch off pursuit behaviour */
     pursuitOff(): AutoPilot {
-        this._flags &= (ALL_SB_MASK - PURSUIT); return this;
+        this.#flags &= (ALL_SB_MASK - PURSUIT); return this;
     }
 
     /** Switch on pursuit behaviour and set agent to pursue     */
     pursuitOn(agent: Mover): AutoPilot {
-        this._flags |= PURSUIT;
+        this.#flags |= PURSUIT;
         this.pursueAgent = agent;
         return this;
     }
 
     /** Is pursuit switched off? */
-    get isPusuitOn(): boolean { return (this._flags & PURSUIT) != 0; }
+    get isPusuitOn(): boolean { return (this.#flags & PURSUIT) != 0; }
 
-    _pursueAgent: Mover;
-    setPursueAgent(a: Mover): AutoPilot { this._pursueAgent = a; return this; }
-    set pursueAgent(a: Mover) { this._pursueAgent = a; }
-    get pursueAgent(): Mover { return this._pursueAgent; }
+    #pursueAgent: Mover;
+    setPursueAgent(a: Mover): AutoPilot { this.#pursueAgent = a; return this; }
+    set pursueAgent(a: Mover) { this.#pursueAgent = a; }
+    get pursueAgent(): Mover { return this.#pursueAgent; }
 
 
     /*
@@ -353,24 +352,24 @@ class AutoPilot {
 
     /** Switch off pursuit behaviour */
     offsetPursuitOff(): AutoPilot {
-        this._flags &= (ALL_SB_MASK - OFFSET_PURSUIT); return this;
+        this.#flags &= (ALL_SB_MASK - OFFSET_PURSUIT); return this;
     }
 
     /** Switch on pursuit behaviour and set agent to pursue     */
     offsetPursuitOn(agent: Mover, offset: Vector2D): AutoPilot {
-        this._flags |= OFFSET_PURSUIT;
+        this.#flags |= OFFSET_PURSUIT;
         this.pursueAgent = agent;
         this.pursueOffset = offset;
         return this;
     }
 
     /** Is pursuit switched off? */
-    get isOffsetPusuitOn(): boolean { return (this._flags & OFFSET_PURSUIT) != 0; }
+    get isOffsetPusuitOn(): boolean { return (this.#flags & OFFSET_PURSUIT) != 0; }
 
-    __pursueOffset = new Vector2D();
-    setPursueOffset(v: Vector2D): AutoPilot { this.__pursueOffset.set(v); return this; }
-    set pursueOffset(v: Vector2D) { this.__pursueOffset.set(v); }
-    get pursueOffset(): Vector2D { return this.__pursueOffset; }
+    #pursueOffset = new Vector2D();
+    setPursueOffset(v: Vector2D): AutoPilot { this.#pursueOffset.set(v); return this; }
+    set pursueOffset(v: Vector2D) { this.#pursueOffset.set(v); }
+    get pursueOffset(): Vector2D { return this.#pursueOffset; }
 
 
     /*
@@ -396,12 +395,12 @@ class AutoPilot {
 
     /** Switch off pursuit behaviour */
     interposeOff(): AutoPilot {
-        this._flags &= (ALL_SB_MASK - INTERPOSE); return this;
+        this.#flags &= (ALL_SB_MASK - INTERPOSE); return this;
     }
 
     /** Switch on interpose behaviour     */
     interposeOn(agent0: Mover, other: Entity | Vector2D | _XY_): AutoPilot {
-        this._flags |= INTERPOSE;
+        this.#flags |= INTERPOSE;
         this.agent0 = agent0;
         // Create a dummy Mover with zero velocity to simplify calculations if needed
         if (other instanceof Mover)
@@ -414,17 +413,17 @@ class AutoPilot {
     }
 
     /** Is pursuit switched off? */
-    get isInterposeOn(): boolean { return (this._flags & INTERPOSE) != 0; }
+    get isInterposeOn(): boolean { return (this.#flags & INTERPOSE) != 0; }
 
-    _agent0: Mover;
-    setAgent0(a: Mover): AutoPilot { this._agent0 = a; return this; }
-    get agent0(): Mover { return this._agent0; }
-    set agent0(a: Mover) { this._agent0 = a; }
+    #agent0: Mover;
+    setAgent0(a: Mover): AutoPilot { this.#agent0 = a; return this; }
+    get agent0(): Mover { return this.#agent0; }
+    set agent0(a: Mover) { this.#agent0 = a; }
 
-    _agent1: Mover;
-    setAgent1(a: Mover): AutoPilot { this._agent1 = a; return this; }
-    set agent1(a: Mover) { this._agent1 = a; }
-    get agent1(): Mover { return this._agent1; }
+    #agent1: Mover;
+    setAgent1(a: Mover): AutoPilot { this.#agent1 = a; return this; }
+    set agent1(a: Mover) { this.#agent1 = a; }
+    get agent1(): Mover { return this.#agent1; }
 
 
     /*
@@ -460,7 +459,7 @@ class AutoPilot {
 
     /** Switch off wander behaviour */
     wanderOff(): AutoPilot {
-        this._flags &= (ALL_SB_MASK - WANDER);
+        this.#flags &= (ALL_SB_MASK - WANDER);
         return this;
     }
 
@@ -468,12 +467,12 @@ class AutoPilot {
     wanderOn(): AutoPilot {
         // Calculate iniitial wander target to directly ahead of of owner
         this._wanderTarget = this.owner.heading.resize(this.__wanderRadius);
-        this._flags |= WANDER;
+        this.#flags |= WANDER;
         return this;
     }
 
     /** Is wander switched on?    */
-    get isWanderOn(): boolean { return (this._flags & WANDER) != 0; }
+    get isWanderOn(): boolean { return (this.#flags & WANDER) != 0; }
 
     // radius of the constraining circle for the wander behaviour
     __wanderRadius = 20.0;
@@ -558,7 +557,7 @@ class AutoPilot {
      * @return this auto-pilot object
      */
     obsAvoidOff(): AutoPilot {
-        this._flags &= (ALL_SB_MASK - OBSTACLE_AVOID);
+        this.#flags &= (ALL_SB_MASK - OBSTACLE_AVOID);
         return this;
     }
 
@@ -566,12 +565,12 @@ class AutoPilot {
      * @return this auto-pilot object
      */
     obsAvoidOn(): AutoPilot {
-        this._flags |= OBSTACLE_AVOID;
+        this.#flags |= OBSTACLE_AVOID;
         return this;
     }
 
     /** Is obstacle avoidance switched on?    */
-    get isObsAvoidOn(): boolean { return (this._flags & OBSTACLE_AVOID) != 0; }
+    get isObsAvoidOn(): boolean { return (this.#flags & OBSTACLE_AVOID) != 0; }
 
     __detectBoxLength = 20;
     setDetectBoxLength(n: number): AutoPilot { this.__detectBoxLength = n; return this; }
@@ -627,18 +626,18 @@ class AutoPilot {
 
     /** Switch off wander behaviour     */
     wallAvoidOff(): AutoPilot {
-        this._flags &= (ALL_SB_MASK - WALL_AVOID);
+        this.#flags &= (ALL_SB_MASK - WALL_AVOID);
         return this;
     }
 
     /** Switch on wander behaviour     */
     wallAvoidOn(): AutoPilot {
-        this._flags |= WALL_AVOID;
+        this.#flags |= WALL_AVOID;
         return this;
     }
 
     /** Is wall avoidance switched on?    */
-    get isWallAvoidOn(): boolean { return (this._flags & WALL_AVOID) != 0; }
+    get isWallAvoidOn(): boolean { return (this.#flags & WALL_AVOID) != 0; }
 
     /**
      * Calculates and returns an array of feelers around the vehicle that
@@ -737,19 +736,19 @@ class AutoPilot {
 
     /** Switch off flocking     */
     flockOff(): AutoPilot {
-        this._flags &= (ALL_SB_MASK - FLOCK);
+        this.#flags &= (ALL_SB_MASK - FLOCK);
         return this;
     }
 
     /** Switch on flocking    */
     flockOn(ndist = this.__neighbourDist): AutoPilot {
         this.__neighbourDist = ndist;
-        this._flags |= FLOCK;
+        this.#flags |= FLOCK;
         return this;
     }
 
     /** Is flocking switched on?    */
-    get isFlockOn(): boolean { return (this._flags & FLOCK) != 0; }
+    get isFlockOn(): boolean { return (this.#flags & FLOCK) != 0; }
 
     // The maximum distance between moving entities for them to be considered
     // as neighbours. Used for group behaviours
@@ -788,18 +787,18 @@ class AutoPilot {
 
     /** Switch off alignment     */
     alignmentOff(): AutoPilot {
-        this._flags &= (ALL_SB_MASK - ALIGNMENT);
+        this.#flags &= (ALL_SB_MASK - ALIGNMENT);
         return this;
     }
 
     /** Switch on alignment    */
     alignmentOn(): AutoPilot {
-        this._flags |= ALIGNMENT;
+        this.#flags |= ALIGNMENT;
         return this;
     }
 
     /** Is wall avoidance switched on?    */
-    get isAlignmentOn(): boolean { return (this._flags & ALIGNMENT) != 0; }
+    get isAlignmentOn(): boolean { return (this.#flags & ALIGNMENT) != 0; }
 
 
     /*
@@ -821,18 +820,18 @@ class AutoPilot {
 
     /** Switch off separation     */
     separationOff(): AutoPilot {
-        this._flags &= (ALL_SB_MASK - SEPARATION);
+        this.#flags &= (ALL_SB_MASK - SEPARATION);
         return this;
     }
 
     /** Switch on separation    */
     separationOn(): AutoPilot {
-        this._flags |= SEPARATION;
+        this.#flags |= SEPARATION;
         return this;
     }
 
     /** Is separation switched on?    */
-    get isSeparationOn(): boolean { return (this._flags & SEPARATION) != 0; }
+    get isSeparationOn(): boolean { return (this.#flags & SEPARATION) != 0; }
 
 
     /*
@@ -855,18 +854,18 @@ class AutoPilot {
 
     /** Switch off cohesion     */
     cohesionOff(): AutoPilot {
-        this._flags &= (ALL_SB_MASK - COHESION);
+        this.#flags &= (ALL_SB_MASK - COHESION);
         return this;
     }
 
     /** Switch on cohsion    */
     cohesionOn(): AutoPilot {
-        this._flags |= COHESION;
+        this.#flags |= COHESION;
         return this;
     }
 
     /** Is cohesion switched on?    */
-    get isCohesionOn(): boolean { return (this._flags & COHESION) != 0; }
+    get isCohesionOn(): boolean { return (this.#flags & COHESION) != 0; }
 
 
     /*
@@ -875,10 +874,10 @@ class AutoPilot {
      * ======================================================================
      */
     path(owner: Vehicle, world: World) {
-        let route = this._route;
+        let route = this.#path;
         if (route.length > 0) {
             let target = new Vector2D(route[0].x, route[0].y);
-            let pd = (route.length == 1) ? this._pad : this._psd;
+            let pd = (route.length == 1) ? this.#pad : this.#psd;
             //            console.log(`Route length ${route.length}    target dist ${target.length()}`)
             if (target.distSq(owner.pos) < pd)
                 route.shift();
@@ -889,36 +888,35 @@ class AutoPilot {
         return Vector2D.ZERO;
     }
 
-    _route: Array<GraphNode | Vector2D> = [];
-
-    _psd = 20;
-    setPathSeekDist(n: number): AutoPilot { this._psd = n * n; return this; }
-    set pathSeekDist(n: number) { this._psd = n * n; }
-    get pathSeekDist(): number { return Math.sqrt(this._psd); }
-
-    _pad = 1;
-    setPathArriveDist(n: number): AutoPilot { this._pad = n * n; return this; }
-    set pathArriveDist(n: number) { this._pad = n * n; }
-    get pathArriveDist(): number { return Math.sqrt(this._pad); }
-
     /** Switch off cohesion     */
     pathOff(): AutoPilot {
-        this._flags &= (ALL_SB_MASK - PATH);
+        this.#flags &= (ALL_SB_MASK - PATH);
         return this;
     }
 
-    /** Switch on cohsion    */
-    pathOn(route: Array<GraphNode | Vector2D>): AutoPilot {   // Should we include array of vector????
-        if (Array.isArray(route) && route.length > 0) {
-            this._route = route;
-            this._flags |= PATH;
+    /** Switch on cohesion    */
+    pathOn(path: Array<GraphNode | Vector2D>): AutoPilot {   // Should we include array of vector????
+        if (Array.isArray(path) && path.length > 0) {
+            this.#path = path;
+            this.#flags |= PATH;
         }
         return this;
     }
 
     /** Is cohesion switched on?    */
-    get isPathOn(): boolean { return (this._flags & PATH) != 0; }
+    get isPathOn(): boolean { return (this.#flags & PATH) != 0; }
 
+    #path: Array<GraphNode | Vector2D> = [];
+
+    #psd = 20;
+    setPathSeekDist(n: number): AutoPilot { this.#psd = n * n; return this; }
+    set pathSeekDist(n: number) { this.#psd = n * n; }
+    get pathSeekDist(): number { return Math.sqrt(this.#psd); }
+
+    #pad = 1;
+    setPathArriveDist(n: number): AutoPilot { this.#pad = n * n; return this; }
+    set pathArriveDist(n: number) { this.#pad = n * n; }
+    get pathArriveDist(): number { return Math.sqrt(this.#pad); }
 
     // ########################################################################
     //                          FORCE CALCULATOR
@@ -1108,12 +1106,12 @@ class AutoPilot {
     // }
 
     off(behaviours: number) {
-        this._flags &= (ALL_SB_MASK - behaviours);
+        this.#flags &= (ALL_SB_MASK - behaviours);
         return this;
     }
 
     on(behaviours: number) {
-        this._flags |= (ALL_SB_MASK & behaviours);
+        this.#flags |= (ALL_SB_MASK & behaviours);
         return this;
     }
 
@@ -1136,8 +1134,8 @@ class AutoPilot {
 
     /** Default values for steering behaviour objects. */
     _weight: Array<number> = [
-        220.0, // wall avoidance weight
-        40.0, // obstacle avoidance weight
+        100.0, // wall avoidance weight
+        25.0, // obstacle avoidance weight
         5.0, // evade weight
         0.5, // flee weight
         1.0, // separation weight
@@ -1149,7 +1147,7 @@ class AutoPilot {
         20.0, // pursuit weight
         10.0, // offset pursuit weight
         10.0, // interpose weight
-        5.0, // hide weight
+        10.0, // hide weight
         20.0, // follow path weight
         4.0 // flock weight
     ];
@@ -1174,7 +1172,6 @@ class AutoPilot {
     // ];
 
 }
-
 
 interface _XY_ {
     x: number;

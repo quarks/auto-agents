@@ -1,22 +1,43 @@
+var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
+    if (kind === "m") throw new TypeError("Private method is not writable");
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
+    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
+};
+var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
+};
+var _World_births, _World_deaths, _World_domain, _World_population, _World_postman, _World_painter;
 class World {
     constructor(wsizeX, wsizeY, depth = 1, border = 0) {
+        _World_births.set(this, void 0);
+        _World_deaths.set(this, void 0);
+        _World_domain.set(this, void 0);
+        _World_population.set(this, void 0);
+        _World_postman.set(this, void 0);
+        _World_painter.set(this, void 0);
         // Largest obstacle collision radius
         this._maxObstacleSize = 0;
         this._preventOverlap = true;
         this._width = wsizeX;
         this._height = wsizeY;
-        this._postman = new Dispatcher(this);
-        this._population = new Map();
-        this._births = [];
-        this._deaths = [];
-        this._domain = new Domain(0, 0, wsizeX, wsizeY);
+        __classPrivateFieldSet(this, _World_postman, new Dispatcher(this), "f");
+        __classPrivateFieldSet(this, _World_population, new Map(), "f");
+        __classPrivateFieldSet(this, _World_births, [], "f");
+        __classPrivateFieldSet(this, _World_deaths, [], "f");
+        __classPrivateFieldSet(this, _World_domain, new Domain(0, 0, wsizeX, wsizeY), "f");
         let ts = Math.max(wsizeX, wsizeY) + 2 * border;
         this._tree = QPart.makeTree(-(ts - wsizeX) / 2, -(ts - wsizeY) / 2, ts, depth);
     }
-    get domain() { return this._domain; }
-    get population() { return [...this._population.values()]; }
-    get postman() { return this._postman; }
-    set painter(painter) { this._painter = painter; }
+    get births() { return __classPrivateFieldGet(this, _World_births, "f"); }
+    get deaths() { return __classPrivateFieldGet(this, _World_deaths, "f"); }
+    get domain() { return __classPrivateFieldGet(this, _World_domain, "f"); }
+    get populationMap() { return __classPrivateFieldGet(this, _World_population, "f"); }
+    get population() { return [...__classPrivateFieldGet(this, _World_population, "f").values()]; }
+    get postman() { return __classPrivateFieldGet(this, _World_postman, "f"); }
+    set painter(painter) { __classPrivateFieldSet(this, _World_painter, painter, "f"); }
     get width() { return this._width; }
     get height() { return this._height; }
     get tree() { return this._tree; }
@@ -27,30 +48,30 @@ class World {
         if (entity instanceof Obstacle)
             this._maxObstacleSize = Math.max(this._maxObstacleSize, entity.colRad);
         if (entity)
-            this._births.push(entity);
+            __classPrivateFieldGet(this, _World_births, "f").push(entity);
     }
     death(entity) {
         if (Number.isFinite(entity))
-            entity = this._population.get(Number(entity));
+            entity = __classPrivateFieldGet(this, _World_population, "f").get(Number(entity));
         if (entity instanceof Entity)
-            this._deaths.push(entity);
+            __classPrivateFieldGet(this, _World_deaths, "f").push(entity);
     }
     update(elapsedTime) {
         // ======================================================================
         // Births and deaths
-        while (this._deaths.length > 0)
-            this._subEntity(this._deaths.pop());
-        while (this._births.length > 0)
-            this._addEntity(this._births.pop());
+        while (__classPrivateFieldGet(this, _World_deaths, "f").length > 0)
+            this._subEntity(__classPrivateFieldGet(this, _World_deaths, "f").pop());
+        while (__classPrivateFieldGet(this, _World_births, "f").length > 0)
+            this._addEntity(__classPrivateFieldGet(this, _World_births, "f").pop());
         // ======================================================================
         // Process telegrams
-        this._postman?.update();
+        __classPrivateFieldGet(this, _World_postman, "f")?.update();
         // ======================================================================
         // Update FSMs
-        [...this._population.values()].forEach(v => v.fsm?.update(elapsedTime, this));
+        [...__classPrivateFieldGet(this, _World_population, "f").values()].forEach(v => v.fsm?.update(elapsedTime, this));
         // ======================================================================
         // Update all entities
-        [...this._population.values()].forEach(v => v.update(elapsedTime, this));
+        [...__classPrivateFieldGet(this, _World_population, "f").values()].forEach(v => v.update(elapsedTime, this));
         // ======================================================================
         // Ensure Zero Overlap?
         if (this._preventOverlap)
@@ -60,8 +81,8 @@ class World {
         this._tree.correctPartitionContents();
     }
     render() {
-        this._painter?.call(this);
-        for (let e of this._population.values())
+        __classPrivateFieldGet(this, _World_painter, "f")?.call(this);
+        for (let e of __classPrivateFieldGet(this, _World_population, "f").values())
             e.render();
     }
     quadtreeAnalysis() {
@@ -120,12 +141,12 @@ class World {
         return total;
     }
     _addEntity(entity) {
-        this._population.set(entity.id, entity);
+        __classPrivateFieldGet(this, _World_population, "f").set(entity.id, entity);
         this._tree.addEntity(entity);
         entity.world = this;
     }
     _subEntity(entity) {
-        this._population.delete(entity.id);
+        __classPrivateFieldGet(this, _World_population, "f").delete(entity.id);
         this._tree.subEntity(entity);
         entity.world = undefined;
     }
@@ -171,4 +192,5 @@ class World {
         }
     }
 }
+_World_births = new WeakMap(), _World_deaths = new WeakMap(), _World_domain = new WeakMap(), _World_population = new WeakMap(), _World_postman = new WeakMap(), _World_painter = new WeakMap();
 //# sourceMappingURL=world.js.map

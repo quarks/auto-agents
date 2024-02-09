@@ -1,36 +1,35 @@
 class FiniteStateMachine {
 
-    _owner: Entity;
-    _currentState: State;
-    _previousState: State;
-    _globalState: State;
+    #owner: Entity;
+    set owner(entity: Entity) { this.#owner = entity }
+    get owner() { return this.#owner }
 
-    set owner(entity: Entity) { this._owner = entity }
-    get owner() { return this._owner }
+    #currentState: State;
+    set currentState(state: State) { this.#currentState = state }
+    get currentState() { return this.#currentState }
 
-    set currentState(state: State) { this._currentState = state }
-    get currentState() { return this._currentState }
+    #previousState: State;
+    set previousState(state: State) { this.#previousState = state }
+    get previousState() { return this.#previousState }
 
-    set previousState(state: State) { this._previousState = state }
-    get previousState() { return this._previousState }
-
-    set globalState(state: State) { this._globalState = state }
-    get globalState() { return this._globalState }
+    #globalState: State;
+    set globalState(state: State) { this.#globalState = state }
+    get globalState() { return this.#globalState }
 
     constructor(owner: Entity, currentState?: State, previousState?: State, globalState?: State) {
-        this._owner = owner;
-        this._currentState = currentState;
-        this._previousState = previousState;
-        this._globalState = globalState;
+        this.#owner = owner;
+        this.#currentState = currentState;
+        this.#previousState = previousState;
+        this.#globalState = globalState;
     }
 
     update(elapsedTime: number, world: World) {
         // if there is a global state call it
         // this['_globalState']?.execute(this._owner, elapsedTime, world);
-        this.globalState?.execute(this._owner, elapsedTime, world);
+        this.globalState?.execute(this.#owner, elapsedTime, world);
         // same with the current state
         // this['_currentState']?.execute(this._owner, elapsedTime, world);
-        this._currentState?.execute(this._owner, elapsedTime, world);
+        this.#currentState?.execute(this.#owner, elapsedTime, world);
     }
 
     // onMessage(tgram: Telegram): boolean {
@@ -45,10 +44,10 @@ class FiniteStateMachine {
     // }
     onMessage(tgram: Telegram): boolean {
         // See if the global state can accept telegram
-        if (this._currentState?.onMessage(this._owner, tgram))
+        if (this.#currentState?.onMessage(this.#owner, tgram))
             return true;
         // See if the global state can accept telegram
-        if (this._globalState?.onMessage(this._owner, tgram))
+        if (this.#globalState?.onMessage(this.#owner, tgram))
             return true;
         // Telegram has not been handled
         return false;
@@ -56,18 +55,18 @@ class FiniteStateMachine {
 
     changeState(newState: State) {
         // Keep track of the previous state
-        this._previousState = this._currentState;
+        this.#previousState = this.#currentState;
         // Exit the current state
-        this._currentState?.exit(this._owner);
+        this.#currentState?.exit(this.#owner);
         // ***********************************************************
         // Change the current state
-        this._currentState = newState;
+        this.#currentState = newState;
         // ***********************************************************
         // Enter the current state
-        this._currentState?.enter(this._owner);
+        this.#currentState?.enter(this.#owner);
     }
 
     revertToPreviousState() {
-        this.changeState(this._previousState);
+        this.changeState(this.#previousState);
     }
 }

@@ -1,36 +1,36 @@
 class QPart {
-    _entities: Set<Entity>;
-    get entities(): Array<Entity> { return [...this._entities]; }
-    _parent: QPart;
-    get parent(): QPart { return this._parent; }
-    _children: Array<QPart>;
-    get children(): Array<QPart> { return this._children; }
-    _level: number;
-    get level(): number { return this._level; }
-    _depth: number;
-    get depth(): number { return this._depth; }
+    #entities: Set<Entity>;
+    get entities(): Array<Entity> { return [...this.#entities]; }
+    #parent: QPart;
+    get parent(): QPart { return this.#parent; }
+    #children: Array<QPart>;
+    get children(): Array<QPart> { return this.#children; }
+    #level: number;
+    get level(): number { return this.#level; }
+    #depth: number;
+    get depth(): number { return this.#depth; }
 
-    _lowX: number;
-    get lowX(): number { return this._lowX; }
-    _highX: number;
-    get highX(): number { return this._highX; }
-    _lowY: number;
-    get lowY(): number { return this._lowY; }
-    _highY: number;
-    get highY(): number { return this._highY; }
-    _cX: number;
-    get cX(): number { return this._cX; }
-    _cY: number;
-    get cY(): number { return this._cY; }
+    #lowX: number;
+    get lowX(): number { return this.#lowX; }
+    #highX: number;
+    get highX(): number { return this.#highX; }
+    #lowY: number;
+    get lowY(): number { return this.#lowY; }
+    #highY: number;
+    get highY(): number { return this.#highY; }
+    #cX: number;
+    get cX(): number { return this.#cX; }
+    #cY: number;
+    get cY(): number { return this.#cY; }
 
-    get partSize(): number { return this.highX - this._lowX; }
+    get partSize(): number { return this.highX - this.#lowX; }
     get treeSize(): number { return this.getRoot().partSize; }
     get leafSize(): number {
-        return this.getRoot().partSize / 2 ** (this._depth - 1);
+        return this.getRoot().partSize / 2 ** (this.#depth - 1);
     }
-    get isLeaf(): boolean { return !this._children; }
-    get isRoot(): boolean { return !this._parent; }
-    get hasChildren(): boolean { return Boolean(this._children); }
+    get isLeaf(): boolean { return !this.#children; }
+    get isRoot(): boolean { return !this.#parent; }
+    get hasChildren(): boolean { return Boolean(this.#children); }
 
     /** 
      * Creates a single partition in a quadtree structure.
@@ -40,20 +40,20 @@ class QPart {
      */
     constructor(parent: QPart, lowX: number, lowY: number, highX: number, highY: number,
         level: number, depth: number) {
-        this._parent = parent;
-        this._lowX = lowX;
-        this._lowY = lowY;
-        this._highX = highX;
-        this._highY = highY;
-        this._cX = (this._lowX + this._highX) / 2;
-        this._cY = (this._lowY + this._highY) / 2;
-        this._level = level;
-        this._depth = depth;
-        this._entities = new Set();
+        this.#parent = parent;
+        this.#lowX = lowX;
+        this.#lowY = lowY;
+        this.#highX = highX;
+        this.#highY = highY;
+        this.#cX = (this.#lowX + this.#highX) / 2;
+        this.#cY = (this.#lowY + this.#highY) / 2;
+        this.#level = level;
+        this.#depth = depth;
+        this.#entities = new Set();
     }
 
     getRoot() {
-        return this.isRoot ? this : this._parent.getRoot();
+        return this.isRoot ? this : this.#parent.getRoot();
     }
 
     // Find the partition that encompasses the specifies region. The specified region will be 
@@ -62,14 +62,14 @@ class QPart {
         function findPartition(p: QPart, x0: number, y0: number, x1: number, y1: number) {
             if ((x0 >= p.lowX && x1 <= p.highX && y0 >= p.lowY && y1 <= p.highY)) {
                 if (p.hasChildren) {
-                    let q = ((x0 < p._cX) ? 0 : 1) + ((y0 < p._cY) ? 0 : 2);
-                    return findPartition(p._children[q], x0, y0, x1, y1);
+                    let q = ((x0 < p.#cX) ? 0 : 1) + ((y0 < p.#cY) ? 0 : 2);
+                    return findPartition(p.#children[q], x0, y0, x1, y1);
                 }
                 else
                     return p;
             }
             else
-                return (p.isRoot ? p : p._parent);
+                return (p.isRoot ? p : p.#parent);
         }
         let root = this.getRoot();
         let a = Geom2D.box_box_p(lowX, lowY, highX, highY,
@@ -84,13 +84,13 @@ class QPart {
     getItemsInRegion(lowX: number, lowY: number, highX: number, highY: number) {
         function getParent(part) {
             if (!part) return;
-            parts.push(part); ents.push(...part._entities);
+            parts.push(part); ents.push(...part.#entities);
             getParent(part._parent);
         }
         function getChildren(part) {
-            parts.push(part); ents.push(...part._entities);
+            parts.push(part); ents.push(...part.#entities);
             if (part.hasChildren)
-                for (let child of part._children)
+                for (let child of part.#children)
                     if (Geom2D.box_box(lowX, lowY, highX, highY,
                         child.lowX, child.lowY, child.highX, child.highY))
                         getChildren(child);
@@ -98,14 +98,14 @@ class QPart {
         }
         let parts: Array<QPart> = [], ents: any = [];
         let encPart = this.getEnclosingPartition(lowX, lowY, highX, highY);
-        getParent(encPart._parent);
+        getParent(encPart.#parent);
         getChildren(encPart);
         return { partitions: parts, entities: ents, enc_partition: encPart };
     }
 
     _childAt(part: QPart, entity: Entity): QPart {
-        let q = ((entity.pos.x < part._cX) ? 0 : 1) + ((entity.pos.y < part._cY) ? 0 : 2);
-        return part._children[q];
+        let q = ((entity.pos.x < part.#cX) ? 0 : 1) + ((entity.pos.y < part.#cY) ? 0 : 2);
+        return part.#children[q];
     }
 
     addEntity(entity: Entity) {
@@ -114,17 +114,17 @@ class QPart {
                 if (part.hasChildren)
                     findPartition(part._childAt(part, entity), entity);
                 else
-                    part._entities.add(entity);
+                    part.#entities.add(entity);
             }
             else
-                part.isRoot ? part._entities.add(entity) : part._parent._entities.add(entity);
+                part.isRoot ? part.#entities.add(entity) : part.#parent.#entities.add(entity);
         }
         findPartition(this.getRoot(), entity);
     }
 
     subEntity(entity: Entity) {
         function findPartition(part: QPart, entity: Entity) {
-            if (part._entities.delete(entity)) return true;
+            if (part.#entities.delete(entity)) return true;
             if (part.hasChildren)
                 return findPartition(part._childAt(part, entity), entity);
             else
@@ -135,9 +135,9 @@ class QPart {
 
     countEntities() {
         function entityCount(part: QPart) {
-            count += part._entities.size;
+            count += part.#entities.size;
             if (part.hasChildren)
-                for (let child of part._children) entityCount(child);
+                for (let child of part.#children) entityCount(child);
         }
         let count = 0;
         entityCount(this.getRoot());
@@ -147,14 +147,14 @@ class QPart {
     correctPartitionContents() {
         function processPartition(part: QPart, root: QPart) {
             // Only need to consider entiies that can move i.e. has a velocity attribute
-            let me = [...part._entities].filter(x => x['_vel']);
+            let me = [...part.#entities].filter(x => x['_vel']);
             for (let e of me) {
                 if (e.fitsInside(part.lowX, part.lowY, part.highX, part.highY)) {
                     // Fits inside this partition attempt to move down as far as possible
                     if (part.hasChildren) {
                         let sp = part._childAt(part, e);
                         if (e.fitsInside(sp.lowX, sp.lowY, sp.highX, sp.highY)) {
-                            part._entities.delete(e);
+                            part.#entities.delete(e);
                             sp.addEntity(e);
                         }
                     }
@@ -163,12 +163,12 @@ class QPart {
                     // Does not fit inside partition. If this is not the root then remove 
                     // from this partion and add back to tree
                     if (part != root) {
-                        part._entities.delete(e);
+                        part.#entities.delete(e);
                         root.addEntity(e);
                     }
                 }
             }
-            part._children?.forEach(p => processPartition(p, root));
+            part.#children?.forEach(p => processPartition(p, root));
         }
         let root = this.getRoot();
         processPartition(root, root);
@@ -176,11 +176,11 @@ class QPart {
 
     getTreeLevelData() {
         function CountEntitiesByLevel(part: QPart) {
-            let s = 0; part._entities.forEach(e => { if (e instanceof Wall) s++; })
+            let s = 0; part.#entities.forEach(e => { if (e instanceof Wall) s++; })
             levelWall[0] += s; levelWall[part.level] += s;
-            s = 0; part._entities.forEach(e => { if (e instanceof Obstacle) s++; })
+            s = 0; part.#entities.forEach(e => { if (e instanceof Obstacle) s++; })
             levelObstacle[0] += s; levelObstacle[part.level] += s;
-            s = 0; part._entities.forEach(e => { if (e instanceof Mover) s++; })
+            s = 0; part.#entities.forEach(e => { if (e instanceof Mover) s++; })
             levelMover[0] += s; levelMover[part.level] += s;
             if (part.hasChildren)
                 for (let child of part.children) CountEntitiesByLevel(child);
@@ -213,22 +213,22 @@ class QPart {
             while (s.length < bufferLength) s = ' ' + s;
             return s;
         }
-        let p = this, t = '', s = `Partition Lvl: ${fmt(p._level, 0, 2)}`;
+        let p = this, t = '', s = `Partition Lvl: ${fmt(p.#level, 0, 2)}`;
         s += `    @ [${fmt(p.lowX, 0, 5)}, ${fmt(p.lowY, 0, 5)}]`;
         s += ` to [${fmt(p.highX, 0, 5)}, ${fmt(p.highY, 0, 5)}]`;
-        s += ` contains ${this._entities.size}  entities`;
-        if (p._entities.size > 0)
-            t = [...p._entities].map(x => x.id).reduce((x, y) => x + ' ' + y, '  ### ');
+        s += ` contains ${this.#entities.size}  entities`;
+        if (p.#entities.size > 0)
+            t = [...p.#entities].map(x => x.id).reduce((x, y) => x + ' ' + y, '  ### ');
         return s + t;
     }
 
     static makeTree(lowX: number, lowY: number, size: number, depth: number): QPart {
         function buildSubTree(parent: QPart, level: number, depth: number) {
             if (level <= depth) {
-                let x0 = parent._lowX, x2 = parent._highX, x1 = (x0 + x2) / 2;
-                let y0 = parent._lowY, y2 = parent._highY, y1 = (y0 + y2) / 2;
-                parent._children = [];
-                let a = parent._children;
+                let x0 = parent.#lowX, x2 = parent.#highX, x1 = (x0 + x2) / 2;
+                let y0 = parent.#lowY, y2 = parent.#highY, y1 = (y0 + y2) / 2;
+                parent.#children = [];
+                let a = parent.#children;
                 a[0] = new QPart(parent, x0, y0, x1, y1, level, depth);
                 a[1] = new QPart(parent, x1, y0, x2, y1, level, depth);
                 a[2] = new QPart(parent, x0, y1, x1, y2, level, depth);

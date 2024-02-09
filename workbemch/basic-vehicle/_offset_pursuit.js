@@ -9,7 +9,7 @@ let demo = function (p) {
         let p5canvas = p.createCanvas(640, 400, p);
         p5canvas.parent('sketch');
         world = new World(400, 400, 1);
-        world._domain.constraint = WRAP;
+        // world.domain.constraint = WRAP;
         p.makeAgents();
         trail = new Trail(600, p.color(0, 180, 0), 0.95);
     }
@@ -19,7 +19,7 @@ let demo = function (p) {
         trail.add(follower1.pos);
         p.background(220, 160, 220);
         p.noStroke(); p.fill(200, 255, 200);
-        let d = world._domain;
+        let d = world.domain;
         p.rect(d.lowX, d.lowY, d.width, d.height);
         world.render();
         if (showTrail) trail.render();
@@ -54,10 +54,9 @@ let demo = function (p) {
         leader = new Vehicle([world.width / 2, world.height / 2], 8);
         leader.vel = Vector2D.fromRandom(10, 20);
         leader.painter = vcePerson(p.color(200, 200, 255), p.color(20, 20, 160), p);
-        leader.maxSpeed = 30;
-        leader.addAutoPilot(world);
+        leader.maxSpeed = 60;
         leader.pilot.wanderOn();
-        leader.pilot.wanderDist = 70;
+        leader.pilot.wanderDist = 100;
         leader.pilot.wanderRadius = 20;
         leader.pilot.wanderJitter = 20;
         world.birth(leader);
@@ -65,8 +64,7 @@ let demo = function (p) {
         follower1 = new Vehicle([0.19 * world.width, 0.91 * world.height], 8);
         follower1.vel = new Vector2D(20, 30);
         follower1.painter = vcePerson(p.color(255, 200, 255), p.color(160, 20, 160), p);
-        follower1.maxSpeed = 60;
-        follower1.addAutoPilot(world);
+        follower1.maxSpeed = 80;
         follower1.pilot.offsetPursuitOn(leader, new Vector2D(-20, 0));
         follower1.forceRecorderOn();
         world.birth(follower1);

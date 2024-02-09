@@ -13,12 +13,12 @@ function setup() {
     world = new World(wx, wy, depth);
     makeEntities();
     world.update(0);
-    world._domain._constraint = WRAP;
+    world.domain.constraint = WRAP;
 }
 
 function draw() {
     world.update(deltaTime / 1000);
-    let wd = world._domain;
+    let wd = world.domain;
     background(240, 190, 240);
     // World background and tree grid
     noStroke(); fill(255, 240, 255); rect(wd.lowX, wd.lowY, wd.width, wd.height);
@@ -59,22 +59,14 @@ function makeEntities() {
         obstacles[i].painter = ppObs[0];
         world.birth(obstacles[i]);
     }
-    // for (let i = 0; i < data.length; i++) {
-    //     let d = data[i];
-    //     walls.push(new Wall({ x: d[0], y: d[1] }, { x: d[2], y: d[3] }));
-    //     walls[i].painter = ppWall[0];
-    //     world.birth(walls[i]);
-    // }
+
     // Wander data
     ppVehicle[0] = vcePerson(color(160, 200, 160), color(20, 200, 20)); // Green
     ppVehicle[1] = vcePerson(color(180, 180, 255), color(20, 20, 200)); // Blue
-    ppVehicle[2] = vcePerson(color(180, 180, 255), color(20, 20, 200)); // Blue
+    // ppVehicle[2] = vcePerson(color(180, 180, 255), color(20, 20, 200)); // Blue
     data = [
         [200, 200, 10],
         [222, 333, 8],
-        //[111, 85, 8],
-        // [300, 233, 10],
-        // [40, 155, 10],
     ]
     for (let i = 0; i < data.length; i++) {
         let d = data[i];
@@ -84,19 +76,16 @@ function makeEntities() {
         v.painter = ppVehicle[1];
         v.maxSpeed = 60;
         v.pilot.wanderOn();
-        // v.pilot.wanderRadius = 40;
-        // v.pilot.wanderDist = 100;
-        // v.pilot.wanderJitter = 3;
         v.pilot.obsAvoidOn();
         world.birth(v);
     }
 
-    for (let i = 1; i < 2; i++) {
-        let v = vehicles[i];
-        v.painter = ppVehicle[0];
-        v.pilot.obsAvoidOn();
-        v.pilot.hideOn(vehicles[0]);
-    }
+    vehicles[1].painter = ppVehicle[0];
+    vehicles[1].pilot.obsAvoidOn();
+    vehicles[1].pilot.hideOn(vehicles[0]);
+    vehicles[1].pilot.wanderOff();
+    vehicles[1].maxForce = 5000;
+    vehicles[1].forceRecorderOn();
 }
 
 function renderTreeGrid() {
@@ -106,7 +95,7 @@ function renderTreeGrid() {
         for (let i = r.lowX; i <= highX; i += dx) line(i, r.lowY, i, highY);
         for (let i = r.lowY; i <= highY; i += dy) line(r.lowX, i, highX, i);
     }
-    let r = world._tree, d = world._domain;
+    let r = world._tree, d = world.domain;
     let highX = Math.min(r.highX, d.highX), highY = Math.min(r.highY, d.highY);
     stroke(0, 16); strokeWeight(1.1);
     for (let i = 1; i <= depth; i++) renderPart(i);
@@ -114,6 +103,7 @@ function renderTreeGrid() {
 
 function keyTyped() {
     if (key == 't') printTree(world._tree);
+    if (key == 'r') vehicles[1].printForceData();
 }
 
 function printTree(tree) {
@@ -127,7 +117,7 @@ function printTree(tree) {
     }
     console.log('=====================================================================================');
     pt(tree);
-    console.log(`World population        ( Size = ${world._population.size} )`)
+    console.log(`World population        ( Size = ${world.population.size} )`)
     // console.log([...world._population.values()]);
     // if (world._population.size > 0) {
     // let pop = [...world._population.values()].map(x => x.id).reduce((x, y) => x + ' ' + y, '{ ') + '  }';

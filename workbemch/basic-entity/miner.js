@@ -10,7 +10,7 @@ class Miner extends Entity {
     constructor(name = 'Miner') {
         super([0, 0], 0);
         this._name = name;
-        this._fsm = new FiniteStateMachine(this);
+        this.fsm = new FiniteStateMachine(this);
     }
 
     get thirst() { return this._thirst };

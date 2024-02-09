@@ -12,12 +12,12 @@ function setup() {
     p5canvas.parent('sketch');
     world = new World(wx, wy, depth);
     makeEntities();
-    world._domain._constraint = WRAP;
+    world.domain.constraint = WRAP;
 }
 
 function draw() {
     world.update(deltaTime / 1000);
-    let wd = world._domain;
+    let wd = world.domain;
     background(240, 190, 240);
     // World background and tree grid
     noStroke(); fill(255, 240, 255); rect(wd.lowX, wd.lowY, wd.width, wd.height);
@@ -71,15 +71,6 @@ function makeEntities() {
     v.painter = ppVehicle[0];
     v.maxSpeed = 70;
     v.pilot.interposeOn(vehicles[2], [200, 200]);
-
-    console.log(`Vehicle is instance of Entity ${v instanceof Entity}`);
-    console.log(`Vehicle is instance of Mover ${v instanceof Mover}`);
-    console.log(`Vehicle is instance of Vehicle ${v instanceof Vehicle}`);
-    console.log(`Vehicle is instance of Artefact ${v instanceof Artefact}`);
-    console.log(`Vehicle is instance of Wall ${v instanceof Wall}`);
-    console.log(`Vehicle is instance of Building ${v instanceof Building}`);
-    console.log(`Vehicle is instance of Obstacle ${v instanceof Obstacle}`);
-
 }
 
 function renderTreeGrid() {
@@ -89,7 +80,7 @@ function renderTreeGrid() {
         for (let i = r.lowX; i <= highX; i += dx) line(i, r.lowY, i, highY);
         for (let i = r.lowY; i <= highY; i += dy) line(r.lowX, i, highX, i);
     }
-    let r = world._tree, d = world._domain;
+    let r = world._tree, d = world.domain;
     let highX = Math.min(r.highX, d.highX), highY = Math.min(r.highY, d.highY);
     stroke(0, 16); strokeWeight(1.1);
     for (let i = 1; i <= depth; i++) renderPart(i);

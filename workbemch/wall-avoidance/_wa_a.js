@@ -13,12 +13,12 @@ function setup() {
     world = new World(wx, wy, depth);
     makeEntities();
     world.update(0);
-    world._domain._constraint = WRAP;
+    world.domain.constraint = WRAP;
 }
 
 function draw() {
     world.update(deltaTime / 1000);
-    let wd = world._domain;
+    let wd = world.domain;
     background(240, 190, 240);
     // World background and tree grid
     noStroke(); fill(255, 240, 255); rect(wd.lowX, wd.lowY, wd.width, wd.height);
@@ -56,10 +56,6 @@ function makeEntities() {
     ppVehicle[1] = vcePerson(color(180, 180, 255), color(20, 20, 200)); // Blue
     data = [
         [200, 200, 10],
-        // [222, 333, 10],
-        // [111, 85, 10],
-        // [300, 233, 10],
-        // [40, 155, 10],
     ]
     for (let i = 0; i < data.length; i++) {
         let d = data[i];
@@ -70,13 +66,10 @@ function makeEntities() {
         v.painter = ppVehicle[1];
         v.maxSpeed = 60;
 
-        // pilot.interposeOn(undefined, [21.3, 87.91]);
-        // pilot.interposeOn(undefined, { x: 123.9, y: 56.7 });
-        // pilot.interposeOn(undefined, new Vector2D(31.422, 229.99));
-        // pilot.interposeOn(undefined, v);
-
+        pilot.wanderdist = 100;
+        pilot.wanderradius = 30;
         pilot.wanderOn();
-        pilot.wanderJitter = 3;
+        pilot.wanderJitter = 20;
 
         pilot.wallAvoidOn();
         pilot.ovalEnvelope = true;
@@ -94,7 +87,7 @@ function renderTreeGrid() {
         for (let i = r.lowX; i <= highX; i += dx) line(i, r.lowY, i, highY);
         for (let i = r.lowY; i <= highY; i += dy) line(r.lowX, i, highX, i);
     }
-    let r = world._tree, d = world._domain;
+    let r = world._tree, d = world.domain;
     let highX = Math.min(r.highX, d.highX), highY = Math.min(r.highY, d.highY);
     stroke(0, 16); strokeWeight(1.1);
     for (let i = 1; i <= depth; i++) renderPart(i);

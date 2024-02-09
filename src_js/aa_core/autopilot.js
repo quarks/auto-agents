@@ -1,17 +1,37 @@
+var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
+    if (kind === "m") throw new TypeError("Private method is not writable");
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
+    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
+};
+var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
+};
+var _AutoPilot_owner, _AutoPilot_flags, _AutoPilot_boxLength, _AutoPilot_target, _AutoPilot_fleeTarget, _AutoPilot_fleeRadius, _AutoPilot_arriveRate, _AutoPilot_arriveDist, _AutoPilot_evadeAgent, _AutoPilot_hideFromAgent, _AutoPilot_pursueAgent, _AutoPilot_pursueOffset, _AutoPilot_agent0, _AutoPilot_agent1, _AutoPilot_path, _AutoPilot_psd, _AutoPilot_pad;
 class AutoPilot {
-    constructor(owner, world) {
-        this._flags = 0;
+    constructor(owner) {
+        _AutoPilot_owner.set(this, void 0);
+        // _world: World;
+        _AutoPilot_flags.set(this, 0);
         // Extra variables needed to draw hints
-        this._boxLength = 0;
-        this._target = new Vector2D(); // Target for both arrive and seek behaviours
-        this.__fleeTarget = new Vector2D();
+        _AutoPilot_boxLength.set(this, 0);
+        _AutoPilot_target.set(this, new Vector2D()); // Target for both arrive and seek behaviours
+        _AutoPilot_fleeTarget.set(this, new Vector2D());
         // Panic distance squared for flee to be effective
-        this.__fleeRadius = 100;
+        _AutoPilot_fleeRadius.set(this, 100);
         // Deceleration rate for arrive
-        this._arriveRate = NORMAL;
-        this._arriveDist = 1;
+        _AutoPilot_arriveRate.set(this, NORMAL);
+        _AutoPilot_arriveDist.set(this, 1);
+        _AutoPilot_evadeAgent.set(this, void 0);
+        _AutoPilot_hideFromAgent.set(this, void 0);
+        this.__hideSearchRange = 100;
         this.__hideStandoffDist = 20;
-        this.__pursueOffset = new Vector2D();
+        _AutoPilot_pursueAgent.set(this, void 0);
+        _AutoPilot_pursueOffset.set(this, new Vector2D());
+        _AutoPilot_agent0.set(this, void 0);
+        _AutoPilot_agent1.set(this, void 0);
         // radius of the constraining circle for the wander behaviour
         this.__wanderRadius = 20.0;
         // distance the wander circle is projected in front of the agent
@@ -30,13 +50,13 @@ class AutoPilot {
         // The maximum distance between moving entities for them to be considered
         // as neighbours. Used for group behaviours
         this.__neighbourDist = 100.0;
-        this._route = [];
-        this._psd = 20;
-        this._pad = 1;
+        _AutoPilot_path.set(this, []);
+        _AutoPilot_psd.set(this, 20);
+        _AutoPilot_pad.set(this, 1);
         /** Default values for steering behaviour objects. */
         this._weight = [
-            220.0,
-            40.0,
+            100.0,
+            25.0,
             5.0,
             0.5,
             1.0,
@@ -48,17 +68,18 @@ class AutoPilot {
             20.0,
             10.0,
             10.0,
-            5.0,
+            10.0,
             20.0,
             4.0 // flock weight
         ];
-        this._owner = owner;
-        this._world = world;
+        __classPrivateFieldSet(this, _AutoPilot_owner, owner, "f");
+        // this._world = world;
     }
-    get owner() { return this._owner; }
-    set owner(owner) { this._owner = owner; }
-    set boxLength(n) { this._boxLength = n; }
-    get boxLength() { return this._boxLength; }
+    get owner() { return __classPrivateFieldGet(this, _AutoPilot_owner, "f"); }
+    set owner(owner) { __classPrivateFieldSet(this, _AutoPilot_owner, owner, "f"); }
+    setBoxLength(n) { __classPrivateFieldSet(this, _AutoPilot_boxLength, n, "f"); return this; }
+    set boxLength(n) { __classPrivateFieldSet(this, _AutoPilot_boxLength, n, "f"); }
+    get boxLength() { return __classPrivateFieldGet(this, _AutoPilot_boxLength, "f"); }
     /**
      * Set any of the properties
      * @param props
@@ -78,11 +99,10 @@ class AutoPilot {
     }
     /**
      * Switch off all steering behaviours
-     *
      * @return this auto-pilot object
      */
     allOff() {
-        this._flags = 0;
+        __classPrivateFieldSet(this, _AutoPilot_flags, 0, "f");
         return this;
     }
     // ########################################################################
@@ -101,21 +121,21 @@ class AutoPilot {
     }
     /** Switch off seek behaviour   */
     seekOff() {
-        this._flags &= (ALL_SB_MASK - SEEK);
+        __classPrivateFieldSet(this, _AutoPilot_flags, __classPrivateFieldGet(this, _AutoPilot_flags, "f") & (ALL_SB_MASK - SEEK), "f");
         return this;
     }
     /** Switch on seek behaviour and change target if anothe is provided    */
     seekOn(target) {
-        this._flags |= SEEK;
+        __classPrivateFieldSet(this, _AutoPilot_flags, __classPrivateFieldGet(this, _AutoPilot_flags, "f") | SEEK, "f");
         if (target)
             this.target.set(target);
         return this;
     }
     /** Is seek switched on?   */
-    get isSeekOn() { return (this._flags & SEEK) != 0; }
-    setTarget(t) { this._target.set(t); return this; }
-    set target(t) { this._target.set(t); }
-    get target() { return this._target; }
+    get isSeekOn() { return (__classPrivateFieldGet(this, _AutoPilot_flags, "f") & SEEK) != 0; }
+    setTarget(t) { __classPrivateFieldGet(this, _AutoPilot_target, "f").set(t); return this; }
+    set target(t) { __classPrivateFieldGet(this, _AutoPilot_target, "f").set(t); }
+    get target() { return __classPrivateFieldGet(this, _AutoPilot_target, "f"); }
     /*
      * ======================================================================
      * FLEE
@@ -123,7 +143,7 @@ class AutoPilot {
      */
     flee(owner, target) {
         let panicDist = Vector2D.dist(owner.pos, target);
-        if (panicDist >= this.__fleeRadius)
+        if (panicDist >= __classPrivateFieldGet(this, _AutoPilot_fleeRadius, "f"))
             return Vector2D.ZERO;
         let desiredVelocity = this.owner.pos.sub(target);
         desiredVelocity = desiredVelocity.normalize();
@@ -132,31 +152,32 @@ class AutoPilot {
     }
     /** Switch off flee behaviour   */
     fleeOff() {
-        this._flags &= (ALL_SB_MASK - FLEE);
+        __classPrivateFieldSet(this, _AutoPilot_flags, __classPrivateFieldGet(this, _AutoPilot_flags, "f") & (ALL_SB_MASK - FLEE), "f");
         return this;
     }
     /** Switch on flee behaviour and change flee target if provided.    */
-    fleeOn(target) {
-        this._flags |= FLEE;
-        if (target)
-            this.__fleeTarget.set(target);
+    fleeOn(target, fleeRadius) {
+        __classPrivateFieldSet(this, _AutoPilot_flags, __classPrivateFieldGet(this, _AutoPilot_flags, "f") | FLEE, "f");
+        __classPrivateFieldGet(this, _AutoPilot_fleeTarget, "f").set(target);
+        if (fleeRadius)
+            __classPrivateFieldSet(this, _AutoPilot_fleeRadius, fleeRadius, "f");
         return this;
     }
     /** Is seek switched on?   */
-    get isFleeOn() { return (this._flags & FLEE) != 0; }
-    setFleeTarget(t) { this.__fleeTarget.set(t); return this; }
-    set fleeTarget(t) { this.__fleeTarget.set(t); }
-    get fleeTarget() { return this.__fleeTarget; }
-    get fleeRadius() { return this.__fleeRadius; }
-    set fleeRadius(n) { this.__fleeRadius = n; }
+    get isFleeOn() { return (__classPrivateFieldGet(this, _AutoPilot_flags, "f") & FLEE) != 0; }
+    setFleeTarget(t) { __classPrivateFieldGet(this, _AutoPilot_fleeTarget, "f").set(t); return this; }
+    set fleeTarget(t) { __classPrivateFieldGet(this, _AutoPilot_fleeTarget, "f").set(t); }
+    get fleeTarget() { return __classPrivateFieldGet(this, _AutoPilot_fleeTarget, "f"); }
+    get fleeRadius() { return __classPrivateFieldGet(this, _AutoPilot_fleeRadius, "f"); }
+    set fleeRadius(n) { __classPrivateFieldSet(this, _AutoPilot_fleeRadius, n, "f"); }
     /*
      * ======================================================================
      * ARRIVE
      * ======================================================================
      */
-    arrive(owner, target, tweak = this._arriveRate) {
+    arrive(owner, target, tweak = __classPrivateFieldGet(this, _AutoPilot_arriveRate, "f")) {
         let toTarget = target.sub(owner.pos), dist = toTarget.length();
-        if (dist > this._arriveDist) {
+        if (dist > __classPrivateFieldGet(this, _AutoPilot_arriveDist, "f")) {
             let rate = dist / DECEL_TWEEK[tweak];
             let speed = Math.min(owner.maxSpeed, rate);
             let desiredVelocity = toTarget.mult(speed / dist);
@@ -166,7 +187,7 @@ class AutoPilot {
     }
     /** Switch off arrive  behaviour   */
     arriveOff() {
-        this._flags &= (ALL_SB_MASK - ARRIVE);
+        __classPrivateFieldSet(this, _AutoPilot_flags, __classPrivateFieldGet(this, _AutoPilot_flags, "f") & (ALL_SB_MASK - ARRIVE), "f");
         return this;
     }
     /**
@@ -175,26 +196,26 @@ class AutoPilot {
      * @param rate rate of approach (SLOW, NORMAL or FAST)
      */
     arriveOn(target, rate) {
-        this._flags |= ARRIVE;
+        __classPrivateFieldSet(this, _AutoPilot_flags, __classPrivateFieldGet(this, _AutoPilot_flags, "f") | ARRIVE, "f");
         if (target)
             this.target.set(target);
         if (rate)
-            this._arriveRate = rate;
+            __classPrivateFieldSet(this, _AutoPilot_arriveRate, rate, "f");
         return this;
     }
     /** Is arrive switched on?   */
-    get isArriveOn() { return (this._flags & ARRIVE) != 0; }
+    get isArriveOn() { return (__classPrivateFieldGet(this, _AutoPilot_flags, "f") & ARRIVE) != 0; }
     setArriveRate(n) {
         if (n == SLOW || n == FAST)
-            this._arriveRate = n;
+            __classPrivateFieldSet(this, _AutoPilot_arriveRate, n, "f");
         else
-            this._arriveRate = NORMAL;
+            __classPrivateFieldSet(this, _AutoPilot_arriveRate, NORMAL, "f");
         return this;
     }
-    set arriveRate(n) { this._arriveRate = n; }
-    get arriveRate() { return this._arriveRate; }
-    set arriveDist(n) { this._arriveDist = n; }
-    get arriveDist() { return this._arriveDist; }
+    set arriveRate(n) { __classPrivateFieldSet(this, _AutoPilot_arriveRate, n, "f"); }
+    get arriveRate() { return __classPrivateFieldGet(this, _AutoPilot_arriveRate, "f"); }
+    set arriveDist(n) { __classPrivateFieldSet(this, _AutoPilot_arriveDist, n, "f"); }
+    get arriveDist() { return __classPrivateFieldGet(this, _AutoPilot_arriveDist, "f"); }
     /*
      * ======================================================================
      * EVADE
@@ -208,7 +229,7 @@ class AutoPilot {
     }
     /** Switch off evade  */
     evadeOff() {
-        this._flags &= (ALL_SB_MASK - EVADE);
+        __classPrivateFieldSet(this, _AutoPilot_flags, __classPrivateFieldGet(this, _AutoPilot_flags, "f") & (ALL_SB_MASK - EVADE), "f");
         return this;
     }
     /**
@@ -216,15 +237,15 @@ class AutoPilot {
      * @returns this auto-pilot object
      */
     evadeOn(agent) {
-        this._flags |= EVADE;
+        __classPrivateFieldSet(this, _AutoPilot_flags, __classPrivateFieldGet(this, _AutoPilot_flags, "f") | EVADE, "f");
         this.evadeAgent = agent;
         return this;
     }
     /** Is evade switched on?   */
-    get isEvadeOn() { return (this._flags & EVADE) != 0; }
-    setEvadeAgent(a) { this._evadeAgent = a; return this; }
-    set evadeAgent(a) { this._evadeAgent = a; }
-    get evadeAgent() { return this._evadeAgent; }
+    get isEvadeOn() { return (__classPrivateFieldGet(this, _AutoPilot_flags, "f") & EVADE) != 0; }
+    setEvadeAgent(a) { __classPrivateFieldSet(this, _AutoPilot_evadeAgent, a, "f"); return this; }
+    set evadeAgent(a) { __classPrivateFieldSet(this, _AutoPilot_evadeAgent, a, "f"); }
+    get evadeAgent() { return __classPrivateFieldGet(this, _AutoPilot_evadeAgent, "f"); }
     /*
      * ======================================================================
      * HIDE
@@ -237,7 +258,7 @@ class AutoPilot {
         let pos = owner.pos;
         let result = world.tree.getItemsInRegion(pos.x - sd, pos.y - sd, pos.x + sd, pos.y + sd);
         let obs = result.entities.filter(e => e instanceof Obstacle);
-        console.log(`Found ${obs.length} obstacles for hiding behind`);
+        // console.log(`Found ${obs.length} obstacles for hiding behind`);
         let distToNearest = Number.MAX_VALUE;
         let bestHidingSpot;
         for (let ob of obs) {
@@ -261,7 +282,7 @@ class AutoPilot {
     }
     /** Switch off evade  */
     hideOff() {
-        this._flags &= (ALL_SB_MASK - HIDE);
+        __classPrivateFieldSet(this, _AutoPilot_flags, __classPrivateFieldGet(this, _AutoPilot_flags, "f") & (ALL_SB_MASK - HIDE), "f");
         return this;
     }
     /**
@@ -269,15 +290,15 @@ class AutoPilot {
      * @returns this auto-pilot object
      */
     hideOn(agent) {
-        this._flags |= HIDE;
+        __classPrivateFieldSet(this, _AutoPilot_flags, __classPrivateFieldGet(this, _AutoPilot_flags, "f") | HIDE, "f");
         this.hideFromAgent = agent;
         return this;
     }
     /** Is hide switched on?   */
-    get isHideOn() { return (this._flags & HIDE) != 0; }
-    setHideFromAgent(m) { this._hideFromAgent = m; return this; }
-    set hideFromAgent(m) { this._hideFromAgent = m; }
-    get hideFromAgent() { return this._hideFromAgent; }
+    get isHideOn() { return (__classPrivateFieldGet(this, _AutoPilot_flags, "f") & HIDE) != 0; }
+    setHideFromAgent(m) { __classPrivateFieldSet(this, _AutoPilot_hideFromAgent, m, "f"); return this; }
+    set hideFromAgent(m) { __classPrivateFieldSet(this, _AutoPilot_hideFromAgent, m, "f"); }
+    get hideFromAgent() { return __classPrivateFieldGet(this, _AutoPilot_hideFromAgent, "f"); }
     setHideSearchRange(n) { this.__hideSearchRange = n; return this; }
     set hideSearchRange(n) { this.__hideSearchRange = n; }
     get hideSearchRange() { return this.__hideSearchRange; }
@@ -300,20 +321,20 @@ class AutoPilot {
     }
     /** Switch off pursuit behaviour */
     pursuitOff() {
-        this._flags &= (ALL_SB_MASK - PURSUIT);
+        __classPrivateFieldSet(this, _AutoPilot_flags, __classPrivateFieldGet(this, _AutoPilot_flags, "f") & (ALL_SB_MASK - PURSUIT), "f");
         return this;
     }
     /** Switch on pursuit behaviour and set agent to pursue     */
     pursuitOn(agent) {
-        this._flags |= PURSUIT;
+        __classPrivateFieldSet(this, _AutoPilot_flags, __classPrivateFieldGet(this, _AutoPilot_flags, "f") | PURSUIT, "f");
         this.pursueAgent = agent;
         return this;
     }
     /** Is pursuit switched off? */
-    get isPusuitOn() { return (this._flags & PURSUIT) != 0; }
-    setPursueAgent(a) { this._pursueAgent = a; return this; }
-    set pursueAgent(a) { this._pursueAgent = a; }
-    get pursueAgent() { return this._pursueAgent; }
+    get isPusuitOn() { return (__classPrivateFieldGet(this, _AutoPilot_flags, "f") & PURSUIT) != 0; }
+    setPursueAgent(a) { __classPrivateFieldSet(this, _AutoPilot_pursueAgent, a, "f"); return this; }
+    set pursueAgent(a) { __classPrivateFieldSet(this, _AutoPilot_pursueAgent, a, "f"); }
+    get pursueAgent() { return __classPrivateFieldGet(this, _AutoPilot_pursueAgent, "f"); }
     /*
      * ======================================================================
      * OFFSET PURSUIT
@@ -334,21 +355,21 @@ class AutoPilot {
     }
     /** Switch off pursuit behaviour */
     offsetPursuitOff() {
-        this._flags &= (ALL_SB_MASK - OFFSET_PURSUIT);
+        __classPrivateFieldSet(this, _AutoPilot_flags, __classPrivateFieldGet(this, _AutoPilot_flags, "f") & (ALL_SB_MASK - OFFSET_PURSUIT), "f");
         return this;
     }
     /** Switch on pursuit behaviour and set agent to pursue     */
     offsetPursuitOn(agent, offset) {
-        this._flags |= OFFSET_PURSUIT;
+        __classPrivateFieldSet(this, _AutoPilot_flags, __classPrivateFieldGet(this, _AutoPilot_flags, "f") | OFFSET_PURSUIT, "f");
         this.pursueAgent = agent;
         this.pursueOffset = offset;
         return this;
     }
     /** Is pursuit switched off? */
-    get isOffsetPusuitOn() { return (this._flags & OFFSET_PURSUIT) != 0; }
-    setPursueOffset(v) { this.__pursueOffset.set(v); return this; }
-    set pursueOffset(v) { this.__pursueOffset.set(v); }
-    get pursueOffset() { return this.__pursueOffset; }
+    get isOffsetPusuitOn() { return (__classPrivateFieldGet(this, _AutoPilot_flags, "f") & OFFSET_PURSUIT) != 0; }
+    setPursueOffset(v) { __classPrivateFieldGet(this, _AutoPilot_pursueOffset, "f").set(v); return this; }
+    set pursueOffset(v) { __classPrivateFieldGet(this, _AutoPilot_pursueOffset, "f").set(v); }
+    get pursueOffset() { return __classPrivateFieldGet(this, _AutoPilot_pursueOffset, "f"); }
     /*
      * ======================================================================
      * INTERPOSE
@@ -369,12 +390,12 @@ class AutoPilot {
     }
     /** Switch off pursuit behaviour */
     interposeOff() {
-        this._flags &= (ALL_SB_MASK - INTERPOSE);
+        __classPrivateFieldSet(this, _AutoPilot_flags, __classPrivateFieldGet(this, _AutoPilot_flags, "f") & (ALL_SB_MASK - INTERPOSE), "f");
         return this;
     }
     /** Switch on interpose behaviour     */
     interposeOn(agent0, other) {
-        this._flags |= INTERPOSE;
+        __classPrivateFieldSet(this, _AutoPilot_flags, __classPrivateFieldGet(this, _AutoPilot_flags, "f") | INTERPOSE, "f");
         this.agent0 = agent0;
         // Create a dummy Mover with zero velocity to simplify calculations if needed
         if (other instanceof Mover)
@@ -386,13 +407,13 @@ class AutoPilot {
         return this;
     }
     /** Is pursuit switched off? */
-    get isInterposeOn() { return (this._flags & INTERPOSE) != 0; }
-    setAgent0(a) { this._agent0 = a; return this; }
-    get agent0() { return this._agent0; }
-    set agent0(a) { this._agent0 = a; }
-    setAgent1(a) { this._agent1 = a; return this; }
-    set agent1(a) { this._agent1 = a; }
-    get agent1() { return this._agent1; }
+    get isInterposeOn() { return (__classPrivateFieldGet(this, _AutoPilot_flags, "f") & INTERPOSE) != 0; }
+    setAgent0(a) { __classPrivateFieldSet(this, _AutoPilot_agent0, a, "f"); return this; }
+    get agent0() { return __classPrivateFieldGet(this, _AutoPilot_agent0, "f"); }
+    set agent0(a) { __classPrivateFieldSet(this, _AutoPilot_agent0, a, "f"); }
+    setAgent1(a) { __classPrivateFieldSet(this, _AutoPilot_agent1, a, "f"); return this; }
+    set agent1(a) { __classPrivateFieldSet(this, _AutoPilot_agent1, a, "f"); }
+    get agent1() { return __classPrivateFieldGet(this, _AutoPilot_agent1, "f"); }
     /*
      * ======================================================================
      * WANDER
@@ -420,18 +441,18 @@ class AutoPilot {
     }
     /** Switch off wander behaviour */
     wanderOff() {
-        this._flags &= (ALL_SB_MASK - WANDER);
+        __classPrivateFieldSet(this, _AutoPilot_flags, __classPrivateFieldGet(this, _AutoPilot_flags, "f") & (ALL_SB_MASK - WANDER), "f");
         return this;
     }
     /** Switch on wander behaviour */
     wanderOn() {
         // Calculate iniitial wander target to directly ahead of of owner
         this._wanderTarget = this.owner.heading.resize(this.__wanderRadius);
-        this._flags |= WANDER;
+        __classPrivateFieldSet(this, _AutoPilot_flags, __classPrivateFieldGet(this, _AutoPilot_flags, "f") | WANDER, "f");
         return this;
     }
     /** Is wander switched on?    */
-    get isWanderOn() { return (this._flags & WANDER) != 0; }
+    get isWanderOn() { return (__classPrivateFieldGet(this, _AutoPilot_flags, "f") & WANDER) != 0; }
     setWanderRadius(n) { this.__wanderRadius = n; return this; }
     set wanderRadius(n) { this.__wanderRadius = n; }
     get wanderRadius() { return this.__wanderRadius; }
@@ -499,18 +520,18 @@ class AutoPilot {
      * @return this auto-pilot object
      */
     obsAvoidOff() {
-        this._flags &= (ALL_SB_MASK - OBSTACLE_AVOID);
+        __classPrivateFieldSet(this, _AutoPilot_flags, __classPrivateFieldGet(this, _AutoPilot_flags, "f") & (ALL_SB_MASK - OBSTACLE_AVOID), "f");
         return this;
     }
     /**
      * @return this auto-pilot object
      */
     obsAvoidOn() {
-        this._flags |= OBSTACLE_AVOID;
+        __classPrivateFieldSet(this, _AutoPilot_flags, __classPrivateFieldGet(this, _AutoPilot_flags, "f") | OBSTACLE_AVOID, "f");
         return this;
     }
     /** Is obstacle avoidance switched on?    */
-    get isObsAvoidOn() { return (this._flags & OBSTACLE_AVOID) != 0; }
+    get isObsAvoidOn() { return (__classPrivateFieldGet(this, _AutoPilot_flags, "f") & OBSTACLE_AVOID) != 0; }
     setDetectBoxLength(n) { this.__detectBoxLength = n; return this; }
     set detectBoxLength(n) { this.__detectBoxLength = n; }
     get detectBoxLength() { return this.__detectBoxLength; }
@@ -557,16 +578,16 @@ class AutoPilot {
     }
     /** Switch off wander behaviour     */
     wallAvoidOff() {
-        this._flags &= (ALL_SB_MASK - WALL_AVOID);
+        __classPrivateFieldSet(this, _AutoPilot_flags, __classPrivateFieldGet(this, _AutoPilot_flags, "f") & (ALL_SB_MASK - WALL_AVOID), "f");
         return this;
     }
     /** Switch on wander behaviour     */
     wallAvoidOn() {
-        this._flags |= WALL_AVOID;
+        __classPrivateFieldSet(this, _AutoPilot_flags, __classPrivateFieldGet(this, _AutoPilot_flags, "f") | WALL_AVOID, "f");
         return this;
     }
     /** Is wall avoidance switched on?    */
-    get isWallAvoidOn() { return (this._flags & WALL_AVOID) != 0; }
+    get isWallAvoidOn() { return (__classPrivateFieldGet(this, _AutoPilot_flags, "f") & WALL_AVOID) != 0; }
     /**
      * Calculates and returns an array of feelers around the vehicle that
      * owns this steering behaviour.
@@ -649,17 +670,17 @@ class AutoPilot {
     }
     /** Switch off flocking     */
     flockOff() {
-        this._flags &= (ALL_SB_MASK - FLOCK);
+        __classPrivateFieldSet(this, _AutoPilot_flags, __classPrivateFieldGet(this, _AutoPilot_flags, "f") & (ALL_SB_MASK - FLOCK), "f");
         return this;
     }
     /** Switch on flocking    */
     flockOn(ndist = this.__neighbourDist) {
         this.__neighbourDist = ndist;
-        this._flags |= FLOCK;
+        __classPrivateFieldSet(this, _AutoPilot_flags, __classPrivateFieldGet(this, _AutoPilot_flags, "f") | FLOCK, "f");
         return this;
     }
     /** Is flocking switched on?    */
-    get isFlockOn() { return (this._flags & FLOCK) != 0; }
+    get isFlockOn() { return (__classPrivateFieldGet(this, _AutoPilot_flags, "f") & FLOCK) != 0; }
     setNeighbourDist(n) { this.__neighbourDist = n; return this; }
     set neighbourDist(n) { this.__neighbourDist = n; }
     get neighbourDist() { return this.__neighbourDist; }
@@ -690,16 +711,16 @@ class AutoPilot {
     }
     /** Switch off alignment     */
     alignmentOff() {
-        this._flags &= (ALL_SB_MASK - ALIGNMENT);
+        __classPrivateFieldSet(this, _AutoPilot_flags, __classPrivateFieldGet(this, _AutoPilot_flags, "f") & (ALL_SB_MASK - ALIGNMENT), "f");
         return this;
     }
     /** Switch on alignment    */
     alignmentOn() {
-        this._flags |= ALIGNMENT;
+        __classPrivateFieldSet(this, _AutoPilot_flags, __classPrivateFieldGet(this, _AutoPilot_flags, "f") | ALIGNMENT, "f");
         return this;
     }
     /** Is wall avoidance switched on?    */
-    get isAlignmentOn() { return (this._flags & ALIGNMENT) != 0; }
+    get isAlignmentOn() { return (__classPrivateFieldGet(this, _AutoPilot_flags, "f") & ALIGNMENT) != 0; }
     /*
      * ======================================================================
      * SEPARATION
@@ -718,16 +739,16 @@ class AutoPilot {
     }
     /** Switch off separation     */
     separationOff() {
-        this._flags &= (ALL_SB_MASK - SEPARATION);
+        __classPrivateFieldSet(this, _AutoPilot_flags, __classPrivateFieldGet(this, _AutoPilot_flags, "f") & (ALL_SB_MASK - SEPARATION), "f");
         return this;
     }
     /** Switch on separation    */
     separationOn() {
-        this._flags |= SEPARATION;
+        __classPrivateFieldSet(this, _AutoPilot_flags, __classPrivateFieldGet(this, _AutoPilot_flags, "f") | SEPARATION, "f");
         return this;
     }
     /** Is separation switched on?    */
-    get isSeparationOn() { return (this._flags & SEPARATION) != 0; }
+    get isSeparationOn() { return (__classPrivateFieldGet(this, _AutoPilot_flags, "f") & SEPARATION) != 0; }
     /*
      * ======================================================================
      * COHESION
@@ -747,26 +768,26 @@ class AutoPilot {
     }
     /** Switch off cohesion     */
     cohesionOff() {
-        this._flags &= (ALL_SB_MASK - COHESION);
+        __classPrivateFieldSet(this, _AutoPilot_flags, __classPrivateFieldGet(this, _AutoPilot_flags, "f") & (ALL_SB_MASK - COHESION), "f");
         return this;
     }
     /** Switch on cohsion    */
     cohesionOn() {
-        this._flags |= COHESION;
+        __classPrivateFieldSet(this, _AutoPilot_flags, __classPrivateFieldGet(this, _AutoPilot_flags, "f") | COHESION, "f");
         return this;
     }
     /** Is cohesion switched on?    */
-    get isCohesionOn() { return (this._flags & COHESION) != 0; }
+    get isCohesionOn() { return (__classPrivateFieldGet(this, _AutoPilot_flags, "f") & COHESION) != 0; }
     /*
      * ======================================================================
      * PATH
      * ======================================================================
      */
     path(owner, world) {
-        let route = this._route;
+        let route = __classPrivateFieldGet(this, _AutoPilot_path, "f");
         if (route.length > 0) {
             let target = new Vector2D(route[0].x, route[0].y);
-            let pd = (route.length == 1) ? this._pad : this._psd;
+            let pd = (route.length == 1) ? __classPrivateFieldGet(this, _AutoPilot_pad, "f") : __classPrivateFieldGet(this, _AutoPilot_psd, "f");
             //            console.log(`Route length ${route.length}    target dist ${target.length()}`)
             if (target.distSq(owner.pos) < pd)
                 route.shift();
@@ -776,27 +797,27 @@ class AutoPilot {
         this.pathOff();
         return Vector2D.ZERO;
     }
-    setPathSeekDist(n) { this._psd = n * n; return this; }
-    set pathSeekDist(n) { this._psd = n * n; }
-    get pathSeekDist() { return Math.sqrt(this._psd); }
-    setPathArriveDist(n) { this._pad = n * n; return this; }
-    set pathArriveDist(n) { this._pad = n * n; }
-    get pathArriveDist() { return Math.sqrt(this._pad); }
     /** Switch off cohesion     */
     pathOff() {
-        this._flags &= (ALL_SB_MASK - PATH);
+        __classPrivateFieldSet(this, _AutoPilot_flags, __classPrivateFieldGet(this, _AutoPilot_flags, "f") & (ALL_SB_MASK - PATH), "f");
         return this;
     }
-    /** Switch on cohsion    */
-    pathOn(route) {
-        if (Array.isArray(route) && route.length > 0) {
-            this._route = route;
-            this._flags |= PATH;
+    /** Switch on cohesion    */
+    pathOn(path) {
+        if (Array.isArray(path) && path.length > 0) {
+            __classPrivateFieldSet(this, _AutoPilot_path, path, "f");
+            __classPrivateFieldSet(this, _AutoPilot_flags, __classPrivateFieldGet(this, _AutoPilot_flags, "f") | PATH, "f");
         }
         return this;
     }
     /** Is cohesion switched on?    */
-    get isPathOn() { return (this._flags & PATH) != 0; }
+    get isPathOn() { return (__classPrivateFieldGet(this, _AutoPilot_flags, "f") & PATH) != 0; }
+    setPathSeekDist(n) { __classPrivateFieldSet(this, _AutoPilot_psd, n * n, "f"); return this; }
+    set pathSeekDist(n) { __classPrivateFieldSet(this, _AutoPilot_psd, n * n, "f"); }
+    get pathSeekDist() { return Math.sqrt(__classPrivateFieldGet(this, _AutoPilot_psd, "f")); }
+    setPathArriveDist(n) { __classPrivateFieldSet(this, _AutoPilot_pad, n * n, "f"); return this; }
+    set pathArriveDist(n) { __classPrivateFieldSet(this, _AutoPilot_pad, n * n, "f"); }
+    get pathArriveDist() { return Math.sqrt(__classPrivateFieldGet(this, _AutoPilot_pad, "f")); }
     // ########################################################################
     //                          FORCE CALCULATOR
     // ########################################################################
@@ -982,11 +1003,11 @@ class AutoPilot {
     //     }
     // }
     off(behaviours) {
-        this._flags &= (ALL_SB_MASK - behaviours);
+        __classPrivateFieldSet(this, _AutoPilot_flags, __classPrivateFieldGet(this, _AutoPilot_flags, "f") & (ALL_SB_MASK - behaviours), "f");
         return this;
     }
     on(behaviours) {
-        this._flags |= (ALL_SB_MASK & behaviours);
+        __classPrivateFieldSet(this, _AutoPilot_flags, __classPrivateFieldGet(this, _AutoPilot_flags, "f") | (ALL_SB_MASK & behaviours), "f");
         return this;
     }
     setWeighting(bhvr, weight) {
@@ -1005,4 +1026,5 @@ class AutoPilot {
             return 0;
     }
 }
+_AutoPilot_owner = new WeakMap(), _AutoPilot_flags = new WeakMap(), _AutoPilot_boxLength = new WeakMap(), _AutoPilot_target = new WeakMap(), _AutoPilot_fleeTarget = new WeakMap(), _AutoPilot_fleeRadius = new WeakMap(), _AutoPilot_arriveRate = new WeakMap(), _AutoPilot_arriveDist = new WeakMap(), _AutoPilot_evadeAgent = new WeakMap(), _AutoPilot_hideFromAgent = new WeakMap(), _AutoPilot_pursueAgent = new WeakMap(), _AutoPilot_pursueOffset = new WeakMap(), _AutoPilot_agent0 = new WeakMap(), _AutoPilot_agent1 = new WeakMap(), _AutoPilot_path = new WeakMap(), _AutoPilot_psd = new WeakMap(), _AutoPilot_pad = new WeakMap();
 //# sourceMappingURL=autopilot.js.map
