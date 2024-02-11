@@ -12,12 +12,12 @@ function setup() {
     world = new World(wx, wy, depth);
     makeEntities();
     world.update(0);
-    world._domain._constraint = WRAP;
+    world.domain.constraint = WRAP;
 }
 
 function draw() {
     world.update(deltaTime / 1000);
-    let wd = world._domain;
+    let wd = world.domain;
     background(240, 190, 240);
     // World background and tree grid
     noStroke(); fill(255, 240, 255); rect(wd.lowX, wd.lowY, wd.width, wd.height);
@@ -29,6 +29,7 @@ function draw() {
     vehicles[0].pilot.testClosestObstacle?.setPainter(ppObs[2]);
 
     world.render();
+    if (frameCount == 60) console.log(`Max obstacle col. rad.  ${world.maxObstacleSize}`);
 }
 
 function makeEntities() {
@@ -58,12 +59,6 @@ function makeEntities() {
         obstacles[i].painter = ppObs[0];
         world.birth(obstacles[i]);
     }
-    // for (let i = 0; i < data.length; i++) {
-    //     let d = data[i];
-    //     walls.push(new Wall({ x: d[0], y: d[1] }, { x: d[2], y: d[3] }));
-    //     walls[i].painter = ppWall[0];
-    //     world.birth(walls[i]);
-    // }
     // Wander data
     ppVehicle[0] = vcePerson(color(160, 255, 160, 48), color(20, 200, 20, 48)); // Green
     ppVehicle[1] = vcePerson(color(180, 180, 255), color(20, 20, 200)); // Blue
@@ -96,7 +91,7 @@ function renderTreeGrid() {
         for (let i = r.lowX; i <= highX; i += dx) line(i, r.lowY, i, highY);
         for (let i = r.lowY; i <= highY; i += dy) line(r.lowX, i, highX, i);
     }
-    let r = world._tree, d = world._domain;
+    let r = world.tree, d = world.domain;
     let highX = Math.min(r.highX, d.highX), highY = Math.min(r.highY, d.highY);
     stroke(0, 16); strokeWeight(1.1);
     for (let i = 1; i <= depth; i++) renderPart(i);

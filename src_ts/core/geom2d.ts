@@ -950,10 +950,8 @@ class Geom2D {
 	 */
 	static triangulate(contour: Array<Vector2D>, closed: boolean = false): Array<number> {
 		let n = closed ? contour.length - 1 : contour.length;
-		if (n < 3)
-			return [];
+		if (n < 3) return [];
 
-		//contour.reverse()
 		let result: Array<number> = [];
 		let vList: Array<number> = [];
 
@@ -982,9 +980,9 @@ class Geom2D {
 				let a = vList[u], b = vList[v], c = vList[w];
 
 				/* output Triangle */
-				result.push(a);
-				result.push(b);
-				result.push(c);
+				result.push(a, b, c);
+				// result.push(b);
+				// result.push(c);
 
 				/* remove v from remaining polygon */
 				for (let s = v, t = v + 1; t < nv; s++, t++)

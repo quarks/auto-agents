@@ -11,7 +11,7 @@ let demo = function (p) {
         let p5canvas = p.createCanvas(640, 400, p);
         p5canvas.parent('sketch');
         world = new World(400, 400, 1);
-        world._domain.constraint = REBOUND;
+        world.domain.constraint = REBOUND;
         p.makeAgents();
         trail = new Trail(600, p.color(0, 180, 0), 0.95);
     }
@@ -21,7 +21,7 @@ let demo = function (p) {
         trail.add(evader.pos);
         p.background(220, 160, 220);
         p.noStroke(); p.fill(200, 255, 200);
-        let d = world._domain;
+        let d = world.domain;
         p.rect(d.lowX, d.lowY, d.width, d.height);
         world.render();
         if (showTrail) trail.render();
@@ -57,7 +57,6 @@ let demo = function (p) {
         wanderer.vel = Vector2D.fromRandom(10, 20);
         wanderer.painter = vcePerson(p.color(200, 200, 255), p.color(20, 20, 160), p);
         wanderer.maxSpeed = 25;
-        wanderer.addAutoPilot(world);
         wanderer.pilot.wanderOn();
         wanderer.pilot.wanderDist = 70;
         wanderer.pilot.wanderRadius = 20;
@@ -69,7 +68,6 @@ let demo = function (p) {
         evader.painter = vcePerson(p.color(255, 200, 255), p.color(160, 20, 160), p);
         evader.maxSpeed = 55;
         evader.fleeRadius = 3000;
-        evader.addAutoPilot(world);
         evader.pilot.evadeOn(wanderer);
         evader.forceRecorderOn();
         world.birth(evader);

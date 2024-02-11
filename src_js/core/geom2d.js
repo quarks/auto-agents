@@ -1,4 +1,13 @@
 class Geom2D {
+    static ACCY = 1E-30;
+    static ON_PLANE = 0b10000;
+    static PLANE_INSIDE = 0b10001;
+    static PLANE_OUTSIDE = 0b10010;
+    static OUT_LEFT = 0b0001;
+    static OUT_TOP = 0b0010;
+    static OUT_RIGHT = 0b0100;
+    static OUT_BOTTOM = 0b1000;
+    static NEARNESS = 1.0;
     /**
      * Calculates the squared distance between 2 points
      * @param x0 point 1
@@ -878,7 +887,6 @@ class Geom2D {
         let n = closed ? contour.length - 1 : contour.length;
         if (n < 3)
             return [];
-        //contour.reverse()
         let result = [];
         let vList = [];
         /* we want a counter-clockwise polygon in V based on computer screen coordinates */
@@ -909,9 +917,9 @@ class Geom2D {
                 /* true names of the vertices */
                 let a = vList[u], b = vList[v], c = vList[w];
                 /* output Triangle */
-                result.push(a);
-                result.push(b);
-                result.push(c);
+                result.push(a, b, c);
+                // result.push(b);
+                // result.push(c);
                 /* remove v from remaining polygon */
                 for (let s = v, t = v + 1; t < nv; s++, t++)
                     vList[s] = vList[t];
@@ -956,13 +964,4 @@ class Geom2D {
         return true;
     }
 }
-Geom2D.ACCY = 1E-30;
-Geom2D.ON_PLANE = 0b10000;
-Geom2D.PLANE_INSIDE = 0b10001;
-Geom2D.PLANE_OUTSIDE = 0b10010;
-Geom2D.OUT_LEFT = 0b0001;
-Geom2D.OUT_TOP = 0b0010;
-Geom2D.OUT_RIGHT = 0b0100;
-Geom2D.OUT_BOTTOM = 0b1000;
-Geom2D.NEARNESS = 1.0;
 //# sourceMappingURL=geom2d.js.map

@@ -9,6 +9,7 @@ class Artefact extends Entity {
 
     constructor(center: Vector2D, width: number, height: number) {
         super(center);
+        this.Z = 8;
         this.#width = width;
         this.#height = height;
         this.#lowX = center.x - width / 2;

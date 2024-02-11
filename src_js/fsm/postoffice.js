@@ -1,43 +1,32 @@
-var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
-    if (kind === "m") throw new TypeError("Private method is not writable");
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
-    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
-};
-var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
-    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
-};
-var _Telegram_sender, _Telegram_receiver, _Telegram_msg, _Telegram_despatchAt, _Telegram_extraInfo;
 class Telegram {
+    #sender;
+    #receiver;
+    #msg;
+    #despatchAt;
+    #extraInfo;
+    get sender() { return this.#sender; }
+    get receiver() { return this.#receiver; }
+    get message() { return this.#msg; }
+    get despatchAt() { return this.#despatchAt; }
+    get extraInfo() { return this.#extraInfo; }
     constructor(despatchAt = -1, sender = -1, receiver = -1, msg = -1, extraInfo) {
-        _Telegram_sender.set(this, void 0);
-        _Telegram_receiver.set(this, void 0);
-        _Telegram_msg.set(this, void 0);
-        _Telegram_despatchAt.set(this, void 0);
-        _Telegram_extraInfo.set(this, void 0);
-        __classPrivateFieldSet(this, _Telegram_despatchAt, despatchAt, "f");
-        __classPrivateFieldSet(this, _Telegram_sender, sender, "f");
-        __classPrivateFieldSet(this, _Telegram_receiver, receiver, "f");
-        __classPrivateFieldSet(this, _Telegram_msg, msg, "f");
-        __classPrivateFieldSet(this, _Telegram_extraInfo, extraInfo, "f");
+        this.#despatchAt = despatchAt;
+        this.#sender = sender;
+        this.#receiver = receiver;
+        this.#msg = msg;
+        this.#extraInfo = extraInfo;
     }
-    get sender() { return __classPrivateFieldGet(this, _Telegram_sender, "f"); }
-    get receiver() { return __classPrivateFieldGet(this, _Telegram_receiver, "f"); }
-    get message() { return __classPrivateFieldGet(this, _Telegram_msg, "f"); }
-    get despatchAt() { return __classPrivateFieldGet(this, _Telegram_despatchAt, "f"); }
-    get extraInfo() { return __classPrivateFieldGet(this, _Telegram_extraInfo, "f"); }
     equals(tgram) {
-        if (__classPrivateFieldGet(this, _Telegram_sender, "f") == __classPrivateFieldGet(tgram, _Telegram_sender, "f") && __classPrivateFieldGet(this, _Telegram_receiver, "f") == __classPrivateFieldGet(tgram, _Telegram_receiver, "f") &&
-            __classPrivateFieldGet(this, _Telegram_msg, "f") == __classPrivateFieldGet(tgram, _Telegram_msg, "f") &&
-            Math.abs(__classPrivateFieldGet(this, _Telegram_despatchAt, "f") - __classPrivateFieldGet(tgram, _Telegram_despatchAt, "f")) < SAFE_TIME_INTERVAL)
+        if (this.#sender == tgram.#sender && this.#receiver == tgram.#receiver &&
+            this.#msg == tgram.#msg &&
+            Math.abs(this.#despatchAt - tgram.#despatchAt) < SAFE_TIME_INTERVAL)
             return true;
         return false;
     }
 }
-_Telegram_sender = new WeakMap(), _Telegram_receiver = new WeakMap(), _Telegram_msg = new WeakMap(), _Telegram_despatchAt = new WeakMap(), _Telegram_extraInfo = new WeakMap();
 class Dispatcher {
+    _telegrams;
+    _world;
     constructor(world) {
         this._world = world;
         this._telegrams = [];

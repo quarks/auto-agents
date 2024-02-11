@@ -60,6 +60,14 @@ abstract class Entity {
     get Z(): number { return this.#zorder; }
     set Z(value) { this.#zorder = value; }
 
+    born(births: Array<Entity>, world?: World) {
+        births.push(this);
+    }
+
+    dies(deaths: Array<Entity>, world?: World) {
+        deaths.push(this);
+    }
+
     fitsInside(lowX: number, lowY: number, highX: number, highY: number): boolean {
         let p = this.#pos, cr = this._colRad;
         return p.x - cr >= lowX && p.x + cr <= highX && p.y - cr >= lowY && p.y + cr <= highY;

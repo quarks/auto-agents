@@ -1,7 +1,11 @@
-class Graph {
+const ASTAR = Symbol.for('A*');
+const DIJKSTRA = Symbol.for('Dijkstra');
+const BFS = Symbol.for('Breadth first');
+const DFS = Symbol.for('Depth first');
 
+class Graph {
     #nodes = new Map<number, GraphNode>();
-    get nodes(): Array<GraphNode> { return [...this.#nodes.values()] };
+    get nodes(): Array<GraphNode> { return [...this.#nodes.values()] }
 
     get edges(): Array<GraphEdge> {
         let e = [];
@@ -18,6 +22,191 @@ class Graph {
 
     constructor(name = '') {
         this.#name = name;
+    }
+
+    search(nodeIDs: Array<number>, searchType = ASTAR, heuristic = EUCLIDEAN, costFactor = 1): PathSearchResult {
+        if (!this.#isSearchValid(nodeIDs, searchType, heuristic))
+            return undefined;
+        let searchImpl: Function;
+        let ash = heuristic(costFactor);
+        switch (searchType) {
+            case ASTAR: searchImpl = this.#searchAstar; break;
+            case DIJKSTRA: searchImpl = this.#searchDijkstra; break;
+            case BFS: searchImpl = this.#searchBFS; break;
+            case DFS: searchImpl = this.#searchDFS; break;
+        }
+        let testedEdges: Set<GraphEdge> = new Set();
+        let path = searchImpl.call(this, nodeIDs[0], nodeIDs[1], testedEdges, ash);
+        for (let i = 2; i < nodeIDs.length; i++) {
+            let pr = searchImpl.call(this, nodeIDs[i - 1], nodeIDs[i], testedEdges, ash);
+            pr.shift();
+            path.push(...pr);
+        }
+        // Now we have the path create list of edges
+        let edges: Array<GraphEdge> = [];
+        for (let i = 0; i < path.length - 1; i++)
+            edges.push(path[i].edge(path[i + 1].id));
+        return { 'path': path, 'edges': edges, 'testedEdges': [...testedEdges.values()] };
+    }
+
+    #searchDFS(startID: number, targetID: number, testedEdges: Set<GraphEdge>): Array<GraphNode> {
+        console.log('Depth first');
+        let partroute = [];
+        let start = this.node(startID), target = this.node(targetID);
+        if (!start || !target) {
+            console.error(`Nodes ${startID} and/or ${targetID} do not exist in this graph.`);
+            return partroute;
+        }
+        let settledNodes: Map<number, number> = new Map();
+        let visited: Set<number> = new Set();
+        let next: GraphEdge;
+        let stack: Array<GraphEdge> = [];
+        stack.push(new GraphEdge(startID, startID, 0));
+
+        while (stack.length > 0) {
+            next = stack.pop();
+            settledNodes.set(next.to, next.from);
+            visited.add(next.to);
+            if (next.to == targetID) {
+                let parent = targetID;
+                partroute.push(this.node(targetID));
+                do {
+                    parent = settledNodes.get(parent);
+                    partroute.push(this.node(parent));
+                } while (parent != startID);
+                partroute.reverse();
+                return partroute;
+            }
+            // Examine edges from current node
+            this.node(next.to).edges.forEach(e => {
+                if (!visited.has(e.to)) {
+                    stack.push(e);
+                    testedEdges.add(e);
+                }
+            });
+        }
+        return partroute;
+    }
+
+    #searchBFS(startID: number, targetID: number, testedEdges: Set<GraphEdge>): Array<GraphNode> {
+        console.log('Breadth first');
+        let partRoute = [];
+        let start = this.node(startID), target = this.node(targetID);
+        if (start !== target) {
+            let settledNodes: Map<number, number> = new Map();
+            let visited: Set<number> = new Set();
+            let next: GraphEdge;
+            let queue: Array<GraphEdge> = [];
+            queue.push(new GraphEdge(startID, startID, 0));
+            while (queue.length > 0) {
+                next = queue.shift();
+                settledNodes.set(next.to, next.from);
+                visited.add(next.to);
+                if (next.to == targetID) {
+                    let parent = targetID;
+                    partRoute.push(this.node(targetID));
+                    do {
+                        parent = settledNodes.get(parent);
+                        partRoute.push(this.node(parent));
+                    } while (parent != startID);
+                    partRoute.reverse();
+                    return partRoute;
+                }
+                // Examine edges from current node
+                this.node(next.to).edges.forEach(e => {
+                    if (!visited.has(e.to)) {
+                        queue.push(e);
+                        testedEdges.add(e);
+                    }
+                });
+            }
+        }
+        return partRoute;
+    }
+
+    #searchDijkstra(startID: number, targetID: number, testedEdges: Set<GraphEdge>): Array<GraphNode> {
+        console.log('Dijkstra');
+        this.nodes.forEach(n => n.resetSearchCosts());
+        let partroute = [];
+        let start = this.node(startID), target = this.node(targetID);
+        if (!start || !target) {
+            console.error(`Nodes ${startID} and/or ${targetID} do not exist in this graph.`);
+            return partroute;
+        }
+        let unsettledNodes: Array<GraphNode> = []; // Use as priority queue
+        let settledNodes: Set<GraphNode> = new Set();
+        let parent: Map<GraphNode, GraphNode> = new Map();
+        let next: GraphNode, edgeTo: GraphNode;
+        unsettledNodes.push(start);
+        while (unsettledNodes.length > 0) {
+            next = unsettledNodes.shift();
+            if (next == target) {
+                partroute.push(target);
+                while (next !== start) {
+                    next = parent.get(next);
+                    partroute.push(next);
+                }
+                partroute.reverse();
+                return partroute;
+            }
+            settledNodes.add(next);
+            next.edges.forEach(e => {
+                edgeTo = this.node(e.to);
+                let newCost = next.graphCost + e.cost;
+                let edgeToCost = edgeTo.graphCost;
+                if (!settledNodes.has(edgeTo) && (edgeToCost == 0 || edgeTo.graphCost > newCost)) {
+                    edgeTo.graphCost = newCost;
+                    parent.set(edgeTo, next);
+                    unsettledNodes.push(edgeTo); // Maintain priority queue
+                    unsettledNodes.sort((a, b) => a.graphCost - b.graphCost);
+                    testedEdges.add(e);
+                }
+            });
+        }
+        return partroute;
+    }
+
+    #searchAstar(startID: number, targetID: number, testedEdges: Set<GraphEdge>, ash: Function): Array<GraphNode> {
+        console.log(`Astar   :   ${ash.name}`);
+        this.nodes.forEach(n => n.resetSearchCosts());
+        let partPath = [];
+        let start = this.node(startID), target = this.node(targetID);
+        if (start !== target) {
+            let unsettledNodes: Array<GraphNode> = []; // Use as priority queue
+            let settledNodes: Set<GraphNode> = new Set();
+            let parent: Map<GraphNode, GraphNode> = new Map();
+            let next: GraphNode, edgeTo: GraphNode;
+            start.fullCost = ash(start, target);
+            unsettledNodes.push(start);
+            while (unsettledNodes.length > 0) {
+                next = unsettledNodes.shift();
+                if (next === target) {
+                    partPath.push(target);
+                    while (next !== start) {
+                        next = parent.get(next);
+                        partPath.push(next);
+                    }
+                    partPath.reverse();
+                    return partPath;
+                }
+                settledNodes.add(next);
+                next.edges.forEach(e => {
+                    edgeTo = this.node(e.to);
+                    let gCost = next.graphCost + e.cost;
+                    let hCost = ash(edgeTo, target);
+                    let edgeToCost = edgeTo.graphCost;
+                    if (!settledNodes.has(edgeTo) && (edgeToCost == 0 || edgeTo.graphCost > gCost + hCost)) {
+                        edgeTo.graphCost = gCost;
+                        edgeTo.fullCost = gCost + hCost;
+                        parent.set(edgeTo, next);
+                        unsettledNodes.push(edgeTo); // Maintain priority queue
+                        unsettledNodes.sort((a, b) => a.fullCost - b.fullCost);
+                        testedEdges.add(e);
+                    }
+                });
+            }
+        }
+        return partPath;
     }
 
     /** Gets the node for a given id it it exists. */
@@ -197,12 +386,61 @@ class Graph {
             a.push(`  ${edge.toString()}`);
         return a;
     }
+
+    #isSearchValid(ids: Array<number>, searchType: symbol, heuristic: Function) {
+        // Make sure we have an array of length >= 2
+        if (!Array.isArray(ids) || ids.length <= 1) {
+            console.error(`Search error:  invalid array`);
+            return false;
+        }
+        // Ensure all nodes exits
+        for (let id of ids)
+            if (!this.node(id)) {
+                return false; break;
+            }
+        // Check search type
+        switch (searchType) {
+            case ASTAR: break;
+            case DIJKSTRA: break;
+            case BFS: break;
+            case DFS: break;
+            default:
+                console.error(`Invalid search algorithm`);
+                return false;
+        }
+        // Check A star heuristic
+        switch (heuristic) {
+            case EUCLIDEAN:
+            case MANHATTAN:
+                break;
+            default:
+                console.error(`Invalid Astar heuristic`);
+                return false;
+        }
+        return true;
+    }
 }
 
-function getRouteEdges(nodes: Array<GraphNode>): Array<GraphEdge> {
-    let edges = [];
-    for (let i = 0; i < nodes.length - 1; i++) {
-        edges.push(nodes[i].edge(nodes[i + 1].id));
-    }
-    return edges;
+const EUCLIDEAN = function (factor = 1): Function {
+    return (function Euclidian(node: GraphNode, target: GraphNode) {
+        let dx = target.x - node.x;
+        let dy = target.y - node.y;
+        let dz = target.z - node.z;
+        return factor * Math.sqrt(dx * dx + dy * dy + dz * dz);
+    });
+}
+
+const MANHATTAN = function (factor = 1): Function {
+    return (function Manhattan(node: GraphNode, target: GraphNode) {
+        let dx = Math.abs(target.x - node.x);
+        let dy = Math.abs(target.y - node.y);
+        let dz = Math.abs(target.z - node.z);
+        return factor * (dx + dy + dz);
+    });
+}
+
+interface PathSearchResult {
+    path: Array<GraphNode>,
+    edges: Array<GraphEdge>,
+    testedEdges: Array<GraphEdge>
 }

@@ -261,8 +261,8 @@ function showFleeCircle(p = p5.instance) {
 
 function colorizeEntities(tree, painters) {
     function colourize(part) {
-        part._entities.forEach(e => { e.painter = painters[part._level]; });
-        part._children?.forEach(p => colourize(p));
+        part.entities.forEach(e => { e.painter = painters[part.level]; });
+        part.children?.forEach(p => colourize(p));
     }
     colourize(tree.getRoot());
 }

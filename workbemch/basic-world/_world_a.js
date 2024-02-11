@@ -19,7 +19,7 @@ function setup() {
 }
 
 function findStuffOfInterest(x, y, w, h) {
-    results = world._tree?.getItemsInRegion(x0, y0, x + w, y + h);
+    results = world.tree?.getItemsInRegion(x0, y0, x + w, y + h);
     intParts = results.partitions;
     intEnts = results.entities;
     encPart = results.enc_partition;
@@ -27,7 +27,7 @@ function findStuffOfInterest(x, y, w, h) {
 
 function draw() {
     world.update(deltaTime / 1000);
-    let wd = world._domain;
+    let wd = world.domain;
     background(240, 190, 240);
     // World background and tree grid
     noStroke(); fill(255, 240, 255); rect(wd.lowX, wd.lowY, wd.width, wd.height);
@@ -71,19 +71,12 @@ function drawEnclosingPartition(part) {
 }
 
 function setPainter(entity, mode) {
-    switch (entity._type) {
-        case WALL:
-            entity.painter = ppWall[mode];
-            break;
-        case MOVER:
-            entity.painter = ppMover[mode];
-            break;
-        case VEHICLE:
-            entity.painter = ppVehicle[mode];
-            break;
-        default:
-            console.log(`Failed to find type ${entity.type.toString()}`);
-    }
+    if (entity instanceof Wall)
+        entity.painter = ppWall[mode];
+    else if (entity instanceof Vehicle)
+        entity.painter = ppVehicle[mode];
+    else if (entity instanceof Mover)
+        entity.painter = ppMover[mode];
 }
 
 function makeEntities() {
@@ -138,6 +131,8 @@ function makeEntities() {
         vehicles[i].painter = ppVehicle[0];
         vehicles[i].maxSpeed = 50;
         vehicles[i].pilot.wanderOn();
+        vehicles[i].pilot.wallAvoidOn();
+        vehicles[i].pilot.feelerLength = 20;
         world.birth(vehicles[i]);
     }
 }
@@ -149,7 +144,7 @@ function renderTreeGrid() {
         for (let i = r.lowX; i <= highX; i += dx) line(i, r.lowY, i, highY);
         for (let i = r.lowY; i <= highY; i += dy) line(r.lowX, i, highX, i);
     }
-    let r = world._tree, d = world._domain;
+    let r = world.tree, d = world.domain;
     let highX = Math.min(r.highX, d.highX), highY = Math.min(r.highY, d.highY);
     stroke(0, 16); strokeWeight(1.1);
     for (let i = 1; i <= depth; i++) renderPart(i);

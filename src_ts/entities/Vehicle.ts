@@ -18,6 +18,7 @@ class Vehicle extends Mover {
 
     constructor(position: Vector2D, radius: number) {
         super(position, radius);
+        this.Z = 144;
         this.#autopilot = new AutoPilot(this);
     }
 

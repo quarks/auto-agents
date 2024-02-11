@@ -25,6 +25,7 @@ class Wall extends Entity {
 
     constructor(start: _XY_, end: _XY_, repelSide = OUTSIDE) {
         super(start, 1);
+        this.Z = 64;
         this.#end = Vector2D.from(end);
         this.#norm = new Vector2D(-(end.y - start.y), end.x - start.x);
         this.#norm = this.#norm.normalize();

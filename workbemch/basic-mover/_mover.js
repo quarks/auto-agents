@@ -7,7 +7,7 @@ function setup() {
     let p5canvas = createCanvas(800, 440);
     p5canvas.parent('sketch');
     world = new World(wx, wy, depth);
-    world._domain.constraint = REBOUND;
+    world.domain.constraint = REBOUND;
     makeMovers();
     let art = new Artefact({ x: 190, y: 210 }, 80, 45);
     world.birth(art);
@@ -40,11 +40,11 @@ function makeMovers() {
 
 function draw() {
     world.update(deltaTime / 1000);
-    //world._tree.colorizeEntities(painters);
-    colorizeEntities(world._tree, painters);
+    world.tree.colorizeEntities(painters);
+    //ßcolorizeEntities(world.tree, painters);
     background(220);
     noStroke(); fill(220, 255, 220);
-    let d = world._domain; rect(d.lowX, d.lowY, d.width, d.height);
+    let d = world.domain; rect(d.lowX, d.lowY, d.width, d.height);
     renderTreeGrid();
     world.render();
 }
@@ -56,7 +56,7 @@ function renderTreeGrid() {
         for (let i = r.lowX; i <= highX; i += dx) line(i, r.lowY, i, highY);
         for (let i = r.lowY; i <= highY; i += dy) line(r.lowX, i, highX, i);
     }
-    let r = world._tree, d = world._domain;
+    let r = world.tree, d = world.domain;
     let highX = Math.min(r.highX, d.highX), highY = Math.min(r.highY, d.highY);
     stroke(0, 16); strokeWeight(1.1);
     for (let i = 1; i <= depth; i++) renderPart(i);

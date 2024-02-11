@@ -63,6 +63,7 @@ class Mover extends Entity {
 
     constructor(position: Array<number> | Vector2D, colRadius = 0) {
         super(position, colRadius);
+        this.Z = 128;
         this.#prevPos.set(this.pos);
         this.#mass = 1;
         this.#side = this.#heading.getPerp();

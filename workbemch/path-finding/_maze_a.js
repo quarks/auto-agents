@@ -2,9 +2,10 @@ let raw_data = [];
 let diags = [false, true, true, true];
 let mn = 1;
 let showDrag = false;
-let route, testedEdges;
+let path, testedEdges;
 let cellsize = 20, nodeRad = cellsize * 0.2;
 let rWt = cellsize * 0.2, eWt = cellsize * 0.025, eeWt = rWt * 0.85;
+let gs;
 
 function preload() {
     raw_data[0] = loadStrings('maze_0.txt');
@@ -37,7 +38,7 @@ function setup() {
 function draw() {
     background(255, 255, 220);
     image(backImage, 0, 0);
-    drawEdges();
+    //drawEdges();
     drawTestedEdges();
     drawNodes();
     drawRoute();
@@ -63,7 +64,7 @@ function mousePressed() {
 
 function mouseMoved() {
     let n = graph.nearestNode(mouseX, mouseY);
-    //console.log(n.id);
+    // console.log(n.id);
 }
 
 function mouseDragged() {
@@ -73,26 +74,34 @@ function mouseDragged() {
 
 function mouseReleased() {
     showDrag = false;
-    //let gs = new Astar(graph, Euclidean());
-    let gs = new Dijkstra(graph);
     console.log(`Route from ${startNode.id}  to  ${endNode.id}`)
-    gs.search([startNode.id, endNode.id]);
-    //gs.search([243, 965, 197, 985]);
-    route = gs.route;
+    let heuristicID = 0;
+    let algorithmID = 0;
+    switch (heuristicID) {
+        case 1: heuristic = MANHATTAN; break;
+        default: heuristic = EUCLIDEAN; break;
+    }
+    switch (algorithmID) {
+        case 3: algorithm = DFS; break;
+        case 2: algorithm = BFS; break;
+        case 1: algorithm = DIJKSTRA; break;
+        default:
+            algorithm = ASTAR;
+    }
+    gs = graph.search([startNode.id, endNode.id], algorithm, heuristic, 0.6);
+    // gs = graph.search([243, 965, 197, 985], algorithm, heuristic);
+    path = gs.path;
     testedEdges = gs.testedEdges;
-    route.forEach(n => {
-        console.log(n.id)
-    });
-    console.log(`Route length ${route.length}   Nbr edges tested ${testedEdges.length}`);
+    console.log(`Path length ${path.length}   Nbr edges tested ${testedEdges.length}`);
 }
 
 function drawRoute() {
-    if (route) {
+    if (path) {
         stroke(240, 0, 0); strokeWeight(rWt);
-        for (let i = 1; i < route.length; i++)
-            line(route[i - 1].x, route[i - 1].y, route[i].x, route[i].y);
+        for (let i = 1; i < path.length; i++)
+            line(path[i - 1].x, path[i - 1].y, path[i].x, path[i].y);
         stroke(0); strokeWeight(0.7); fill(routeNodeCol);
-        route.forEach(n => {
+        path.forEach(n => {
             ellipse(n.x, n.y, 2 * nodeRad, 2 * nodeRad);
         });
     }

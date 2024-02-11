@@ -16,8 +16,8 @@ function draw() {
 function drawGraph(graph) {
     push();
     textSize(10); textAlign(LEFT, CENTER);
-    for (let n of graph._nodes.values()) {
-        for (let e of n._edges.values()) {
+    for (let n of graph.nodes.values()) {
+        for (let e of n.edges.values()) {
             push();
             fill(0, 48); stroke(0, 48); strokeWeight(1.2);
             let fromNode = graph.node(e.from), toNode = graph.node(e.to);
@@ -34,7 +34,7 @@ function drawGraph(graph) {
             pop();
         }
     }
-    for (let n of graph._nodes.values()) {
+    for (let n of graph.nodes.values()) {
         noStroke(), fill(255, 100, 100);
         ellipse(n.x, n.y, 10, 10);
     }

@@ -20,7 +20,7 @@ function draw() {
     background(220);
     translate((world.tree.treeSize - world.width + 20) / 2, (world.tree.treeSize - world.height + 20) / 2 + 10);
     noStroke(); fill(220, 255, 220);
-    let d = world._domain;
+    let d = world.domain;
     rect(d.lowX, d.lowY, d.width, d.height);
     renderTreeGrid();
     world.render();
@@ -74,7 +74,7 @@ function renderTreeGrid() {
         for (let i = r.lowX; i <= r.highX; i += delta) line(i, r.lowY, i, r.highY);
         for (let i = r.lowY; i <= r.highY; i += delta) line(r.lowX, i, r.highX, i);
     }
-    let r = world._tree;
+    let r = world.tree;
     //let highX = Math.min(r.highX, d.highX), highY = Math.min(r.highY, d.highY);
     //let highX = r.highX, highY = r.highY;
     stroke(0, 32); strokeWeight(1.1);

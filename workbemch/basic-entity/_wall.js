@@ -18,7 +18,7 @@ function setup() {
 function testInterestingPartiions(x, y, w, h) {
     x0 = x; y0 = y; x1 = x + w; y1 = y + h;
     console.log('-------------  Items of Interest   ------------------------');
-    let results = world._tree?.getItemsInRegion(x0, y0, x1, y1);
+    let results = world.tree?.getItemsInRegion(x0, y0, x1, y1);
     intParts = results.partitions;
     console.log(`Found ${intParts.length} partitions`);
     for (let part of intParts) part.$$();
@@ -86,10 +86,10 @@ function keyTyped() {
 
 function makeEntities() {
     entities = [];
-    ppRed = wallBarrier(color(255, 200, 200), 4);
-    ppPurple = wallBarrier(color(255, 200, 255), 4);
-    ppBlue = wallBarrier(color(200, 200, 255), 4);
-    ppCyan = wallBarrier(color(200, 255, 255), 4);
+    ppRed = entWall(color(255, 200, 200), 4);
+    ppPurple = entWall(color(255, 200, 255), 4);
+    ppBlue = entWall(color(200, 200, 255), 4);
+    ppCyan = entWall(color(200, 255, 255), 4);
     let data = [
         [125, 75, 60, 280, ppPurple],
         [75, 340, 120, 310, ppPurple],

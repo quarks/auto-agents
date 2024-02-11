@@ -11,21 +11,12 @@ let demo = function (p) {
         let p5canvas = p.createCanvas(640, 400, p);
         p5canvas.parent('sketch');
         world = new World(400, 400, 1);
-        world._domain.constraint = WRAP;
+        world.domain.constraint = WRAP;
         //p.makeSeek();
         //p.makeArrive();
         p.makeFlee();
         //p.makeWanderer();
-
         trail = new Trail(600, p.color(0, 180, 0), 0.95);
-
-        // wanderer.pilot.setProperties({ 'wanderDist': 75, 'wanderRadius': 65, 'xxx': 123, 'wanderJitter': 35 });
-
-        //gui = GUI.getNamed('WanderDemo', p5canvas, p);
-        //p.createGUI(gui); 
-        console.log(Symbol.keyFor(vEntity.type));
-        console.log(vEntity.type$);
-        console.log(vEntity.hasOwnProperty('_visible'))
     }
 
     p.draw = function () {
@@ -33,7 +24,7 @@ let demo = function (p) {
         trail.add(vEntity.pos);
         p.background(220, 160, 220);
         p.noStroke(); p.fill(200, 255, 200);
-        let d = world._domain;
+        let d = world.domain;
         p.rect(d.lowX, d.lowY, d.width, d.height);
         world.render();
         if (showTrail) trail.render();
@@ -41,7 +32,7 @@ let demo = function (p) {
         p.rect(410, 10, 220, 380, 10);
 
         p.fill(0, 160, 0); p.noStroke();
-        p.ellipse(world._domain.cX, world._domain.cY, 10, 10);
+        p.ellipse(world.domain.cX, world.domain.cY, 10, 10);
         gui?.draw();
 
         if (sampleForces && p.frameCount >= sampleEnd) {
@@ -83,10 +74,9 @@ let demo = function (p) {
         vEntity.heading = vEntity.vel.normalize();
         vEntity.painter = vcePerson(p.color(200, 200, 255), p.color(20, 20, 160), p);
         vEntity.maxSpeed = 100;
-        vEntity.addAutoPilot(world);
         vEntity.pilot.fleeOn(new Vector2D(0.5 * world.width, 0.5 * world.height));
         vEntity.forceRecorderOn();
-        world._domain.constraint = REBOUND;
+        world.domain.constraint = REBOUND;
         world.birth(vEntity);
     }
 
@@ -96,7 +86,6 @@ let demo = function (p) {
         vEntity.heading = vEntity.vel.normalize();
         vEntity.painter = vcePerson(p.color(200, 200, 255), p.color(20, 20, 160), p);
         vEntity.maxSpeed = 60;
-        vEntity.addAutoPilot(world);
         vEntity.pilot.arriveOn(new Vector2D(0.79 * world.width, 0.23 * world.height));
         vEntity.forceRecorderOn();
         world.birth(vEntity);

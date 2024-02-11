@@ -15,7 +15,7 @@ function draw() {
     world.update(deltaTime);
     background(220);
     noStroke(); fill(255, 255, 255);
-    let d = world._domain;
+    let d = world.domain;
     rect(d.lowX, d.lowY, d.width, d.height);
     world.render();
 }

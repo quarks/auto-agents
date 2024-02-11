@@ -18,46 +18,59 @@ class World {
     #painter: Function;
     set painter(painter: Function) { this.#painter = painter; }
 
-    _width: number;
-    get width(): number { return this._width }
-    _height: number;
-    get height(): number { return this._height }
+    #width: number;
+    get width(): number { return this.#width }
+    #height: number;
+    get height(): number { return this.#height }
 
-    _tree: QPart;
-    get tree(): QPart { return this._tree }
+    #tree: QPart;
+    get tree(): QPart { return this.#tree }
 
     // Largest obstacle collision radius
-    _maxObstacleSize = 0;
-    // Number of tests performed when avoiding overlap
-    _nbrTests: number;
+    #maxObstacleSize = 0;
+    get maxObstacleSize(): number { return this.#maxObstacleSize; }
+    set maxObstacleSize(n: number) { this.#maxObstacleSize = Math.max(this.#maxObstacleSize, n); }
 
-    _preventOverlap = true;
-    get isPreventOverlapOn(): boolean { return this._preventOverlap };
-    set preventOverlap(b: boolean) { this._preventOverlap = b; }
+    // Number of tests performed when avoiding overlap
+    #nbrTests: number;
+
+    #preventOverlap = true;
+    get isPreventOverlapOn(): boolean { return this.#preventOverlap };
+    set preventOverlap(b: boolean) { this.#preventOverlap = b; }
 
     constructor(wsizeX: number, wsizeY: number, depth: number = 1, border = 0) {
-        this._width = wsizeX;
-        this._height = wsizeY;
+        this.#width = wsizeX;
+        this.#height = wsizeY;
         this.#postman = new Dispatcher(this);
         this.#population = new Map<number, Entity>();
         this.#births = [];
         this.#deaths = [];
         this.#domain = new Domain(0, 0, wsizeX, wsizeY);
         let ts = Math.max(wsizeX, wsizeY) + 2 * border;
-        this._tree = QPart.makeTree(-(ts - wsizeX) / 2, -(ts - wsizeY) / 2, ts, depth);
+        this.#tree = QPart.makeTree(-(ts - wsizeX) / 2, -(ts - wsizeY) / 2, ts, depth);
     }
 
     birth(entity: Entity) {
-        if (entity instanceof Obstacle)
-            this._maxObstacleSize = Math.max(this._maxObstacleSize, entity.colRad);
-        if (entity) this.#births.push(entity);
+        if (entity) entity.born(this.#births, this);
     }
 
     death(entity: Entity | number) {
         if (Number.isFinite(entity))
             entity = this.#population.get(Number(entity));
         if (entity instanceof Entity)
-            this.#deaths.push(entity);
+            entity.dies(this.#deaths, this)
+    }
+
+    _addEntity(entity: Entity) {
+        this.#population.set(entity.id, entity);
+        this.#tree.addEntity(entity);
+        entity.world = this;
+    }
+
+    _subEntity(entity: Entity) {
+        this.#population.delete(entity.id);
+        this.#tree.subEntity(entity);
+        entity.world = undefined;
     }
 
     update(elapsedTime: number): void {
@@ -76,10 +89,10 @@ class World {
         [...this.#population.values()].forEach(v => v.update(elapsedTime, this));
         // ======================================================================
         // Ensure Zero Overlap?
-        if (this._preventOverlap) this._ensureNoOverlap();
+        if (this.#preventOverlap) this._ensureNoOverlap();
         // ======================================================================
         // Correct partition data
-        this._tree.correctPartitionContents();
+        this.#tree.correctPartitionContents();
     }
 
     render() {
@@ -119,7 +132,7 @@ class World {
         }
         a.push(hr, r0, r1, r2, r3, r4, hr);
         // Now calculate factor
-        let total = this._nbrTests > 0 ? this._nbrTests :
+        let total = this.#nbrTests > 0 ? this.#nbrTests :
             this._estimateNbrTests(m, d.lowX, d.lowY, d.treesize, d.depth);
         // Brute force count 
         let bfc = m[0] * (m[0] - 1) / 2 - (m[0] - 1); //Quadtree with just 1 level
@@ -141,18 +154,6 @@ class World {
             prevCumAvg = prevCumAvg + partAvg;
         }
         return total;
-    }
-
-    _addEntity(entity: Entity) {
-        this.#population.set(entity.id, entity);
-        this._tree.addEntity(entity);
-        entity.world = this;
-    }
-
-    _subEntity(entity: Entity) {
-        this.#population.delete(entity.id);
-        this._tree.subEntity(entity);
-        entity.world = undefined;
     }
 
     _ensureNoOverlap() {
@@ -182,12 +183,12 @@ class World {
                             w._testForOverlap(mvrs[i], pmvrs[j]);
             }
         }
-        this._nbrTests = 0;
+        this.#nbrTests = 0;
         processPartitionData(this.tree, this);
     }
 
     _testForOverlap(mvr0: any, mvr1: any) {
-        this._nbrTests++;
+        this.#nbrTests++;
         let cnLen = Vector2D.dist(mvr1.pos, mvr0.pos);
         let overlap = mvr0.colRad + mvr1.colRad - cnLen;
         if (overlap > 0) {

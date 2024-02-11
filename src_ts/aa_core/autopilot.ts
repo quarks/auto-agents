@@ -227,7 +227,7 @@ class AutoPilot {
      */
     hide(owner: Vehicle, world: World, hideFrom: Mover) {
         // Calculate the search distance for obstacles
-        let sd = this.__hideSearchRange + world._maxObstacleSize;
+        let sd = this.__hideSearchRange + world.maxObstacleSize;
         // Get all obstacles inside search distance
         let pos = owner.pos;
         let result = world.tree.getItemsInRegion(pos.x - sd, pos.y - sd, pos.x + sd, pos.y + sd);
@@ -288,7 +288,6 @@ class AutoPilot {
     setHideStandoffDist(n: number): AutoPilot { this.__hideStandoffDist = n; return this; }
     set hideStandoffDist(n: number) { this.__hideStandoffDist = n; }
     get hideStandoffDist(): number { return this.__hideStandoffDist; }
-
 
     /*
      * ======================================================================
@@ -512,7 +511,7 @@ class AutoPilot {
         // Calculate the length of the detection box
         this.boxLength = this.detectBoxLength * (1 + owner.speed / owner.maxSpeed);
         // Calculate the search distance for obstacles
-        let sd = this.boxLength + world._maxObstacleSize;
+        let sd = this.boxLength + world.maxObstacleSize;
         // Get all obstacles inside search distance
         let pos = owner.pos;
         let result = world.tree.getItemsInRegion(pos.x - sd, pos.y - sd, pos.x + sd, pos.y + sd);
@@ -874,30 +873,38 @@ class AutoPilot {
      * ======================================================================
      */
     path(owner: Vehicle, world: World) {
-        let route = this.#path;
-        if (route.length > 0) {
-            let target = new Vector2D(route[0].x, route[0].y);
-            let pd = (route.length == 1) ? this.#pad : this.#psd;
-            //            console.log(`Route length ${route.length}    target dist ${target.length()}`)
-            if (target.distSq(owner.pos) < pd)
-                route.shift();
-            return route.length == 1 ? this.arrive(owner, target, FAST) : this.seek(owner, target);
+        let path = this.#path, edges = this.#edges; //, pathTarget = this.#pathTarget;
+        if (this.#pathTarget) {
+            let pd = (path.length == 1) ? this.#pad : this.#psd;
+            if (this.#pathTarget.distSq(owner.pos) < pd) {
+                path.shift();
+                if (path.length == 0) {
+                    edges = [];
+                    this.#pathTarget = undefined;
+                    owner.vel = Vector2D.ZERO;
+                    this.pathOff();
+                    return Vector2D.ZERO;
+                }
+                this.#pathTarget = Vector2D.from(path[0]);
+                if (edges.length > 0) edges.shift();
+            }
         }
-        owner.vel = Vector2D.ZERO;
-        this.pathOff();
-        return Vector2D.ZERO;
+        return path.length == 1 ? this.arrive(owner, this.#pathTarget, FAST) : this.seek(owner, this.#pathTarget);
     }
 
     /** Switch off cohesion     */
     pathOff(): AutoPilot {
+        this.#pathTarget = undefined;
         this.#flags &= (ALL_SB_MASK - PATH);
         return this;
     }
 
     /** Switch on cohesion    */
-    pathOn(path: Array<GraphNode | Vector2D>): AutoPilot {   // Should we include array of vector????
+    pathOn(path: Array<GraphNode | Vector2D>, edges: Array<GraphEdge> = []): AutoPilot {   // Should we include array of vector????
         if (Array.isArray(path) && path.length > 0) {
             this.#path = path;
+            this.#pathTarget = Vector2D.from(this.#path[0]);
+            this.#edges = edges;
             this.#flags |= PATH;
         }
         return this;
@@ -907,6 +914,8 @@ class AutoPilot {
     get isPathOn(): boolean { return (this.#flags & PATH) != 0; }
 
     #path: Array<GraphNode | Vector2D> = [];
+    #edges: Array<GraphEdge> = [];
+    #pathTarget: Vector2D;
 
     #psd = 20;
     setPathSeekDist(n: number): AutoPilot { this.#psd = n * n; return this; }
@@ -917,6 +926,9 @@ class AutoPilot {
     setPathArriveDist(n: number): AutoPilot { this.#pad = n * n; return this; }
     set pathArriveDist(n: number) { this.#pad = n * n; }
     get pathArriveDist(): number { return Math.sqrt(this.#pad); }
+
+    get pathEdge(): GraphEdge { return this.#edges.length > 0 ? this.#edges[0] : undefined; }
+    get pathNode(): GraphNode | Vector2D { return this.#path.length > 0 ? this.#path[0] : undefined; }
 
     // ########################################################################
     //                          FORCE CALCULATOR
@@ -1079,31 +1091,6 @@ class AutoPilot {
             return false;
         }
     }
-
-    // accumulateForce(totalForceSoFar: Vector2D, forceToAdd: Vector2D, maxForce: number): boolean {
-    //     // calculate how much steering force the vehicle has used so far
-    //     let magSoFar = totalForceSoFar.length();
-    //     // calculate how much steering force remains to be used by this vehicle
-    //     let magLeft = maxForce - magSoFar;
-    //     // calculate the magnitude of the force we want to add
-    //     let magToAdd = forceToAdd.length();
-    //     // if the magnitude of the sum of ForceToAdd and the running total
-    //     // does not exceed the maximum force available to this vehicle, just
-    //     // add together. Otherwise add as much of the ForceToAdd vector is
-    //     // possible without going over the max.
-    //     if (magToAdd < magLeft) {
-    //         totalForceSoFar.set([totalForceSoFar.x + forceToAdd.x, totalForceSoFar.y + forceToAdd.y]);
-    //         //totalForceSoFar = new Vector2D(totalForceSoFar.x + forceToAdd.x, totalForceSoFar.y + forceToAdd.y);
-    //         return true;
-    //     } else {
-    //         forceToAdd = forceToAdd.normalize();
-    //         forceToAdd = forceToAdd.mult(magLeft);
-    //         // add it to the steering force
-    //         totalForceSoFar.set([totalForceSoFar.x + forceToAdd.x, totalForceSoFar.y + forceToAdd.y]);
-    //         //totalForceSoFar = new Vector2D(totalForceSoFar.x + forceToAdd.x, totalForceSoFar.y + forceToAdd.y);
-    //         return false;
-    //     }
-    // }
 
     off(behaviours: number) {
         this.#flags &= (ALL_SB_MASK - behaviours);

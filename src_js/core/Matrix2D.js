@@ -6,6 +6,7 @@ const MATRIX2D = '1 # 06 Nov 2022';
 * Vector2D objects.
 */
 class Matrix2D {
+    matrix;
     constructor() {
         this.matrix = new Matrix();
         this.matrix.identity();
@@ -207,20 +208,19 @@ class Matrix2D {
  * @hidden
  */
 class Matrix {
+    _11 = 0;
+    _12 = 0;
+    _13 = 0;
+    _21 = 0;
+    _22 = 0;
+    _23 = 0;
+    _31 = 0;
+    _32 = 0;
+    _33 = 0;
     /**
      * Ctor initialises to the zero matrix
      */
-    constructor() {
-        this._11 = 0;
-        this._12 = 0;
-        this._13 = 0;
-        this._21 = 0;
-        this._22 = 0;
-        this._23 = 0;
-        this._31 = 0;
-        this._32 = 0;
-        this._33 = 0;
-    }
+    constructor() { }
     set(n) {
         this._11 = n[0];
         this._12 = n[1];

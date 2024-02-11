@@ -17,10 +17,10 @@ function setup() {
 
 function testInterestingPartiions(x, y, w, h) {
     x0 = x; y0 = y; x1 = x + w; y1 = y + h;
-    let encPart = world._tree.getEnclosingPartition(x0, y0, x1, y1);
+    let encPart = world.tree.getEnclosingPartition(x0, y0, x1, y1);
     encPart.$$();
     console.log('---------------------------------------------------------------');
-    let results = world._tree?.getItemsInRegion(x0, y0, x1, y1);
+    let results = world.tree?.getItemsInRegion(x0, y0, x1, y1);
     intParts = results.partitions;
     for (let part of intParts) part.$$();
     intEnts = results.entities;
@@ -41,7 +41,7 @@ function draw() {
     world.update(deltaTime);
     background(220);
     noStroke(); fill(255, 255, 255);
-    let d = world._domain;
+    let d = world.domain;
     rect(d.lowX, d.lowY, d.width, d.height);
     renderTreeGrid();
     // world.render();
@@ -59,7 +59,7 @@ function renderTreeGrid() {
         for (let i = r.lowX; i <= highX; i += dx) line(i, r.lowY, i, highY);
         for (let i = r.lowY; i <= highY; i += dy) line(r.lowX, i, highX, i);
     }
-    let r = world._tree, d = world._domain;
+    let r = world.tree, d = world.domain;
     let highX = Math.min(r.highX, d.highX), highY = Math.min(r.highY, d.highY);
     stroke(0, 16); strokeWeight(1.1);
     for (let i = 1; i <= depth; i++) renderPart(i);
