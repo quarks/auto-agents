@@ -4,7 +4,7 @@ const MOVER = Symbol.for('Mover');
 const VEHICLE = Symbol.for('Vehicle');
 const OBSTACLE = Symbol.for('Obstacle');
 const WALL = Symbol.for('Wall');
-const BUILDING = Symbol.for('Building');
+const FENCE = Symbol.for('Fence');
 // Bit positions for flags for internal library use.
 // These are used to index the force
 const BIT_WALL_AVOID = 0;
@@ -23,12 +23,11 @@ const BIT_INTERPOSE = 12;
 const BIT_HIDE = 13;
 const BIT_PATH = 14;
 const BIT_FLOCK = 15;
-const FORCE_NAME = [
-    'Wall avoid     ', 'Obstacle avoid ', 'Evade          ', 'Flee           ',
-    'Separation     ', 'Alignment      ', 'Cohesion       ', 'Seek           ',
-    'Arrive         ', 'Wander         ', 'Pursuit        ', 'Offset Pursuit ',
-    'Interpose      ', 'Hide           ', 'Path           ', 'Flock          '
-];
+const WEIGHTS_INDEX = new Map()
+    .set('Wall Avoid', '0').set('Obstacle Avoid', 1).set('Evade', 2).set(`Flee`, 3)
+    .set('Separation', 4).set('Alignment', 5).set('Cohesion', 6).set('Seek', 7)
+    .set('Arrive', 8).set('Wander', 9).set('Pursuit', 10).set('Offset Pursuit', 11)
+    .set('Interpose', 12).set('Hide', 13).set('Path', 14).set('Flock', 15);
 const NBR_BEHAVIOURS = 16;
 // Behaviour identifier constants (flag values)
 const WALL_AVOID = 1 << BIT_WALL_AVOID;
@@ -70,4 +69,6 @@ const WRAP = Symbol.for('Wrap');
 const REBOUND = Symbol.for('Rebound');
 const SAFE_TIME_INTERVAL = 250;
 const EPSILON = 1E-10;
+const PREC = 5;
+const FXD = 2;
 //# sourceMappingURL=constants.js.map

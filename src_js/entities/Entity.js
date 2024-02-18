@@ -3,7 +3,7 @@ class Entity {
     constructor(position, colRadius = 1) {
         this.#id = Entity.#NEXT_ID++;
         this.#pos = Vector2D.from(position);
-        this._colRad = colRadius;
+        this.#colRad = colRadius;
     }
     /** Every entity should be given a unique ID number */
     #id;
@@ -16,15 +16,15 @@ class Entity {
     /** Position coordinates */
     get x() { return this.#pos.x; }
     get y() { return this.#pos.y; }
+    /** The world */
+    // #world: World;
+    // get world(): World { return this.#world; }
+    // set world(world: World) { this.#world = world; }
     /** The colision radius */
-    #world;
-    get world() { return this.#world; }
-    set world(world) { this.#world = world; }
-    /** The colision radius */
-    _colRad = 0;
-    get colRad() { return this._colRad; }
-    set colRad(value) { this._colRad = value; }
-    setColRad(value) { this._colRad = value; return this; }
+    #colRad = 0;
+    get colRad() { return this.#colRad; }
+    set colRad(value) { this.#colRad = value; }
+    setColRad(value) { this.#colRad = value; return this; }
     /** The tag property */
     #tag;
     get tag() { return this.#tag; }
@@ -48,14 +48,16 @@ class Entity {
     #zorder = 0;
     get Z() { return this.#zorder; }
     set Z(value) { this.#zorder = value; }
-    born(births, world) {
-        births.push(this);
+    /** Override this in entities reqiiring special actions e.g. Obstacle, Fence */
+    born(world) {
+        world.births.push(this);
     }
-    dies(deaths, world) {
-        deaths.push(this);
+    /** Override this in entities reqiiring special actions e.g. Fence */
+    dies(world) {
+        world.deaths.push(this);
     }
     fitsInside(lowX, lowY, highX, highY) {
-        let p = this.#pos, cr = this._colRad;
+        let p = this.#pos, cr = this.#colRad;
         return p.x - cr >= lowX && p.x + cr <= highX && p.y - cr >= lowY && p.y + cr <= highY;
     }
     isEitherSide(p0, p1) {
@@ -65,25 +67,16 @@ class Entity {
     changeState(newState) { this.#fsm?.changeState(newState); }
     revertToPreviousState() { this.#fsm?.revertToPreviousState(); }
     hasFSM() { return this.#fsm ? true : false; }
-    render() { if (this.isVisible)
-        this.#painter?.call(this); }
-    $$(len = 5) {
-        console.log(this.$(len));
-        return this.toString(len);
+    render(world, elapsedTime) { if (this.isVisible)
+        this.#painter?.call(this, world, elapsedTime); }
+    $$() {
+        console.log(this.toString());
     }
-    $(len = 5) {
-        return this.toString(len);
+    $() {
+        return this.toString();
     }
-    toString(len = 5) {
-        function fmt(n, nd, bufferLength) {
-            let s = n.toFixed(nd).toString();
-            while (s.length < bufferLength)
-                s = ' ' + s;
-            return s;
-        }
-        let s = `${this.constructor.name} ID: ${fmt(this.id, 0, 2)}`;
-        s += ` @ [${fmt(this.x, 0, len)}, ${fmt(this.y, 0, len)}]`;
-        return s;
+    toString() {
+        return `${this.constructor.name}  @  [${this.x.toFixed(FXD)}, ${this.y.toFixed(FXD)}]  Col. radius: ${this.colRad.toFixed(FXD)}`;
     }
 }
 //# sourceMappingURL=entity.js.map

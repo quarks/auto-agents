@@ -12,7 +12,7 @@ function setup() {
 }
 
 function draw() {
-    world.update(deltaTime);
+    world.update(deltaTime / 1000);
     background(220);
     noStroke(); fill(255, 255, 255);
     let d = world.domain;

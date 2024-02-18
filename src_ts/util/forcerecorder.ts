@@ -1,4 +1,10 @@
 class ForceRecorder {
+    static FORCE_NAME = [
+        'Wall avoid     ', 'Obstacle avoid ', 'Evade          ', 'Flee           ',
+        'Separation     ', 'Alignment      ', 'Cohesion       ', 'Seek           ',
+        'Arrive         ', 'Wander         ', 'Pursuit        ', 'Offset Pursuit ',
+        'Interpose      ', 'Hide           ', 'Path           ', 'Flock          '
+    ];
 
     #owner: Vehicle;
     #forces: Array<Force>;
@@ -7,7 +13,7 @@ class ForceRecorder {
 
     constructor(owner: Vehicle, weights: Array<number>) {
         this.#owner = owner;
-        this.#forces = FORCE_NAME.map((v, i) => new Force(v, weights[i]));
+        this.#forces = ForceRecorder.FORCE_NAME.map((v, i) => new Force(v, weights[i]));
     }
 
     addData(typeFlag: number, force: Vector2D) {

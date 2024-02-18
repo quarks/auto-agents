@@ -46,7 +46,7 @@ class Graph {
         let edges: Array<GraphEdge> = [];
         for (let i = 0; i < path.length - 1; i++)
             edges.push(path[i].edge(path[i + 1].id));
-        return { 'path': path, 'edges': edges, 'testedEdges': [...testedEdges.values()] };
+        return { 'path': [...path], 'edges': [...edges], 'testedEdges': [...testedEdges.values()] };
     }
 
     #searchDFS(startID: number, targetID: number, testedEdges: Set<GraphEdge>): Array<GraphNode> {

@@ -1,9 +1,12 @@
-let showDrag = false;
-let pathToFollow = [], pathToDraw = [], testedEdges = [];
 let cellsize = 20, nodeRad = cellsize * 0.275;
-let rWt = cellsize * 0.2, eWt = cellsize * 0.025, eeWt = rWt * 0.85;
+let rWt = cellsize * 0.15, eWt = cellsize * 0.025, eeWt = rWt * 0.85;
 let w, h, walls = [];
-let walker;
+
+
+let walkerA;
+let cyclic;
+
+let nodePath, vectorPath, path;
 
 function preload() {
     maze_data = loadStrings('maze_3.txt');
@@ -20,17 +23,28 @@ function setup() {
     cellCol = [color(255, 255, 220), color(0)];
     nodeCol = color(220);
     routeNodeCol = color(240, 0, 0);
+    // Make maze image
+    backImage = createMazeWallImage(maze_data, cellsize, cellCol);
     // Create walker
-    walker = new Vehicle({ x: 15, y: 15 }, 10, world);
-    walker.painter = vcePerson(color(200, 200, 255), color(20, 20, 160));
-    walker.maxSpeed = 40;
-    world.birth(walker);
+    walkerA = new Vehicle({ x: 15, y: 15 }, 8, world);
+    walkerA.painter = mvrArrowOffset(color(200, 200, 255), color(20, 20, 160), 0.5);
+    walkerA.maxSpeed = 60;
+    world.birth(walkerA);
+    walkerB = new Vehicle({ x: 15, y: 15 }, 8, world);
+    walkerB.painter = mvrArrowOffset(color(200, 200, 255), color(20, 20, 160), 0.5);
+    walkerB.maxSpeed = 60;
+    world.birth(walkerB);
     // #######  Make Maze Data  ##############
     graph = createGraph(node_data, edge_data);
     nodes = graph.nodes;
     edges = graph.edges;
-    // Make maze image
-    backImage = createMazeWallImage(maze_data, cellsize, cellCol);
+    // Create paths
+    gsa = graph.search([1, 10, 5, 32, 29, 6], ASTAR, EUCLIDEAN);
+    nodePathA = [...gsa.path];
+    gsb = graph.search([6, 17, 29, 32, 5, 10, 1], ASTAR, EUCLIDEAN);
+    nodePathB = [...gsb.path];
+    psd = 10;
+    path = undefined;
 }
 
 function draw() {
@@ -38,26 +52,48 @@ function draw() {
     background(200);
     image(backImage, 0, 0);
     //drawEdges();
-    drawTestedEdges();
+    // drawTestedEdges();
     drawNodes();
-    drawRoute(pathToDraw);
-    stroke(0, 255, 255); strokeWeight(3);
-    if (showDrag) line(startNode.x, startNode.y, endNode.x, endNode.y);
+    drawRoute(path, cyclic);
     world.render();
-    if (walker.pilot.isPathOn) {
-        console.log(walker.pilot.pathEdge?.toString());
+    if (walkerA.pilot.isPathOn) {
+        //console.log(walker.pilot.pathEdge?.toString());
         // console.log(walker.pilot.pathNode?.toString());
     }
 }
 
 function keyTyped() {
-    if (key == 'w') walker.printForceData();
-    if (key === 'q') console.log(graph.getData().join('\n'));
+    switch (key) {
+        case 'w': walkerA.printForceData(); break;
+        case 'd': console.log(graph.getData().join('\n')); break;
+        case '1':
+            cyclic = true;
+            path = nodePathA;
+            walkerA.pilot.pathOff();
+            walkerA.pos.set([0, 0]);
+            walkerA.pilot.pathOn(nodePathA, cyclic);
+            walkerA.pilot.pathSeekDist = psd;
+            walkerB.pilot.pathOff();
+            walkerB.pos.set([0, 0]);
+            walkerB.pilot.pathOn(nodePathB, cyclic);
+            walkerB.pilot.pathSeekDist = psd;
+            console.log(`(1)  Node path:     Cyclic: ${cyclic}`)
+            break;
+        case '2':
+            cyclic = true;
+            path = nodePathA;
+            walkerA.pilot.pathOff();
+            walkerA.pos.set(nodePathA[0]);
+            walkerA.pilot.pathOn(path, cyclic);
+            walkerA.pilot.pathSeekDist = psd;
+            console.log(`(2)  Node path:     Cyclic: ${cyclic}`)
+            break;
+    }
 }
 
 function mouseMoved() {
     let n = graph.nearestNode(mouseX, mouseY);
-    console.log(n.id);
+    // console.log(n.id);
 }
 
 function mousePressed() {
@@ -65,44 +101,14 @@ function mousePressed() {
     endNode = startNode;
 }
 
-function mouseDragged() {
-    showDrag = true;
-    endNode = graph.nearestNode(mouseX, mouseY);
-}
-
-function mouseReleased() {
-    console.clear();
-    showDrag = false;
-    let heuristicID = 0;
-    let algorithmID = 0;
-    switch (heuristicID) {
-        case 1: heuristic = MANHATTAN; break;
-        default: heuristic = EUCLIDEAN; break;
-    }
-    switch (algorithmID) {
-        case 3: algorithm = DFS; break;
-        case 2: algorithm = BFS; break;
-        case 1: algorithm = DIJKSTRA; break;
-        default:
-            algorithm = ASTAR;
-    }
-    gs = graph.search([startNode.id, endNode.id], algorithm, heuristic);
-    pathToDraw = [...gs.path];
-    if (pathToDraw.length > 0) {
-        pathToFollow = [...gs.path];
-        walker.setPos(new Vector2D(pathToFollow[0].x, pathToFollow[0].y));
-        // pathToFollow.shift();
-        walker.pilot.pathOn(pathToFollow, false, graph);
-        testedEdges = gs.testedEdges;
-    }
-    console.log(`Path length ${pathToDraw.length}   Nbr edges tested ${testedEdges.length}`);
-}
-
-function drawRoute(p2d) {
+function drawRoute(p2d, cyclic) {
     if (p2d) {
         stroke(240, 0, 0); strokeWeight(rWt);
-        for (let i = 1; i < p2d.length; i++)
-            line(p2d[i - 1].x, p2d[i - 1].y, p2d[i].x, p2d[i].y);
+        let nbrEdges = cyclic ? p2d.length : p2d.length - 1;
+        for (let i = 0; i < nbrEdges; i++) {
+            let ni = (i + 1) % p2d.length;
+            line(p2d[i].x, p2d[i].y, p2d[ni].x, p2d[ni].y);
+        }
         stroke(0); strokeWeight(0.7); fill(routeNodeCol);
         p2d.forEach(n => {
             ellipse(n.x, n.y, 2 * nodeRad, 2 * nodeRad);

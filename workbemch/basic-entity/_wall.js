@@ -42,7 +42,7 @@ function draw() {
     world.update(deltaTime);
     background(220);
     noStroke(); fill(250);
-    let d = world._domain;
+    let d = world.domain;
     rect(d.lowX, d.lowY, d.width, d.height);
     renderTreeGrid();
     // world.render();
@@ -56,20 +56,6 @@ function draw() {
     world.render();
 }
 
-function renderTreeGrid() {
-    function renderPart(level) {
-        level = (2 ** (level - 1));
-        let dx = r.width / level, dy = r.height / level;
-        for (let i = r.lowX; i <= highX; i += dx) line(i, r.lowY, i, highY);
-        for (let i = r.lowY; i <= highY; i += dy) line(r.lowX, i, highX, i);
-    }
-    let r = world._tree, d = world._domain;
-    let highX = Math.min(r.highX, d.highX), highY = Math.min(r.highY, d.highY);
-    stroke(0, 16); strokeWeight(1.1);
-    for (let i = 1; i <= depth; i++) renderPart(i);
-}
-
-
 function keyTyped() {
     if (key == 't') printTree(world._tree);
     if (key == 'e') {
@@ -79,7 +65,6 @@ function keyTyped() {
     let eid = '0123456789'.indexOf(key);
     if (eid >= 0 && eid < entities.length) {
         world.death(eid);
-        //world.death(entities[eid]);
     }
 }
 

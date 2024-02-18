@@ -24,10 +24,10 @@ class Vehicle extends Mover {
 
     fits_inside(lowX: number, lowY: number, highX: number, highY: number): boolean {
         let fits: boolean =
-            (this.pos.x - this._colRad >= lowX)
-            && (this.pos.x + this._colRad <= highX)
-            && (this.pos.y - this._colRad >= lowY)
-            && (this.pos.y + this._colRad <= highY);
+            (this.pos.x - this.colRad >= lowX)
+            && (this.pos.x + this.colRad <= highX)
+            && (this.pos.y - this.colRad >= lowY)
+            && (this.pos.y + this.colRad <= highY);
         return fits;
     }
 
@@ -45,7 +45,7 @@ class Vehicle extends Mover {
      */
     forceRecorderOn(): Vehicle {
         if (this.pilot)
-            this.#forceRecorder = new ForceRecorder(this, this.pilot._weight);
+            this.#forceRecorder = new ForceRecorder(this, this.pilot.weightsArray);
         return this;
     }
 

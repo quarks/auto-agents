@@ -1,3 +1,4 @@
+const GEOM2D = '14 Feb 2024';
 class Geom2D {
     static ACCY = 1E-30;
     static ON_PLANE = 0b10000;
@@ -8,6 +9,37 @@ class Geom2D {
     static OUT_RIGHT = 0b0100;
     static OUT_BOTTOM = 0b1000;
     static NEARNESS = 1.0;
+    /**
+     * Rotate a vector (clockwise) about the origin [0,0] by the given ang.
+     * The vector 'v' is unchanged.
+     * @param ang angle to rotate vector
+     * @param v the vector to rotate
+     * @param origin the origin to rotate about
+     * @returns the rotated vector
+     */
+    static rotate_av(ang, v, origin = Vector2D.ZERO) {
+        let cosa = Math.cos(ang), sina = Math.sin(ang);
+        let dx = v.x - origin.x, dy = v.y - origin.y;
+        let x = origin.x + dx * cosa - dy * sina;
+        let y = origin.y + dy * cosa + dx * sina;
+        return new Vector2D(x, y);
+    }
+    /**
+     *
+     * @param ang angle to rotate vector
+     * @param vx vector x coordinate
+     * @param vy vector x coordinate
+     * @param ox origin x coordinate
+     * @param oy origin y coordinate
+     * @returns the rotated position
+     */
+    static rotate_axy(ang, vx, vy, ox = 0, oy = 0) {
+        let cosa = Math.cos(ang), sina = Math.sin(ang);
+        let dx = vx - ox, dy = vy - oy;
+        let x = ox + dx * cosa - dy * sina;
+        let y = oy + dy * cosa + dx * sina;
+        return { x: x, y: y };
+    }
     /**
      * Calculates the squared distance between 2 points
      * @param x0 point 1
@@ -558,6 +590,50 @@ class Geom2D {
         return side;
     }
     /**
+      * Check whether a vector ov lies between the vectors oa and ob. The origin of all vectors
+      * is [0, 0] unless a different origin is specified in the parameters ox, oy.
+      * All vectors lie in XY plane (z = 0) or projected onto the XY (z != 0 but is ignored).
+      * @param vx x coordinate of the vector to test
+      * @param vy y coordinate of the vector to test
+      * @param ax x coordinate of the first vector
+      * @param ay y coordinate of the first vector
+      * @param bx x coordinate of the second vector
+      * @param by y coordinate of the second vector
+      * @param ox x coordinate of the vectors' origin (default = 0)
+      * @param oy y coordinate of the vectors' origin (default = 0)
+      * @returns
+      */
+    static lies_between(vx, vy, ax, ay, bx, by, ox = 0, oy = 0) {
+        // tranlate vector origin
+        vx -= ox;
+        ax -= ox;
+        bx -= ox;
+        vy -= oy;
+        ay -= oy;
+        by -= oy;
+        // Calculate cross product of ab [0, 0, abz]
+        let abz = ax * by - ay * bx;
+        return (ax * vy - ay * vx) * abz > 0 && (by * vx - bx * vy) * abz > 0;
+    }
+    /**
+     * Given an arc enclosed by the two angles a0 and a1, this function checks whether
+     * a third angle is within that arc.
+     * The angle subtended by the arc will be less than Pi radians for all values of
+     * a0 and a1.
+     * The angles do not have to be constrained to a particular range but can be any
+     * real number.
+     *
+     * @param angle the angle to test
+     * @param a0 the angle for one end of the arc
+     * @param a1 the angle for the other end of the arc
+     * @returns true if the angle is inside the arc
+     */
+    static is_in_arc(angle, a0, a1) {
+        let c = Math.cos;
+        let s = Math.sin;
+        return Geom2D.lies_between(c(angle), s(angle), c(a0), s(a0), c(a1), s(a1));
+    }
+    /**
      * Outside is in the same direction of the plane normal. <br>
      * This version requires a single point on the plane and the normal
      * direction. Useful for an infinite plane or for testing many
@@ -889,15 +965,15 @@ class Geom2D {
             return [];
         let result = [];
         let vList = [];
-        /* we want a counter-clockwise polygon in V based on computer screen coordinates */
-        if (0 < Geom2D.area(contour))
+        /* We want a counter-clockwise polygon in V based on computer screen coordinates */
+        if (Geom2D.area(contour) < 0)
             for (let v = 0; v < n; v++)
                 vList[v] = v;
         else
             for (let v = 0; v < n; v++)
-                vList[v] = (n - 1) - v;
+                vList[v] = n - 1 - v;
         let nv = n;
-        /*  remove nv-2 Vertices, creating 1 triangle every time */
+        /*  remove (nv-2) Vertices, creating 1 triangle every time */
         let count = 2 * nv; /* error detection */
         for (let v = nv - 1; nv > 2;) {
             /* if we loop, it is probably a non-simple polygon */
@@ -918,8 +994,6 @@ class Geom2D {
                 let a = vList[u], b = vList[v], c = vList[w];
                 /* output Triangle */
                 result.push(a, b, c);
-                // result.push(b);
-                // result.push(c);
                 /* remove v from remaining polygon */
                 for (let s = v, t = v + 1; t < nv; s++, t++)
                     vList[s] = vList[t];
@@ -928,10 +1002,13 @@ class Geom2D {
                 count = 2 * nv;
             }
         }
-        return result.reverse();
+        return result;
     }
     /**
      * Calculate the area of the polygon.
+     * The sign of the area depends on the order the vetices appear on the computer screen.
+     * negative : anti-clockwise   <br>
+     * positive : clockwise        <br>
      *
      * @param contour an array of vertices that make up an open 2D polygon
      * @return the area of the polygon
@@ -951,7 +1028,7 @@ class Geom2D {
         let By = contour[vList[v]].y;
         let Cx = contour[vList[w]].x;
         let Cy = contour[vList[w]].y;
-        if (Geom2D.ACCY > (((Bx - Ax) * (Cy - Ay)) - ((By - Ay) * (Cx - Ax))))
+        if (Geom2D.ACCY < (((Bx - Ax) * (Cy - Ay)) - ((By - Ay) * (Cx - Ax))))
             return false;
         for (p = 0; p < n; p++) {
             if ((p == u) || (p == v) || (p == w))

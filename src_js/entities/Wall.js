@@ -1,31 +1,24 @@
 class Wall extends Entity {
+    #start;
+    get start() { return this.#start; }
+    ;
     #end;
     get end() { return this.#end; }
-    ;
-    get start() { return this.pos; }
     ;
     #norm;
     get norm() { return this.#norm; }
     ;
     #repelSide;
-    setRepelSide(s) { this.repelSide = s; return this; }
-    set repelSide(s) {
-        switch (s) {
-            case OUTSIDE:
-            case INSIDE:
-            case BOTH_SIDES:
-                this.#repelSide = s;
-                break;
-            default:
-                this.#repelSide == NO_SIDE;
-        }
-    }
+    setRepelSide(s) { this.#repelSide = s; return this; }
+    set repelSide(s) { this.#repelSide = s; }
     get repelSide() { return this.#repelSide; }
-    constructor(start, end, repelSide = OUTSIDE) {
-        super(start, 1);
+    constructor(start, end, repelSide = BOTH_SIDES) {
+        let vs = Vector2D.from(start), ve = Vector2D.from(end);
+        super(vs.add(ve).div(2), 1);
         this.Z = 64;
-        this.#end = Vector2D.from(end);
-        this.#norm = new Vector2D(-(end.y - start.y), end.x - start.x);
+        this.#start = vs;
+        this.#end = ve;
+        this.#norm = new Vector2D(-(this.#end.y - this.#start.y), this.#end.x - this.#start.x);
         this.#norm = this.#norm.normalize();
         this.repelSide = repelSide;
     }
@@ -36,6 +29,12 @@ class Wall extends Entity {
     }
     isEitherSide(p0, p1) {
         return Geom2D.line_line(p0.x, p0.y, p1.x, p1.y, this.start.x, this.start.y, this.end.x, this.end.y);
+    }
+    toString() {
+        let s = `${this.constructor.name}  @  [${this.x.toFixed(FXD)}, ${this.y.toFixed(FXD)}]  `;
+        s += `from [${this.start.x.toFixed(FXD)}, ${this.start.y.toFixed(FXD)}]  `;
+        s += `to [${this.end.x.toFixed(FXD)}, ${this.end.y.toFixed(FXD)}]  `;
+        return s;
     }
 }
 //# sourceMappingURL=wall.js.map

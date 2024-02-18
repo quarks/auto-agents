@@ -79,7 +79,7 @@ class QPart {
                 return;
             parts.push(part);
             ents.push(...part.#entities);
-            getParent(part._parent);
+            getParent(part.#parent);
         }
         function getChildren(part) {
             parts.push(part);
@@ -96,7 +96,7 @@ class QPart {
         getChildren(encPart);
         return { partitions: parts, entities: ents, enc_partition: encPart };
     }
-    _childAt(part, entity) {
+    #childAt(part, entity) {
         let q = ((entity.pos.x < part.#cX) ? 0 : 1) + ((entity.pos.y < part.#cY) ? 0 : 2);
         return part.#children[q];
     }
@@ -104,7 +104,7 @@ class QPart {
         function findPartition(part, entity) {
             if (entity.fitsInside(part.lowX, part.lowY, part.highX, part.highY)) {
                 if (part.hasChildren)
-                    findPartition(part._childAt(part, entity), entity);
+                    findPartition(part.#childAt(part, entity), entity);
                 else
                     part.#entities.add(entity);
             }
@@ -113,12 +113,12 @@ class QPart {
         }
         findPartition(this.getRoot(), entity);
     }
-    subEntity(entity) {
+    delEntity(entity) {
         function findPartition(part, entity) {
             if (part.#entities.delete(entity))
                 return true;
             if (part.hasChildren)
-                return findPartition(part._childAt(part, entity), entity);
+                return findPartition(part.#childAt(part, entity), entity);
             else
                 return false;
         }
@@ -137,13 +137,13 @@ class QPart {
     }
     correctPartitionContents() {
         function processPartition(part, root) {
-            // Only need to consider entiies that can move i.e. has a velocity attribute
-            let me = [...part.#entities].filter(x => x['_vel']);
+            // Only need to consider entiies that can move i.e. a Mover or Vehicle
+            let me = [...part.#entities].filter(x => x instanceof Mover);
             for (let e of me) {
                 if (e.fitsInside(part.lowX, part.lowY, part.highX, part.highY)) {
                     // Fits inside this partition attempt to move down as far as possible
                     if (part.hasChildren) {
-                        let sp = part._childAt(part, e);
+                        let sp = part.#childAt(part, e);
                         if (e.fitsInside(sp.lowX, sp.lowY, sp.highX, sp.highY)) {
                             part.#entities.delete(e);
                             sp.addEntity(e);
@@ -167,6 +167,11 @@ class QPart {
     getTreeLevelData() {
         function CountEntitiesByLevel(part) {
             let s = 0;
+            part.#entities.forEach(e => { if (e instanceof Fence)
+                s++; });
+            levelFence[0] += s;
+            levelFence[part.level] += s;
+            s = 0;
             part.#entities.forEach(e => { if (e instanceof Wall)
                 s++; });
             levelWall[0] += s;
@@ -186,13 +191,14 @@ class QPart {
                     CountEntitiesByLevel(child);
         }
         let levelMover = new Array(this.depth + 1).fill(0);
+        let levelFence = new Array(this.depth + 1).fill(0);
         let levelWall = new Array(this.depth + 1).fill(0);
         let levelObstacle = new Array(this.depth + 1).fill(0);
         CountEntitiesByLevel(this.getRoot());
         return {
             'movers': levelMover, 'obstacles': levelObstacle, 'walls': levelWall,
-            'depth': this.depth, 'treesize': this.treeSize, 'leafsize': this.leafSize,
-            'lowX': this.lowX, 'lowY': this.lowY
+            'fences': levelFence, 'depth': this.depth, 'treesize': this.treeSize,
+            'leafsize': this.leafSize, 'lowX': this.lowX, 'lowY': this.lowY
         };
     }
     $$(len = 5) {

@@ -1,11 +1,26 @@
 let hintHeading = true, hintVelocity = true, hintForce = true;
 let hintTrail = true, hintCircle = true, hintFleeCircle = true;
 let hintObsDetect = true, hintFeelers = true, hintInterpose = true;
-
+let hintCanSee = true;
 let showColCircle = true;
 
+function fenceBasic(colF, p = p5.instance) {
+    return (function (world, elapsedTime) {
+        p.push();
+        p.stroke(colF);
+        p.fill(colF);
+        p.strokeJoin(ROUND);
+        p.strokeWeight(1.1); // Fix for antialiasing
+        let t = this.triangles;
+        beginShape(TRIANGLES);
+        t.forEach(pv => vertex(pv.x, pv.y));
+        endShape();
+        p.pop();
+    });
+}
+
 function entBasic(colF, colS, p = p5.instance) {
-    return (function () {
+    return (function (world, elapsedTime) {
         p.push();
         p.translate(this.pos.x, this.pos.y);
         let size = 2 * this.colRad;
@@ -17,7 +32,7 @@ function entBasic(colF, colS, p = p5.instance) {
 
 function entPerson(colF, colS, p = p5.instance) {
     let body = [0.15, -0.5, 0.15, 0.5, -0.18, 0.3, -0.18, -0.3];
-    return (function () {
+    return (function (world, elapsedTime) {
         p.push();
         p.translate(this.pos.x, this.pos.y);
         let size = 2 * this.colRad;
@@ -37,9 +52,9 @@ function entObsAnim(p = p5.instance) {
     let a = Math.PI * Math.random();
     let pi2 = Math.PI / 4;
 
-    return (function () {
+    return (function (world, elapsedTime) {
         let size = 2 * this.colRad;
-        a += 0.01;
+        a += elapsedTime;
         p.push();
         p.translate(this.pos.x, this.pos.y); p.rotate(a);
         p.noStroke();
@@ -55,21 +70,21 @@ function entObsAnim(p = p5.instance) {
 }
 
 function entWall(col, weight, p = p5.instance) {
-    return (function () {
+    return (function (world, elapsedTime) {
         p.push();
         p.stroke(col); p.strokeWeight(weight);
-        p.line(this.pos.x, this.pos.y, this.end.x, this.end.y);
-        p.stroke(120); p.strokeWeight(weight / 4);
+        p.line(this.start.x, this.start.y, this.end.x, this.end.y);
+        p.stroke(60); p.strokeWeight(1);
         if (this.repelSide == OUTSIDE || this.repelSide == BOTH_SIDES) {
             p.push();
-            p.translate(this.norm.x * 3, this.norm.y * 3);
-            p.line(this.pos.x, this.pos.y, this.end.x, this.end.y);
+            p.translate(this.norm.x * 2, this.norm.y * 2);
+            p.line(this.start.x, this.start.y, this.end.x, this.end.y);
             p.pop();
         }
         if (this.repelSide == INSIDE || this.repelSide == BOTH_SIDES) {
             p.push();
-            p.translate(this.norm.x * -3, this.norm.y * -3);
-            p.line(this.pos.x, this.pos.y, this.end.x, this.end.y);
+            p.translate(this.norm.x * -2, this.norm.y * -2);
+            p.line(this.start.x, this.start.y, this.end.x, this.end.y);
             p.pop();
         }
         p.pop();
@@ -78,7 +93,7 @@ function entWall(col, weight, p = p5.instance) {
 
 function vcePerson(colF, colS, p = p5.instance) {
     let body = [0.15, -0.5, 0.15, 0.5, -0.18, 0.3, -0.18, -0.3];
-    return (function () {
+    return (function (world, elapsedTime) {
         p.push();
         p.translate(this.pos.x, this.pos.y);
         if (hintHeading) showHeading.call(this, p);
@@ -103,6 +118,9 @@ function vcePerson(colF, colS, p = p5.instance) {
         if (this.pilot.isInterposeOn) {
             if (hintInterpose) showInterpose.call(this, p);
         }
+        if (hintCanSee) {
+            showCanSee.call(this, p);
+        }
         let size = 2 * this.colRad;
         p.rotate(this.headingAngle);
         if (showColCircle) {
@@ -122,9 +140,12 @@ function vcePerson(colF, colS, p = p5.instance) {
 
 function mvrPerson(colF, colS, p = p5.instance) {
     let body = [0.15, -0.5, 0.15, 0.5, -0.18, 0.3, -0.18, -0.3];
-    return (function () {
+    return (function (world, elapsedTime) {
         p.push();
         p.translate(this.pos.x, this.pos.y);
+        if (hintCanSee) {
+            showCanSee.call(this, p);
+        }
         p.rotate(this.headingAngle)
         let size = 2 * this.colRad;
         if (showColCircle) {
@@ -144,7 +165,7 @@ function mvrPerson(colF, colS, p = p5.instance) {
 
 function mvrArrow(colF, colS, p = p5.instance) {
     let body = [-0.7, -0.45, -0.7, 0.45, 0.85, 0];
-    return (function () {
+    return (function (world, elapsedTime) {
         p.push();
         p.translate(this.pos.x, this.pos.y);
         p.rotate(this.headingAngle)
@@ -153,6 +174,22 @@ function mvrArrow(colF, colS, p = p5.instance) {
             p.fill(0, 32); p.noStroke();
             p.ellipse(0, 0, 2 * this.colRad, 2 * this.colRad);
         }
+        p.fill(colF); p.stroke(colS); p.strokeWeight(1.1);
+        p.beginShape();
+        for (let idx = 0; idx < body.length; idx += 2)
+            p.vertex(body[idx] * size, body[idx + 1] * size);
+        p.endShape(CLOSE);
+        p.pop();
+    });
+}
+
+function mvrArrowOffset(colF, colS, offset = 0, p = p5.instance) {
+    let body = [-0.7, -0.45 + offset, -0.7, 0.45 + offset, 0.85, offset];
+    return (function (world, elapsedTime) {
+        let size = this.colRad;
+        p.push();
+        p.translate(this.pos.x, this.pos.y);
+        p.rotate(this.headingAngle);
         p.fill(colF); p.stroke(colS); p.strokeWeight(1.1);
         p.beginShape();
         for (let idx = 0; idx < body.length; idx += 2)
@@ -198,6 +235,16 @@ function showHeading(p = p5.instance) {
     p.line(0, 0, wd2, 0);
     p.noStroke(); p.fill(163, 163, 255);
     p.triangle(wd2, -6, wd2, 6, wd2 + 10, 0);
+    p.pop();
+}
+
+function showCanSee(p = p5.instance) {
+    let vd = 2 * this.viewDistance;
+    let fov = this.viewFOV;
+    p.push();
+    p.rotate(this.headingAngle);
+    p.fill(200, 180, 32, 64); p.strokeWeight(1); p.stroke(180, 140, 32);
+    p.arc(0, 0, vd, vd, -fov / 2, fov / 2, p.PIE);
     p.pop();
 }
 
@@ -258,92 +305,3 @@ function showFleeCircle(p = p5.instance) {
     p.pop();
 }
 
-
-function colorizeEntities(tree, painters) {
-    function colourize(part) {
-        part.entities.forEach(e => { e.painter = painters[part.level]; });
-        part.children?.forEach(p => colourize(p));
-    }
-    colourize(tree.getRoot());
-}
-
-
-function createMazeWallImage(data, cellsize, cellCols) {
-    function drawWallCell(t) {
-        pg.push();
-        pg.translate(px, py);
-        switch (t) {
-            case 0:
-                pg.rect(- cs2, - cs2, cs, cs, cs / 5);
-                break;
-            case 1:
-                pg.rect(- cs2, - cs2, cs, cs2);
-                pg.arc(0, 0, cs, cs, 0, PI);
-                break;
-            case 2:
-                pg.rect(0, - cs2, cs2, cs);
-                pg.arc(0, 0, cs, cs, HALF_PI, HALF_PI + PI)
-                break;
-            case 3:
-                pg.rect(- cs2, - cs2, cs, cs2);
-                pg.rect(0, - cs2, cs2, cs);
-                pg.arc(0, 0, cs, cs, HALF_PI, PI);
-                break;
-            case 4:
-                pg.rect(- cs2, 0, cs, cs2);
-                pg.arc(0, 0, cs, cs, PI, TWO_PI);
-                break;
-            case 6:
-                pg.rect(0, - cs2, cs2, cs);
-                pg.rect(- cs2, 0, cs, cs2);
-                pg.arc(0, 0, cs, cs, PI, PI + HALF_PI);
-                break;
-            case 8:
-                pg.rect(-cs2, - cs2, cs2, cs);
-                pg.arc(0, 0, cs, cs, TWO_PI - HALF_PI, HALF_PI);
-                break;
-            case 9:
-                pg.rect(- cs2, - cs2, cs, cs2);
-                pg.rect(-cs2, - cs2, cs2, cs);
-                pg.arc(0, 0, cs, cs, 0, HALF_PI);
-                break;
-            case 12:
-                pg.rect(- cs2, 0, cs, cs2);
-                pg.rect(-cs2, - cs2, cs2, cs);
-                pg.arc(0, 0, cs, cs, PI + HALF_PI, TWO_PI);
-                break;
-            default:
-                pg.rect(- cs2, - cs2, cs, cs);
-                pg.rect(- cs2, 0, cs, cs2);
-        }
-
-        pg.pop();
-    }
-    let h = data.length, w = data[0].length, cs = cellsize, cs2 = cs / 2, px, py;
-    let md = [];
-    for (let i = 0; i < h + 2; i++)
-        md.push(new Uint8Array(w + 2).fill(1));
-    // Populate from data
-    for (let i = 0; i < h; i++)
-        for (let j = 0; j < w; j++)
-            md[i + 1][j + 1] = data[i].charAt(j) === ' ' ? 0 : 1;
-    let pg = createGraphics(w * cs, h * cs);
-    pg.background(cellCols[0]);
-    pg.fill(cellCols[1]);
-    pg.noStroke();
-    for (let i = 1; i < h + 1; i++) {
-        py = (i - 1 + 0.5) * cs;
-        for (let j = 1; j < w + 1; j++) {
-            px = (j - 1 + 0.5) * cs;
-            if ([md[i][j]] == 1) {
-                let type = (md[i][j - 1] << 3);
-                type += (md[i][j + 1] << 1);
-                type += (md[i + 1][j] << 2);
-                type += md[i - 1][j];
-                // console.log(`[${j - 1}, ${i - 1}] Type ${type}`);
-                drawWallCell(type);
-            }
-        }
-    }
-    return pg;
-}

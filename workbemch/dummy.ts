@@ -1,14 +1,20 @@
-const GEOM2D = '06 Aug 2023';
+const GEOM2D = '14 Feb 2024';
+
 class Geom2D {
+
     static ACCY = 1E-30;
+
     static ON_PLANE = 16;
     static PLANE_INSIDE = 17;
     static PLANE_OUTSIDE = 18;
+
     static OUT_LEFT = 1;
     static OUT_TOP = 2;
     static OUT_RIGHT = 4;
     static OUT_BOTTOM = 8;
+
     static NEARNESS = 1.0;
+
     /**
      * Rotate a vector (clockwise) about the origin [0,0] by the given ang.
      * The vector 'v' is unchanged.
@@ -17,15 +23,16 @@ class Geom2D {
      * @param origin the origin to rotate about
      * @returns the rotated vector
      */
-    static rotate_av(ang, v, origin = Vector2D.ZERO) {
+    static rotate_av(ang: number, v: Vector2D, origin = Vector2D.ZERO): Vector2D {
         let cosa = Math.cos(ang), sina = Math.sin(ang);
         let dx = v.x - origin.x, dy = v.y - origin.y;
         let x = origin.x + dx * cosa - dy * sina;
         let y = origin.y + dy * cosa + dx * sina;
         return new Vector2D(x, y);
     }
+
     /**
-     *
+     * 
      * @param ang angle to rotate vector
      * @param vx vector x coordinate
      * @param vy vector x coordinate
@@ -33,13 +40,14 @@ class Geom2D {
      * @param oy origin y coordinate
      * @returns the rotated position
      */
-    static rotate_axy(ang, vx, vy, ox = 0, oy = 0) {
+    static rotate_axy(ang: number, vx: number, vy: number, ox = 0, oy = 0) {
         let cosa = Math.cos(ang), sina = Math.sin(ang);
         let dx = vx - ox, dy = vy - oy;
         let x = ox + dx * cosa - dy * sina;
         let y = oy + dy * cosa + dx * sina;
         return { x: x, y: y };
     }
+
     /**
      * Calculates the squared distance between 2 points
      * @param x0 point 1
@@ -48,9 +56,10 @@ class Geom2D {
      * @param y1 point 2
      * @return the distance between the pos squared
      */
-    static distance_sq(x0, y0, x1, y1) {
+    static distance_sq(x0: number, y0: number, x1: number, y1: number): number {
         return (x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0);
     }
+
     /**
      * Calculates the distance between 2 points
      * @param x0 point 1
@@ -59,75 +68,76 @@ class Geom2D {
      * @param y1 point 2
      * @return the distance between the pos squared
      */
-    static distance(x0, y0, x1, y1) {
+    static distance(x0: number, y0: number, x1: number, y1: number): number {
         return Math.sqrt((x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0));
     }
+
     /**
      * This sets the distance used to decide whether a point is 'near, a line. This
      * is initially set at 1.0 <br>
      * @param nearness must be >0 otherwise it is unchanged
      */
-    static po_to_line_dist(nearness) {
+    static po_to_line_dist(nearness: number) {
         if (nearness > 0)
             Geom2D.NEARNESS = nearness;
     }
+
     /**
      * See if point is near the finite line. <br>
-     *
+     * 
      * @param v0 line start
      * @param v1 line end
      * @param p point to consider
      * @param vp filled with xy position of the nearest point on finite line (if provided)
      * @return true if p is near the line
      */
-    static is_po_near_line(v0, v1, p, vp) {
+    static is_po_near_line(v0: Vector2D, v1: Vector2D, p: Vector2D, vp?: Vector2D): boolean {
         let pnl = Geom2D.po_nearest_line(v0, v1, p);
         if (pnl) {
             let d = Math.sqrt((p.p[0] - pnl.p[0]) * (p.p[0] - pnl.p[0]) + (p.p[1] - pnl.p[1]) * (p.p[1] - pnl.p[1]));
-            if (vp)
-                vp.set(pnl);
+            if (vp) vp.set(pnl);
             if (d <= Geom2D.NEARNESS)
                 return true;
         }
         return false;
     }
+
     /**
      * See if point is near the infinite line. <br>
-     *
+     * 
      * @param v0 line passes through this po
      * @param v1 line passes through this po
      * @param p point to consider
      * @param vp filled with xy position of the nearest point on line (must not be undefined)
      * @return true if p is near the line
      */
-    static is_po_near_infinite_line(v0, v1, p, vp) {
+    static is_po_near_infinite_line(v0: Vector2D, v1: Vector2D, p: Vector2D, vp?: Vector2D): boolean {
         let pnl = Geom2D.po_nearest_infinite_line(v0, v1, p);
         if (pnl) {
             let d = Math.sqrt((p.p[0] - pnl.p[0]) * (p.p[0] - pnl.p[0]) + (p.p[1] - pnl.p[1]) * (p.p[1] - pnl.p[1]));
-            if (vp)
-                vp.set(pnl);
+            if (vp) vp.set(pnl);
             if (d <= Geom2D.NEARNESS)
                 return true;
         }
         return false;
     }
+
     /**
      * Given a point find the nearest position on a finite line.
-     *
+     * 
      * @param v0 line start
      * @param v1 line end
      * @param p point to consider
      * @return returns undefined if the line is undefined or if the nearest point is not on the line
      */
-    static po_nearest_line(v0, v1, p) {
+    static po_nearest_line(v0: Vector2D, v1: Vector2D, p: Vector2D): Vector2D {
         let vp = undefined;
-        let the_line = v1.sub(v0); //Vector2D.sub(v1, v0);
+        let the_line = v1.sub(v0);  //Vector2D.sub(v1, v0);
         let lineMag = the_line.length();
         lineMag = lineMag * lineMag;
         if (lineMag > 0.0) {
-            let pv0_line = p.sub(v0); // Vector2D.sub(p, v0);
+            let pv0_line = p.sub(v0);  // Vector2D.sub(p, v0);
             let t = pv0_line.dot(the_line) / lineMag;
-            //console.log(lineMag, t)
             if (t >= 0 && t <= 1) {
                 vp = new Vector2D();
                 vp.p[0] = the_line.p[0] * t + v0.p[0];
@@ -136,6 +146,7 @@ class Geom2D {
         }
         return vp;
     }
+
     /**
      * Given a point find the nearest position on an infinite line.
      * @param v0 line start
@@ -143,7 +154,7 @@ class Geom2D {
      * @param p point to consider
      * @return returns undefined if the line is undefined else the nearest position
      */
-    static po_nearest_infinite_line(v0, v1, p) {
+    static po_nearest_infinite_line(v0: Vector2D, v1: Vector2D, p: Vector2D): Vector2D {
         let vp = undefined;
         let the_line = v1.sub(v0); // Vector2D.sub(v1, v0);
         let lineMag = the_line.length();
@@ -157,10 +168,11 @@ class Geom2D {
         }
         return vp;
     }
+
     /**
      * Sees if a line intersects with the circumference of a circle.
-     *
-     * @param x0
+     * 
+     * @param x0 
      * @param y0
      * @param x1
      * @param y1
@@ -169,20 +181,24 @@ class Geom2D {
      * @param r radius of circle
      * @return true if the line intersects the circle else false
      */
-    static line_circle(x0, y0, x1, y1, cx, cy, r) {
+    static line_circle(x0: number, y0: number, x1: number, y1: number, cx: number, cy: number, r: number): boolean {
         let f = (x1 - x0);
         let g = (y1 - y0);
         let fSQ = f * f;
         let gSQ = g * g;
         let fgSQ = fSQ + gSQ;
         let rSQ = r * r;
+
         let xc0 = cx - x0;
         let yc0 = cy - y0;
         let xc1 = cx - x1;
         let yc1 = cy - y1;
-        let lineInside = xc0 * xc0 + yc0 * yc0 < rSQ && xc1 * xc1 + yc1 * yc1 < rSQ;
+
+        let lineInside: boolean = xc0 * xc0 + yc0 * yc0 < rSQ && xc1 * xc1 + yc1 * yc1 < rSQ;
+
         let fygx = f * yc0 - g * xc0;
         let root = r * r * fgSQ - fygx * fygx;
+
         if (root > Geom2D.ACCY && !lineInside) {
             let fxgy = f * xc0 + g * yc0;
             let t = fxgy / fgSQ;
@@ -194,6 +210,7 @@ class Geom2D {
         }
         return false;
     }
+
     /**
      * Calculate the pos of intersection between a line and a circle. <br>
      * An array is returned that contains the intersection pos in x, y order.
@@ -201,7 +218,7 @@ class Geom2D {
      * 0 then there is no intersection <br>
      * 2 there is just one intersection (the line is a tangent to the circle) <br>
      * 4 there are two intersections <br>
-     *
+     * 
      * @param x0 start of line
      * @param y0 start of line
      * @param x1 end of line
@@ -211,27 +228,29 @@ class Geom2D {
      * @param r radius of circle
      * @return the intersection pos as an array (2 elements per intersection)
      */
-    static line_circle_p(x0, y0, x1, y1, cx, cy, r) {
-        let result = [];
+    static line_circle_p(x0: number, y0: number, x1: number, y1: number, cx: number, cy: number, r: number): Array<number> {
+        let result: Array<number> = [];
         let f = (x1 - x0);
         let g = (y1 - y0);
         let fSQ = f * f;
         let gSQ = g * g;
         let fgSQ = fSQ + gSQ;
+
         let xc0 = cx - x0;
         let yc0 = cy - y0;
+
         let fygx = f * yc0 - g * xc0;
         let root = r * r * fgSQ - fygx * fygx;
         if (root > -Geom2D.ACCY) {
             let fxgy = f * xc0 + g * yc0;
-            if (root < Geom2D.ACCY) { // tangent so just one po
+            if (root < Geom2D.ACCY) {		// tangent so just one po
                 let t = fxgy / fgSQ;
                 if (t >= 0 && t <= 1) {
                     result.push(x0 + f * t);
                     result.push(y0 + g * t);
                 }
             }
-            else { // possibly two intersections
+            else {	// possibly two intersections
                 root = Math.sqrt(root);
                 let t = (fxgy - root) / fgSQ;
                 if (t >= 0 && t <= 1) {
@@ -246,6 +265,7 @@ class Geom2D {
         }
         return result;
     }
+
     /**
      * See if two lines intersect <br>
      * @param x0 start of line 1
@@ -258,7 +278,7 @@ class Geom2D {
      * @param y3 end of line 2
      * @return true if the lines intersect
      */
-    static line_line(x0, y0, x1, y1, x2, y2, x3, y3) {
+    static line_line(x0: number, y0: number, x1: number, y1: number, x2: number, y2: number, x3: number, y3: number): boolean {
         let f1 = (x1 - x0);
         let g1 = (y1 - y0);
         let f2 = (x3 - x2);
@@ -273,6 +293,7 @@ class Geom2D {
         }
         return false;
     }
+
     /**
      * Find the point of intersection between two lines. <br>
      * This method uses Vector2D objects to represent the line end pos.
@@ -280,10 +301,11 @@ class Geom2D {
      * @param v1 end of line 1
      * @param v2 start of line 2
      * @param v3 end of line 2
-     * @return a Vector2D object holding the intersection coordinates else undefined if no intersection
+     * @return a Vector2D object holding the intersection coordinates else undefined if no intersection 
      */
-    static line_line_pv(v0, v1, v2, v3) {
-        let intercept = undefined;
+    static line_line_pv(v0: Vector2D, v1: Vector2D, v2: Vector2D, v3: Vector2D): Vector2D {
+        let intercept: Vector2D = undefined;
+
         let f1 = (v1.p[0] - v0.p[0]);
         let g1 = (v1.p[1] - v0.p[1]);
         let f2 = (v3.p[0] - v2.p[0]);
@@ -291,6 +313,7 @@ class Geom2D {
         let f1g2 = f1 * g2;
         let f2g1 = f2 * g1;
         let det = f2g1 - f1g2;
+
         if (Math.abs(det) > Geom2D.ACCY) {
             let s = (f2 * (v2.p[1] - v0.p[1]) - g2 * (v2.p[0] - v0.p[0])) / det;
             let t = (f1 * (v2.p[1] - v0.p[1]) - g1 * (v2.p[0] - v0.p[0])) / det;
@@ -299,6 +322,8 @@ class Geom2D {
         }
         return intercept;
     }
+
+
     /**
      * Find the point of intersection between two lines. <br>
      * An array is returned that contains the intersection pos in x, y order.
@@ -315,7 +340,7 @@ class Geom2D {
      * @param y3 end of line 2
      * @return an array of coordinates for the intersection if any
      */
-    static line_line_p(x0, y0, x1, y1, x2, y2, x3, y3) {
+    static line_line_p(x0: number, y0: number, x1: number, y1: number, x2: number, y2: number, x3: number, y3: number): Array<number> {
         let result = [];
         let f1 = (x1 - x0);
         let g1 = (y1 - y0);
@@ -324,6 +349,7 @@ class Geom2D {
         let f1g2 = f1 * g2;
         let f2g1 = f2 * g1;
         let det = f2g1 - f1g2;
+
         if (Math.abs(det) > Geom2D.ACCY) {
             let s = (f2 * (y2 - y0) - g2 * (x2 - x0)) / det;
             let t = (f1 * (y2 - y0) - g1 * (x2 - x0)) / det;
@@ -332,13 +358,15 @@ class Geom2D {
         }
         return result;
     }
+
     /**
-     * Find the intersection point between two infinite lines that
+     * Find the intersection point between two infinite lines that 
      * pass through the pos (v0,v1) and (v2,v3)
      * @return a Vector2D object of the intercept or undefoned if parallel
      */
-    static line_line_infinite_pv(v0, v1, v2, v3) {
-        let intercept = undefined;
+    static line_line_infinite_pv(v0: Vector2D, v1: Vector2D, v2: Vector2D, v3: Vector2D): Vector2D {
+        let intercept: Vector2D = undefined;
+
         let f1 = (v1.p[0] - v0.p[0]);
         let g1 = (v1.p[1] - v0.p[1]);
         let f2 = (v3.p[0] - v2.p[0]);
@@ -346,12 +374,14 @@ class Geom2D {
         let f1g2 = f1 * g2;
         let f2g1 = f2 * g1;
         let det = f2g1 - f1g2;
+
         if (Math.abs(det) > Geom2D.ACCY) {
             let s = (f2 * (v2.p[1] - v0.p[1]) - g2 * (v2.p[0] - v0.p[0])) / det;
             intercept = new Vector2D(v0.p[0] + f1 * s, v0.p[1] + g1 * s);
         }
         return intercept;
     }
+
     /**
      * Find the point of intersection between two infinite lines that pass through the
      * positions ([x0,y0],[x1,y1]) and ([x2,y2],[x3,y3]). <br>
@@ -361,7 +391,7 @@ class Geom2D {
      * 2 these are the x/y coordinates of the intersection po. <br>
      * @return an array of coordinates for the intersection if any
      */
-    static line_line_infinite_p(x0, y0, x1, y1, x2, y2, x3, y3) {
+    static line_line_infinite_p(x0: number, y0: number, x1: number, y1: number, x2: number, y2: number, x3: number, y3: number): Array<number> {
         let result = [];
         let f1 = (x1 - x0);
         let g1 = (y1 - y0);
@@ -370,12 +400,14 @@ class Geom2D {
         let f1g2 = f1 * g2;
         let f2g1 = f2 * g1;
         let det = f2g1 - f1g2;
+
         if (Math.abs(det) > Geom2D.ACCY) {
             let s = (f2 * (y2 - y0) - g2 * (x2 - x0)) / det;
             result = [x0 + f1 * s, y0 + g1 * s];
         }
         return result;
     }
+
     /**
      * Calculate the intersection pos between a line and a collection of lines. <br>
      * This will calculate all the intersection pos between a given line
@@ -385,13 +417,13 @@ class Geom2D {
      * line 1 is from xy[0],xy[1] to xy[2],xy[3] and
      * line 2 is from xy[2],xy[3] to xy[4],xy[5] and so on
      * </pre>
-     * and if continuous is false then each set of four array elements form their
+     * and if continuous is false then each set of four array elements form their 
      * own line <br>
      * <pre>
      * line 1 is from xy[0],xy[1] to xy[2],xy[3] and
      * line 2 is from xy[4],xy[5] to xy[6],xy[7] and so on
      * </pre>
-     *
+     * 
      * @param x0 x position of the line start
      * @param y0 y position of the line start
      * @param x1 x position of the line end
@@ -400,10 +432,10 @@ class Geom2D {
      * @param continuous if true the pos makes a continuous line
      * @return an array with all the intersection coordinates
      */
-    static line_lines_p(x0, y0, x1, y1, xy, continuous) {
+    static line_lines_p(x0: number, y0: number, x1: number, y1: number, xy: Array<number>, continuous: boolean): Array<number> {
         let result = [];
         let stride = continuous ? 2 : 4;
-        let f1, g1, f2, g2, f1g2, f2g1, det;
+        let f1: number, g1: number, f2: number, g2: number, f1g2: number, f2g1: number, det: number;
         f1 = (x1 - x0);
         g1 = (y1 - y0);
         for (let i = 0; i < xy.length - 3; i += stride) {
@@ -416,13 +448,13 @@ class Geom2D {
                 let s = (f2 * (xy[i + 1] - y0) - g2 * (xy[i] - x0)) / det;
                 let t = (f1 * (xy[i + 1] - y0) - g1 * (xy[i] - x0)) / det;
                 if (s >= 0 && s <= 1 && t >= 0 && t <= 1) {
-                    result.push(x0 + f1 * s);
-                    result.push(y0 + g1 * s);
+                    result.push(x0 + f1 * s); result.push(y0 + g1 * s);
                 }
             }
         }
         return result;
     }
+
     /**
      * Determine if the circumferences of two circles intersect
      * @param cx0 centre of first circle x position
@@ -433,20 +465,21 @@ class Geom2D {
      * @param r1 radius of second circle
      * @return true if the circumferences intersect
      */
-    static circle_circle(cx0, cy0, r0, cx1, cy1, r1) {
+    static circle_circle(cx0: number, cy0: number, r0: number, cx1: number, cy1: number, r1: number): boolean {
         let dxSQ = (cx1 - cx0) * (cx1 - cx0);
         let dySQ = (cy1 - cy0) * (cy1 - cy0);
         let rSQ = (r0 + r1) * (r0 + r1);
         let drSQ = (r0 - r1) * (r0 - r1);
         return (dxSQ + dySQ <= rSQ && dxSQ + dySQ >= drSQ);
     }
+
     /**
      * Calculate the intersection pos between two circles. <br>
      * If the array is of length: <br>
      * 0 then there is no intersection <br>
      * 2 there is just one intersection (the circles are touching) <br>
      * 4 there are two intersections <br>
-     *
+     * 
      * @param cx0 centre of first circle x position
      * @param cy0 centre of first circle y position
      * @param r0 radius of first circle
@@ -455,11 +488,12 @@ class Geom2D {
      * @param r1 radius of second circle
      * @return an array with the intersection pos
      */
-    static circle_circle_p(cx0, cy0, r0, cx1, cy1, r1) {
+    static circle_circle_p(cx0: number, cy0: number, r0: number, cx1: number, cy1: number, r1: number): Array<number> {
         let result = [];
         let dx = cx1 - cx0;
         let dy = cy1 - cy0;
         let distSQ = dx * dx + dy * dy;
+
         if (distSQ > Geom2D.ACCY) {
             let r0SQ = r0 * r0;
             let r1SQ = r1 * r1;
@@ -483,13 +517,14 @@ class Geom2D {
         }
         return result;
     }
+
     /**
      * Calculate the tangents from a po. <br>
      * If the array is of length: <br>
      * 0 then there is no tangent the point is inside the circle <br>
      * 2 there is just one intersection (the point is on the circumference) <br>
      * 4  there are two pos.
-     *
+     * 
      * @param x x position for point of interest
      * @param y y position for point of interest
      * @param cx centre of circle x position
@@ -497,17 +532,20 @@ class Geom2D {
      * @param r radius of circle
      * @return an array of the tangent point coordinates
      */
-    static tangents_to_circle(x, y, cx, cy, r) {
+    static tangents_to_circle(x: number, y: number, cx: number, cy: number, r: number): Array<number> {
         let result = [];
         let dx = cx - x;
         let dy = cy - y;
         let dxSQ = dx * dx;
         let dySQ = dy * dy;
         let denom = dxSQ + dySQ;
+
         let root = denom - r * r;
+
         if (root > -Geom2D.ACCY) {
             let denomINV = 1.0 / denom;
-            let A, B;
+            let A: number, B: number;
+
             if (root < Geom2D.ACCY) { // point is on circle
                 A = -r * dx * denomINV;
                 B = -r * dy * denomINV;
@@ -527,13 +565,14 @@ class Geom2D {
         }
         return result;
     }
+
     /**
      * Will calculate the contact pos for both outer and inner tangents. <br>
      * There are no tangents if one circle is completely inside the other.
      * If the circles eract only the outer tangents exist. When the circles
      * do not intersect there will be 4 tangents (outer and inner), the array
      * has the outer pair first.
-     *
+     * 
      * @param cx0 x position for the first circle
      * @param cy0 y position for the first circle
      * @param r0 radius of the first circle
@@ -542,18 +581,20 @@ class Geom2D {
      * @param r1 radius of the second circle
      * @return an array of tangent contact pos
      */
-    static tangents_between_circles(cx0, cy0, r0, cx1, cy1, r1) {
+    static tangents_between_circles(cx0: number, cy0: number, r0: number, cx1: number, cy1: number, r1: number) {
         let result = [];
         let dxySQ = (cx0 - cx1) * (cx0 - cx1) + (cy0 - cy1) * (cy0 - cy1);
-        if (dxySQ <= (r0 - r1) * (r0 - r1))
-            return result;
+
+        if (dxySQ <= (r0 - r1) * (r0 - r1)) return result;
+
         let d = Math.sqrt(dxySQ);
         let vx = (cx1 - cx0) / d;
         let vy = (cy1 - cy0) / d;
+
         for (let sign1 = +1; sign1 >= -1; sign1 -= 2) {
             let c = (r0 - sign1 * r1) / d;
-            if (c * c > 1)
-                continue;
+            if (c * c > 1) continue;
+
             let h = Math.sqrt(Math.max(0.0, 1.0 - c * c));
             for (let sign2 = +1; sign2 >= -1; sign2 -= 2) {
                 let nx = vx * c - sign2 * h * vy;
@@ -566,11 +607,12 @@ class Geom2D {
         }
         return result;
     }
+
     /**
      * Outside is in the same direction of the plane normal. <br>
      * The first four parameters represent the start and end position
-     * for a line segment (finite plane).
-     *
+     * for a line segment (finite plane).  
+     * 
      * @param x0 x start of the line
      * @param y0 y start of the line
      * @param x1 x end of the line
@@ -579,9 +621,10 @@ class Geom2D {
      * @param py y position of the point to test
      * @return returns either PLANE_INSIDE, PLANE_OUTSIDE or ON_PLANE
      */
-    static which_side_pp(x0, y0, x1, y1, px, py) {
-        let side;
+    static which_side_pp(x0: number, y0: number, x1: number, y1: number, px: number, py: number): number {
+        let side: number;
         let dot = (y0 - y1) * (px - x0) + (x1 - x0) * (py - y0);
+
         if (dot < -Geom2D.ACCY)
             side = Geom2D.PLANE_INSIDE;
         else if (dot > Geom2D.ACCY)
@@ -590,6 +633,7 @@ class Geom2D {
             side = Geom2D.ON_PLANE;
         return side;
     }
+
     /**
      * Check whether a vector ov lies between the vectors oa and ob. The origin of all vectors
      * is [0, 0] unless a different origin is specified in the parameters ox, oy.
@@ -602,45 +646,44 @@ class Geom2D {
      * @param by y coordinate of the second vector
      * @param ox x coordinate of the vectors' origin (default = 0)
      * @param oy y coordinate of the vectors' origin (default = 0)
-     * @returns
+     * @returns 
      */
-    static lies_between(vx, vy, ax, ay, bx, by, ox = 0, oy = 0) {
+    static lies_between(vx: number, vy: number, ax: number, ay: number, bx: number, by: number,
+        ox: number = 0, oy: number = 0): boolean {
         // tranlate vector origin
-        vx -= ox;
-        ax -= ox;
-        bx -= ox;
-        vy -= oy;
-        ay -= oy;
-        by -= oy;
+        vx -= ox; ax -= ox; bx -= ox;
+        vy -= oy; ay -= oy; by -= oy;
         // Calculate cross product of ab [0, 0, abz]
         let abz = ax * by - ay * bx;
         return (ax * vy - ay * vx) * abz > 0 && (by * vx - bx * vy) * abz > 0;
     }
+
     /**
-     * Given an arc enclosed by the two angles a0 and a1, this function checks whether
-     * a third angle is within that arc.
+     * Given an arc enclosed by the two angles a0 and a1, this function checks whether 
+     * a third angle is within that arc. 
      * The angle subtended by the arc will be less than Pi radians for all values of
      * a0 and a1.
      * The angles do not have to be constrained to a particular range but can be any
-     * real number.
-     *
+     * real number. 
+     * 
      * @param angle the angle to test
      * @param a0 the angle for one end of the arc
      * @param a1 the angle for the other end of the arc
      * @returns true if the angle is inside the arc
      */
-    static is_in_arc(angle, a0, a1) {
+    static is_in_arc(angle: number, a0: number, a1: number) {
         let c = Math.cos;
         let s = Math.sin;
         return Geom2D.lies_between(c(angle), s(angle), c(a0), s(a0), c(a1), s(a1));
     }
+
     /**
      * Outside is in the same direction of the plane normal. <br>
-     * This version requires a single point on the plane and the normal
+     * This version requires a single point on the plane and the normal 
      * direction. Useful for an infinite plane or for testing many
      * pos against a single plane when the plane normal does not have
      * to be calculated each time.
-     *
+     * 
      * @param x0 x position of a point on the plane
      * @param y0 y position of a point on the plane
      * @param nx x value of normal vector
@@ -649,9 +692,10 @@ class Geom2D {
      * @param py y position of the point to test
      * @return returns either PLANE_INSIDE, PLANE_OUTSIDE or ON_PLANE
      */
-    static which_side_pn(x0, y0, nx, ny, px, py) {
-        let side;
+    static which_side_pn(x0: number, y0: number, nx: number, ny: number, px: number, py: number) {
+        let side: number;
         let dot = nx * (px - x0) + ny * (py - y0);
+
         if (dot < -Geom2D.ACCY)
             side = Geom2D.PLANE_INSIDE;
         else if (dot > Geom2D.ACCY)
@@ -660,34 +704,32 @@ class Geom2D {
             side = Geom2D.ON_PLANE;
         return side;
     }
+
     /**
      * Code copied from {@link java.awt.geom.Rectangle2D#ersectsLine(, , , )}
      */
-    static _outcode(pX, pY, rectX, rectY, rectWidth, rectHeight) {
+    static _outcode(pX: number, pY: number, rectX: number, rectY: number, rectWidth: number, rectHeight: number) {
         let out = 0;
         if (rectWidth <= 0) {
             out |= Geom2D.OUT_LEFT | Geom2D.OUT_RIGHT;
-        }
-        else if (pX < rectX) {
+        } else if (pX < rectX) {
             out |= Geom2D.OUT_LEFT;
-        }
-        else if (pX > rectX + rectWidth) {
+        } else if (pX > rectX + rectWidth) {
             out |= Geom2D.OUT_RIGHT;
         }
         if (rectHeight <= 0) {
             out |= Geom2D.OUT_TOP | Geom2D.OUT_BOTTOM;
-        }
-        else if (pY < rectY) {
+        } else if (pY < rectY) {
             out |= Geom2D.OUT_TOP;
-        }
-        else if (pY > rectY + rectHeight) {
+        } else if (pY > rectY + rectHeight) {
             out |= Geom2D.OUT_BOTTOM;
         }
         return out;
     }
+
     /**
      * Determine whether a line intersects with any part of a box. <br>
-     * The box is represented by the top-left and bottom-right corner coordinates.
+     * The box is represented by the top-left and bottom-right corner coordinates. 
      * @param lx0 start of line
      * @param ly0 start of line
      * @param lx1 end of line
@@ -698,10 +740,11 @@ class Geom2D {
      * @param ry1  bottom-right corner of rectangle
      * @return true if they intersect else false
      */
-    static line_box_xyxy(lx0, ly0, lx1, ly1, rx0, ry0, rx1, ry1) {
-        let out1, out2;
+    static line_box_xyxy(lx0: number, ly0: number, lx1: number, ly1: number, rx0: number, ry0: number, rx1: number, ry1): boolean {
+        let out1: number, out2: number;
         let rectWidth = rx1 - rx0;
         let rectHeight = ry1 - ry0;
+
         if ((out2 = Geom2D._outcode(lx1, ly1, rx0, ry0, rectWidth, rectHeight)) == 0) {
             return true;
         }
@@ -716,8 +759,7 @@ class Geom2D {
                 }
                 ly0 = ly0 + (x - lx0) * (ly1 - ly0) / (lx1 - lx0);
                 lx0 = x;
-            }
-            else {
+            } else {
                 let y = ry0;
                 if ((out1 & Geom2D.OUT_BOTTOM) != 0) {
                     y += rectHeight;
@@ -728,9 +770,10 @@ class Geom2D {
         }
         return true;
     }
+
     /**
      * Determine whether a line intersects with any part of a box. <br>
-     * The box is represented by the top-left corner coordinates and the box width and height.
+     * The box is represented by the top-left corner coordinates and the box width and height. 
      * @param lx0 start of line
      * @param ly0 start of line
      * @param lx1 end of line
@@ -741,8 +784,8 @@ class Geom2D {
      * @param rHeight height of rectangle
      * @return true if they intersect else false
      */
-    static line_box_xywh(lx0, ly0, lx1, ly1, rx0, ry0, rWidth, rHeight) {
-        let out1, out2;
+    static line_box_xywh(lx0: number, ly0: number, lx1: number, ly1: number, rx0: number, ry0: number, rWidth: number, rHeight: number): boolean {
+        let out1: number, out2: number;
         if ((out2 = Geom2D._outcode(lx1, ly1, rx0, ry0, rWidth, rHeight)) == 0) {
             return true;
         }
@@ -757,8 +800,7 @@ class Geom2D {
                 }
                 ly0 = ly0 + (x - lx0) * (ly1 - ly0) / (lx1 - lx0);
                 lx0 = x;
-            }
-            else {
+            } else {
                 let y = ry0;
                 if ((out1 & Geom2D.OUT_BOTTOM) != 0) {
                     y += rHeight;
@@ -769,10 +811,11 @@ class Geom2D {
         }
         return true;
     }
+
     /**
      * Determine whether two boxes intersect. <br>
-     * The boxes are represented by the top-left and bottom-right corner coordinates.
-     *
+     * The boxes are represented by the top-left and bottom-right corner coordinates. 
+     * 
      * @param ax0 top-left corner of rectangle A
      * @param ay0 top-left corner of rectangle A
      * @param ax1 bottom-right corner of rectangle A
@@ -783,7 +826,7 @@ class Geom2D {
      * @param by1 bottom-right corner of rectangle B
      * @return true if the boxes intersect
      */
-    static box_box(ax0, ay0, ax1, ay1, bx0, by0, bx1, by1) {
+    static box_box(ax0: number, ay0: number, ax1: number, ay1: number, bx0: number, by0: number, bx1, by1: number): boolean {
         let topA = Math.min(ay0, ay1);
         let botA = Math.max(ay0, ay1);
         let leftA = Math.min(ax0, ax1);
@@ -792,18 +835,21 @@ class Geom2D {
         let botB = Math.max(by0, by1);
         let leftB = Math.min(bx0, bx1);
         let rightB = Math.max(bx0, bx1);
+
         if (botA <= topB || botB <= topA || rightA <= leftB || rightB <= leftA)
             return false;
+
         return true;
     }
+
     /**
-     * If two boxes overlap then the overlap region is another box. This method is used to
+     * If two boxes overlap then the overlap region is another box. This method is used to 
      * calculate the coordinates of the overlap. <br>
-     * The boxes are represented by the top-left and bottom-right corner coordinates.
+     * The boxes are represented by the top-left and bottom-right corner coordinates. 
      * If the returned array has a length:
      * 0 then they do not overlap <br>
      * 4 then these are the coordinates of the top-left and bottom-right corners of the overlap region.
-     *
+     *  
      * @param ax0 top-left corner of rectangle A
      * @param ay0 top-left corner of rectangle A
      * @param ax1 bottom-right corner of rectangle A
@@ -814,7 +860,7 @@ class Geom2D {
      * @param by1 bottom-right corner of rectangle B
      * @return an array with the overlap box coordinates (if any)
      */
-    static box_box_p(ax0, ay0, ax1, ay1, bx0, by0, bx1, by1) {
+    static box_box_p(ax0: number, ay0: number, ax1: number, ay1: number, bx0: number, by0: number, bx1: number, by1: number): Array<number> {
         let result = [];
         let topA = Math.min(ay0, ay1);
         let botA = Math.max(ay0, ay1);
@@ -824,8 +870,10 @@ class Geom2D {
         let botB = Math.max(by0, by1);
         let leftB = Math.min(bx0, bx1);
         let rightB = Math.max(bx0, bx1);
+
         if (botA <= topB || botB <= topA || rightA <= leftB || rightB <= leftA)
             return result;
+
         let leftO = (leftA < leftB) ? leftB : leftA;
         let rightO = (rightA > rightB) ? rightB : rightA;
         let botO = (botA > botB) ? botB : botA;
@@ -833,13 +881,18 @@ class Geom2D {
         result = [leftO, topO, rightO, botO];
         return result;
     }
+
     /**
      * Determine if the point pX/pY is inside triangle defined by triangle ABC whose
      * vertices are given by [ax,ay] [bx,by] [cx,cy]. The triangle vertices should
      * provided in counter-clockwise order.
      * @return true if the point is inside
      */
-    static is_in_triangle(aX, aY, bX, bY, cX, cY, pX, pY) {
+    static is_in_triangle(aX: number, aY: number,
+        bX: number, bY: number,
+        cX: number, cY: number,
+        pX: number, pY: number): boolean {
+
         let ax = cX - bX;
         let ay = cY - bY;
         let bx = aX - cX;
@@ -855,25 +908,28 @@ class Geom2D {
         let aCROSSbp = ax * bpy - ay * bpx;
         let cCROSSap = cx * apy - cy * apx;
         let bCROSScp = bx * cpy - by * cpx;
+
         return ((aCROSSbp < 0) && (bCROSScp < 0) && (cCROSSap < 0));
     }
+
     /**
-     * Determine if the point (p) is inside triangle defined by triangle ABC. The
+     * Determine if the point (p) is inside triangle defined by triangle ABC. The 
      * triangle vertices should provided in counter-clockwise order.
-     *
+     * 
      * @param a triangle vertex 1
      * @param b triangle vertex 2
      * @param c triangle vertex 3
      * @param p point of interest
      * @return true if inside triangle else false
      */
-    static is_in_triangle_v(a, b, c, p) {
+    static is_in_triangle_v(a: Vector2D, b: Vector2D, c: Vector2D, p: Vector2D): boolean {
         return Geom2D.is_in_triangle(a.p[0], a.p[1], b.p[0], b.p[1], c.p[0], c.p[1], p.p[0], p.p[1]);
     }
+
     /**
-     * Determine if the point pX/pY is inside triangle defined by triangle ABC. The
+     * Determine if the point pX/pY is inside triangle defined by triangle ABC. The 
      * triangle vertices should provided in counter-clockwise order.
-     *
+     * 
      * @param a triangle vertex 1
      * @param b triangle vertex 2
      * @param c triangle vertex 3
@@ -881,66 +937,72 @@ class Geom2D {
      * @param pY y position for point of interest
      * @return true if inside triangle else false
      */
-    static is_in_triangle_pv(a, b, c, pX, pY) {
+    static is_in_triangle_pv(a: Vector2D, b: Vector2D, c: Vector2D, pX: number, pY: number): boolean {
         return Geom2D.is_in_triangle(a.p[0], a.p[1], b.p[0], b.p[1], c.p[0], c.p[1], pX, pY);
     }
+
     /**
      * See if a point is inside the rectangle defined by top-left and bottom right coordinates
-     * @param x0 top-left corner of rectangle
-     * @param y0 top-left corner of rectangle
+     * @param x0 top-left corner of rectangle 
+     * @param y0 top-left corner of rectangle 
      * @param x1 bottom-right corner of rectangle
      * @param y1 bottom-right corner of rectangle
      * @param pX x position of point of interest
      * @param pY y position of point of interest
      * @return true if inside rectangle else false
      */
-    static is_in_rectangle_xyxy(x0, y0, x1, y1, pX, pY) {
+    static is_in_rectangle_xyxy(x0: number, y0: number, x1: number, y1: number, pX: number, pY: number): boolean {
         return (pX >= x0 && pY >= y0 && pX <= x1 && pY <= y1);
     }
+
     /**
      * See if this a is inside the rectangle defined by top-left and bottom right coordinates
-     * @param v0 top-left corner of rectangle
+     * @param v0 top-left corner of rectangle 
      * @param v1 bottom-right corner of rectangle
      * @param p point of interest
      * @return true if inside rectangle else false
      */
-    static is_in_rectangle_xyxy_v(v0, v1, p) {
+    static is_in_rectangle_xyxy_v(v0: Vector2D, v1: Vector2D, p: Vector2D): boolean {
         return Geom2D.is_in_rectangle_xyxy(v0.p[0], v0.p[1], v1.p[0], v1.p[1], p.p[0], p.p[1]);
     }
+
     /**
      * See if a point is inside the rectangle defined by top-left and bottom right coordinates
-     * @param x0 top-left corner of rectangle
-     * @param y0 top-left corner of rectangle
+     * @param x0 top-left corner of rectangle 
+     * @param y0 top-left corner of rectangle 
      * @param width width of rectangle
      * @param height height of rectangle
      * @param pX x position of point of interest
      * @param pY y position of point of interest
      * @return true if inside rectangle else false
      */
-    static is_in_rectangle_xywh(x0, y0, width, height, pX, pY) {
+    static is_in_rectangle_xywh(x0: number, y0: number, width: number, height: number,
+        pX: number, pY: number): boolean {
         return (pX >= x0 && pY >= y0 && pX <= x0 + width && pY <= y0 + height);
     }
+
     /**
      * See if this a is inside the rectangle defined by top-left and bottom right coordinates
-     * @param v0 top-left corner of rectangle
+     * @param v0 top-left corner of rectangle 
      * @param width width of rectangle
      * @param height height of rectangle
      * @param p point of interest
      * @return true if inside rectangle else false
      */
-    static is_in_rectangle_xywh_v(v0, width, height, p) {
+    static is_in_rectangle_xywh_v(v0: Vector2D, width: number, height: number, p: Vector2D): boolean {
         return Geom2D.is_in_rectangle_xyxy(v0.p[0], v0.p[1], v0.p[0] + width, v0.p[1] + height, p.p[0], p.p[1]);
     }
+
     /**
-     * See if the given point is inside a polygon defined by the vertices provided. The shape can be
-     * open or closed and the order can be clockwise or counter-clockwise.
-     *
+     * See if the given point is inside a polygon defined by the vertices provided. The shape can be 
+     * open or closed and the order can be clockwise or counter-clockwise. 
+     * 
      * @param verts the vertices of the shape
      * @param x0 x position
      * @param y0 y position
      * @return true if x0, y0 is inside polygon else returns false
      */
-    static is_in_polygon(verts, x0, y0) {
+    static is_in_polygon(verts: Array<Vector2D>, x0: number, y0: number): boolean {
         let oddNodes = false;
         for (let i = 0, j = verts.length - 1; i < verts.length; j = i, i++) {
             let vi = verts[i];
@@ -950,90 +1012,98 @@ class Geom2D {
         }
         return oddNodes;
     }
+
     /**
-     * Create a set of triangles from a concave/convex polygon with no holes and no
+     * Create a set of triangles from a concave/convex polygon with no holes and no 
      * intersecting sides.
-     *
-     * @param contour an array of vertices that make up a 2D polygon
-     * @param closed true if the polygon is closed i.e. the first and last vertex represent
-     * the same 2D position.
+     * 
+     * @param contour an array of vertices that make up a 2D polygon 
+     * @param closed true if the polygon is closed i.e. the first and last vertex represent 
+     * the same 2D position. 
      * @return an array of vertex indices (to contour list in counter-clockwise order)
      * in groups of three for the render triangles (counter-clockwise)
      */
-    static triangulate(contour, closed = false) {
+    static triangulate(contour: Array<Vector2D>, closed: boolean = false): Array<number> {
         let n = closed ? contour.length - 1 : contour.length;
         if (n < 3)
             return [];
+
         //contour.reverse()
-        let result = [];
-        let vList = [];
+        let result: Array<number> = [];
+        let vList: Array<number> = [];
+
         /* we want a counter-clockwise polygon in V based on computer screen coordinates */
         if (0 < Geom2D.area(contour))
-            for (let v = 0; v < n; v++)
-                vList[v] = v;
+            for (let v = 0; v < n; v++) vList[v] = v;
         else
-            for (let v = 0; v < n; v++)
-                vList[v] = (n - 1) - v;
+            for (let v = 0; v < n; v++) vList[v] = (n - 1) - v;
         let nv = n;
+
         /*  remove nv-2 Vertices, creating 1 triangle every time */
-        let count = 2 * nv; /* error detection */
+        let count = 2 * nv;   /* error detection */
+
         for (let v = nv - 1; nv > 2;) {
             /* if we loop, it is probably a non-simple polygon */
             if (0 >= (count--))
                 return []; // Triangulation: ERROR - probable bad polygon!
+
             /* three consecutive vertices in current polygon, <u,v,w> */
-            let u = v;
-            if (nv <= u)
-                u = 0; /* previous */
-            v = u + 1;
-            if (nv <= v)
-                v = 0; /* new v    */
-            let w = v + 1;
-            if (nv <= w)
-                w = 0; /* next     */
+            let u = v; if (nv <= u) u = 0;			/* previous */
+            v = u + 1; if (nv <= v) v = 0;			/* new v    */
+            let w = v + 1; if (nv <= w) w = 0;		/* next     */
             if (Geom2D._snip(contour, u, v, w, nv, vList)) {
+
                 /* true names of the vertices */
                 let a = vList[u], b = vList[v], c = vList[w];
+
                 /* output Triangle */
                 result.push(a);
                 result.push(b);
                 result.push(c);
+
                 /* remove v from remaining polygon */
                 for (let s = v, t = v + 1; t < nv; s++, t++)
                     vList[s] = vList[t];
                 nv--;
+
                 /* reset error detection counter */
                 count = 2 * nv;
             }
         }
         return result.reverse();
     }
+
     /**
      * Calculate the area of the polygon.
-     *
-     * @param contour an array of vertices that make up an open 2D polygon
+     * 
+     * @param contour an array of vertices that make up an open 2D polygon 
      * @return the area of the polygon
      */
-    static area(contour) {
+    static area(contour: Array<Vector2D>): number {
         let n = contour.length;
         let areaX2 = 0;
         for (let p = n - 1, q = 0; q < n; p = q++)
             areaX2 += contour[p].p[0] * contour[q].p[1] - contour[q].p[0] * contour[p].p[1];
         return areaX2 * 0.5;
     }
-    static _snip(contour, u, v, w, n, vList) {
-        let p;
+
+    static _snip(contour: Array<Vector2D>, u: number, v: number, w: number, n: number, vList: Array<number>): boolean {
+        let p: number;
+
         let Ax = contour[vList[u]].p[0];
         let Ay = contour[vList[u]].p[1];
+
         let Bx = contour[vList[v]].p[0];
         let By = contour[vList[v]].p[1];
+
         let Cx = contour[vList[w]].p[0];
         let Cy = contour[vList[w]].p[1];
+
         if (Geom2D.ACCY > (((Bx - Ax) * (Cy - Ay)) - ((By - Ay) * (Cx - Ax))))
             return false;
+
         for (p = 0; p < n; p++) {
-            if ((p == u) || (p == v) || (p == w))
-                continue;
+            if ((p == u) || (p == v) || (p == w)) continue;
             let Px = contour[vList[p]].p[0];
             let Py = contour[vList[p]].p[1];
             if (Geom2D.is_in_triangle(Ax, Ay, Bx, By, Cx, Cy, Px, Py))
@@ -1042,4 +1112,4 @@ class Geom2D {
         return true;
     }
 }
-//# sourceMappingURL=geom2d.js.map
+

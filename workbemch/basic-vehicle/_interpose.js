@@ -1,4 +1,4 @@
-let wx = 400, wy = 400, depth = 1;
+let wx = 400, wy = 400, depth = 3;
 let intParts = [], intEnts = [];
 
 function setup() {
@@ -73,18 +73,18 @@ function makeEntities() {
     v.pilot.interposeOn(vehicles[2], [200, 200]);
 }
 
-function renderTreeGrid() {
-    function renderPart(level) {
-        level = (2 ** (level - 1));
-        let dx = r.width / level, dy = r.height / level;
-        for (let i = r.lowX; i <= highX; i += dx) line(i, r.lowY, i, highY);
-        for (let i = r.lowY; i <= highY; i += dy) line(r.lowX, i, highX, i);
-    }
-    let r = world.tree, d = world.domain;
-    let highX = Math.min(r.highX, d.highX), highY = Math.min(r.highY, d.highY);
-    stroke(0, 16); strokeWeight(1.1);
-    for (let i = 1; i <= depth; i++) renderPart(i);
-}
+// function renderTreeGrid() {
+//     function renderPart(level) {
+//         level = (2 ** (level - 1));
+//         let dx = r.width / level, dy = r.height / level;
+//         for (let i = r.lowX; i <= highX; i += dx) line(i, r.lowY, i, highY);
+//         for (let i = r.lowY; i <= highY; i += dy) line(r.lowX, i, highX, i);
+//     }
+//     let r = world.tree, d = world.domain;
+//     let highX = Math.min(r.highX, d.highX), highY = Math.min(r.highY, d.highY);
+//     stroke(0, 16); strokeWeight(1.1);
+//     for (let i = 1; i <= depth; i++) renderPart(i);
+// }
 
 function keyTyped() {
     if (key == 't') printTree(world._tree);

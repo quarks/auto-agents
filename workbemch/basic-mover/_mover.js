@@ -1,4 +1,4 @@
-let wx = 400, wy = 400, depth = 3;
+let wx = 600, wy = 400, depth = 3;
 let painters = [];
 
 function setup() {
@@ -23,9 +23,13 @@ function makeMovers() {
 
     let data = [
         [380, 125, 10, painters[1]],
-        [70, 85, 12, painters[1]],
-        [175, 210, 14, painters[1]],
-        [250, 175, 16, painters[1]],
+        [70, 85, 13, painters[1]],
+        [175, 210, 16, painters[1]],
+        [250, 175, 19, painters[1]],
+        [25, 67, 10, painters[1]],
+        [330, 17, 13, painters[1]],
+        [122, 345, 16, painters[1]],
+        [198, 300, 19, painters[1]],
     ]
     for (let i = 0; i < data.length; i++) {
         let d = data[i];
@@ -40,8 +44,6 @@ function makeMovers() {
 
 function draw() {
     world.update(deltaTime / 1000);
-    world.tree.colorizeEntities(painters);
-    //ßcolorizeEntities(world.tree, painters);
     background(220);
     noStroke(); fill(220, 255, 220);
     let d = world.domain; rect(d.lowX, d.lowY, d.width, d.height);
@@ -52,18 +54,19 @@ function draw() {
 function renderTreeGrid() {
     function renderPart(level) {
         level = (2 ** (level - 1));
-        let dx = r.width / level, dy = r.height / level;
+        let dx = r.treeSize / level, dy = r.treeSize / level;
         for (let i = r.lowX; i <= highX; i += dx) line(i, r.lowY, i, highY);
         for (let i = r.lowY; i <= highY; i += dy) line(r.lowX, i, highX, i);
     }
     let r = world.tree, d = world.domain;
     let highX = Math.min(r.highX, d.highX), highY = Math.min(r.highY, d.highY);
-    stroke(0, 16); strokeWeight(1.1);
+    stroke(0, 24); strokeWeight(1.1);
     for (let i = 1; i <= depth; i++) renderPart(i);
 }
 
 function keyTyped() {
-    if (key == 't') printTree(world._tree);
+    if (key == 't') world.quadtreeAnalysis();
+    if (key >= '0' && key <= '3') world.death(Number(key));
 }
 
 function printTree(tree) {

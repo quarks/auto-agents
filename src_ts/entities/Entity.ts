@@ -5,7 +5,7 @@ abstract class Entity {
     constructor(position: Array<number> | _XY_, colRadius = 1) {
         this.#id = Entity.#NEXT_ID++;
         this.#pos = Vector2D.from(position);
-        this._colRad = colRadius;
+        this.#colRad = colRadius;
     }
 
     /** Every entity should be given a unique ID number */
@@ -21,16 +21,16 @@ abstract class Entity {
     get x(): number { return this.#pos.x; }
     get y(): number { return this.#pos.y; }
 
-    /** The colision radius */
-    #world: World;
-    get world(): World { return this.#world; }
-    set world(world: World) { this.#world = world; }
+    /** The world */
+    // #world: World;
+    // get world(): World { return this.#world; }
+    // set world(world: World) { this.#world = world; }
 
     /** The colision radius */
-    _colRad: number = 0;
-    get colRad(): number { return this._colRad; }
-    set colRad(value) { this._colRad = value; }
-    setColRad(value: number): Entity { this._colRad = value; return this; }
+    #colRad: number = 0;
+    get colRad(): number { return this.#colRad; }
+    set colRad(value) { this.#colRad = value; }
+    setColRad(value: number): Entity { this.#colRad = value; return this; }
 
     /** The tag property */
     #tag: string | number;
@@ -60,16 +60,18 @@ abstract class Entity {
     get Z(): number { return this.#zorder; }
     set Z(value) { this.#zorder = value; }
 
-    born(births: Array<Entity>, world?: World) {
-        births.push(this);
+    /** Override this in entities reqiiring special actions e.g. Obstacle, Fence */
+    born(world: World) {
+        world.births.push(this);
     }
 
-    dies(deaths: Array<Entity>, world?: World) {
-        deaths.push(this);
+    /** Override this in entities reqiiring special actions e.g. Fence */
+    dies(world: World) {
+        world.deaths.push(this);
     }
 
     fitsInside(lowX: number, lowY: number, highX: number, highY: number): boolean {
-        let p = this.#pos, cr = this._colRad;
+        let p = this.#pos, cr = this.#colRad;
         return p.x - cr >= lowX && p.x + cr <= highX && p.y - cr >= lowY && p.y + cr <= highY;
     }
 
@@ -86,26 +88,18 @@ abstract class Entity {
 
     hasFSM() { return this.#fsm ? true : false; }
 
-    render() { if (this.isVisible) this.#painter?.call(this); }
+    render(world: World, elapsedTime: number) { if (this.isVisible) this.#painter?.call(this, world, elapsedTime); }
 
-    $$(len: number = 5) {
-        console.log(this.$(len));
-        return this.toString(len);
+    $$() {
+        console.log(this.toString());
     }
 
-    $(len: number = 5): string {
-        return this.toString(len);
+    $() {
+        return this.toString();
     }
 
-    toString(len: number = 5): string {
-        function fmt(n: number, nd: number, bufferLength: number) {
-            let s = n.toFixed(nd).toString();
-            while (s.length < bufferLength) s = ' ' + s;
-            return s;
-        }
-        let s = `${this.constructor.name} ID: ${fmt(this.id, 0, 2)}`;
-        s += ` @ [${fmt(this.x, 0, len)}, ${fmt(this.y, 0, len)}]`;
-        return s;
+    toString(): string {
+        return `${this.constructor.name}  @  [${this.x.toFixed(FXD)}, ${this.y.toFixed(FXD)}]  Col. radius: ${this.colRad.toFixed(FXD)}`;
     }
 }
 

@@ -2,8 +2,7 @@ let wx = 400, wy = 400, depth = 3;
 let intParts = [], intEnts = [];
 
 function setup() {
-    console.clear();
-    console.log('GLOBAL mode');
+    // console.clear();
     hintHeading = hintVelocity = hintForce = false;
     hintTrail = hintCircle = hintFleeCircle = false;
     hintObsDetect = false;
@@ -24,7 +23,7 @@ function draw() {
     noStroke(); fill(255, 240, 255); rect(wd.lowX, wd.lowY, wd.width, wd.height);
     renderTreeGrid();
 
-    // Colourize obstacles
+    // Colourize walls on collision
     walls.forEach(x => x.painter = ppWall[0]);
     vehicles[0].pilot.testWallsFound?.forEach(x => x.painter = ppWall[1]);
 
@@ -45,11 +44,10 @@ function makeEntities() {
     ]
     for (let i = 0; i < data.length; i++) {
         let d = data[i];
-        walls.push(new Wall({ x: d[0], y: d[1] }, { x: d[2], y: d[3] }, OUTSIDE));
+        walls.push(new Wall({ x: d[0], y: d[1] }, { x: d[2], y: d[3] }));
         walls[i].painter = ppWall[0];
         world.birth(walls[i]);
     }
-    walls[0].repelSide = BOTH_SIDES;
 
     // Wander data
     ppVehicle[0] = vcePerson(color(160, 255, 160, 48), color(20, 200, 20, 48)); // Green
@@ -80,40 +78,8 @@ function makeEntities() {
     }
 }
 
-function renderTreeGrid() {
-    function renderPart(level) {
-        level = (2 ** (level - 1));
-        let dx = r.width / level, dy = r.height / level;
-        for (let i = r.lowX; i <= highX; i += dx) line(i, r.lowY, i, highY);
-        for (let i = r.lowY; i <= highY; i += dy) line(r.lowX, i, highX, i);
-    }
-    let r = world.tree, d = world.domain;
-    let highX = Math.min(r.highX, d.highX), highY = Math.min(r.highY, d.highY);
-    stroke(0, 16); strokeWeight(1.1);
-    for (let i = 1; i <= depth; i++) renderPart(i);
-}
-
 function keyTyped() {
-    if (key == 't') printTree(world._tree);
+    if (key == 't') world.quadtreeAnalysis();
     if (key == 'c') console.log(`Population: ${world._population.size}   Tree: ${world.tree.countEntities()}`);
     if (key == 'd') { world.death(2); }
-}
-
-function printTree(tree) {
-    function pt(tree) {
-        //if (tree._entities.size > 0)
-        tree.$$();
-        //console.log(tree.toString());
-        if (tree._children)
-            for (let child of tree._children)
-                pt(child);
-    }
-    console.log('=====================================================================================');
-    pt(tree);
-    console.log(`World population        ( Size = ${world._population.size} )`)
-    // console.log([...world._population.values()]);
-    // if (world._population.size > 0) {
-    // let pop = [...world._population.values()].map(x => x.id).reduce((x, y) => x + ' ' + y, '{ ') + '  }';
-    // console.log(pop);
-    // }
 }

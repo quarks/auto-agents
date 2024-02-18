@@ -1,33 +1,26 @@
 class Wall extends Entity {
+    #start: Vector2D;
+    get start() { return this.#start };
 
     #end: Vector2D;
     get end() { return this.#end };
-    get start() { return this.pos };
 
     #norm: Vector2D;
     get norm() { return this.#norm };
 
     #repelSide: symbol;
 
-    setRepelSide(s: symbol) { this.repelSide = s; return this; }
-    set repelSide(s: symbol) {
-        switch (s) {
-            case OUTSIDE:
-            case INSIDE:
-            case BOTH_SIDES:
-                this.#repelSide = s;
-                break;
-            default:
-                this.#repelSide == NO_SIDE;
-        }
-    }
+    setRepelSide(s: symbol) { this.#repelSide = s; return this; }
+    set repelSide(s: symbol) { this.#repelSide = s; }
     get repelSide() { return this.#repelSide; }
 
-    constructor(start: _XY_, end: _XY_, repelSide = OUTSIDE) {
-        super(start, 1);
+    constructor(start: _XY_, end: _XY_, repelSide = BOTH_SIDES) {
+        let vs = Vector2D.from(start), ve = Vector2D.from(end);
+        super(vs.add(ve).div(2), 1);
         this.Z = 64;
-        this.#end = Vector2D.from(end);
-        this.#norm = new Vector2D(-(end.y - start.y), end.x - start.x);
+        this.#start = vs;
+        this.#end = ve;
+        this.#norm = new Vector2D(-(this.#end.y - this.#start.y), this.#end.x - this.#start.x);
         this.#norm = this.#norm.normalize();
         this.repelSide = repelSide;
     }
@@ -43,16 +36,10 @@ class Wall extends Entity {
             this.start.y, this.end.x, this.end.y);
     }
 
-
-    // toString(len: number = 5): string {
-    //     function fmt(n: number, nd: number, bufferLength: number) {
-    //         let s = n.toFixed(nd).toString();
-    //         while (s.length < bufferLength) s = ' ' + s;
-    //         return s;
-    //     }
-    //     let s = `Wall ID: ${fmt(this.id, 0, 2)}`;
-    //     s += `    [${fmt(this.x, 0, len)}, ${fmt(this.y, 0, len)}]-`;
-    //     s += `[${fmt(this.end.x, 0, len)}, ${fmt(this.end.y, 0, len)}]`;
-    //     return s;
-    // }
+    toString() {
+        let s = `${this.constructor.name}  @  [${this.x.toFixed(FXD)}, ${this.y.toFixed(FXD)}]  `;
+        s += `from [${this.start.x.toFixed(FXD)}, ${this.start.y.toFixed(FXD)}]  `
+        s += `to [${this.end.x.toFixed(FXD)}, ${this.end.y.toFixed(FXD)}]  `
+        return s;
+    }
 }

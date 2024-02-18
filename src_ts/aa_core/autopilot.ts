@@ -6,9 +6,8 @@ class AutoPilot {
     // _world: World;
     #flags = 0;
 
-    constructor(owner: Vehicle) { // }, world: World) {
+    constructor(owner: Vehicle) {
         this.#owner = owner;
-        // this._world = world;
     }
 
     // ########################################################################
@@ -40,6 +39,18 @@ class AutoPilot {
                 this[pname] = props[p];
             else
                 console.error(`"${p} " is not a valid property name for a pilot.`);
+        }
+        return this;
+    }
+
+    setWeights(weights: object): AutoPilot {
+        if (!weights || typeof weights !== 'object') return this;
+        for (let w in weights) {
+            let index = WEIGHTS_INDEX.get(w);
+            if (index)
+                this.#weight[index] = weights[w];
+            else
+                console.error(`Cannot set the weighting for "${w}" it is not a recognised steering behaviour.`);
         }
         return this;
     }
@@ -718,18 +729,16 @@ class AutoPilot {
             // Cohesion
             cohForce = cohForce.div(nCount).sub(owner.pos).normalize()
                 .mult(owner.maxSpeed).sub(owner.vel).normalize()
-                .mult(this._weight[BIT_COHESION]);
+                .mult(this.#weight[BIT_COHESION]);
             // Separation
-            //sepForce = sepForce.normalize().mult(this._weight[BIT_SEPARATION]);
-            sepForce = sepForce.mult(this._weight[BIT_SEPARATION]);
+            sepForce = sepForce.mult(this.#weight[BIT_SEPARATION]);
             // Alignment
             alnForce = alnForce.div(nCount).sub(owner.heading)
-                .mult(this._weight[BIT_ALIGNMENT]);
+                .mult(this.#weight[BIT_ALIGNMENT]);
             // Add them to get flock force
             let flockForce = cohForce.add(sepForce).add(alnForce);
             return flockForce;
         }
-
         return Vector2D.ZERO;
     }
 
@@ -873,49 +882,71 @@ class AutoPilot {
      * ======================================================================
      */
     path(owner: Vehicle, world: World) {
-        let path = this.#path, edges = this.#edges; //, pathTarget = this.#pathTarget;
+        //let path = this.#path, edges = this.#edges; //  pathTarget = this.#pathTarget;
+        // console.log(this.#path.length, this.#pathTarget)
         if (this.#pathTarget) {
-            let pd = (path.length == 1) ? this.#pad : this.#psd;
+            let pd = (this.#path.length == 1) ? this.#pad : this.#psd;
             if (this.#pathTarget.distSq(owner.pos) < pd) {
-                path.shift();
-                if (path.length == 0) {
-                    edges = [];
-                    this.#pathTarget = undefined;
-                    owner.vel = Vector2D.ZERO;
-                    this.pathOff();
-                    return Vector2D.ZERO;
-                }
-                this.#pathTarget = Vector2D.from(path[0]);
-                if (edges.length > 0) edges.shift();
+                this.#cyclicPath ? this.#path.push(this.#path.shift()) : this.#path.shift();
+                if (this.#path.length > 0)
+                    this.#cyclicPath ? this.#edges.push(this.#edges.shift()) : this.#edges.shift();
+                if (this.#path.length > 0)
+                    this.#pathTarget = Vector2D.from(this.#path[0]);
             }
         }
-        return path.length == 1 ? this.arrive(owner, this.#pathTarget, FAST) : this.seek(owner, this.#pathTarget);
+        switch (this.#path.length) {
+            case 0: this.pathOff(); return Vector2D.ZERO;
+            case 1: return this.arrive(owner, this.#pathTarget, FAST);
+            default: return this.seek(owner, this.#pathTarget);
+        }
     }
 
-    /** Switch off cohesion     */
+    /** Switch off path     */
     pathOff(): AutoPilot {
         this.#pathTarget = undefined;
+        this.#path = [];
+        this.#edges = [];
+        this.owner.vel = Vector2D.ZERO;
         this.#flags &= (ALL_SB_MASK - PATH);
         return this;
     }
 
-    /** Switch on cohesion    */
-    pathOn(path: Array<GraphNode | Vector2D>, edges: Array<GraphEdge> = []): AutoPilot {   // Should we include array of vector????
-        if (Array.isArray(path) && path.length > 0) {
-            this.#path = path;
-            this.#pathTarget = Vector2D.from(this.#path[0]);
-            this.#edges = edges;
-            this.#flags |= PATH;
+    #getPathEdges(path: Array<GraphNode | Vector2D>, cyclic: boolean) {
+        let nodes = path.filter(n => n instanceof GraphNode) as GraphNode[];
+        let edges = [], nl = cyclic ? nodes.length : nodes.length;
+        for (let idx = 0; idx < nl; idx++) {
+            let edge = nodes[idx].edge(nodes[(idx + 1) % nl].id);
+            if (edge) edges.push(edge);
         }
+        return edges;
+    }
+
+    /** Switch on path    */
+    pathOn(path: Array<GraphNode | Vector2D>, cyclic = false): AutoPilot {
+        if (!Array.isArray(path) || path.length <= 1) return this;
+        this.#path = [...path];
+        this.#edges = this.#getPathEdges(this.#path, cyclic);
+        let isOwnerAtStart = this.#owner.pos.equals(Vector2D.from(path[0]));
+        if (isOwnerAtStart) cyclic ? this.#path.push(this.#path.shift()) : this.#path.shift();
+        this.#cyclicPath = cyclic && (this.#path.length == this.#edges.length || this.#edges.length == 0);
+        this.#pathTarget = Vector2D.from(this.#path[0]);
+        this.#flags |= PATH;
         return this;
     }
 
-    /** Is cohesion switched on?    */
+    /** Is path switched on?    */
     get isPathOn(): boolean { return (this.#flags & PATH) != 0; }
 
-    #path: Array<GraphNode | Vector2D> = [];
-    #edges: Array<GraphEdge> = [];
     #pathTarget: Vector2D;
+
+    #path: Array<GraphNode | Vector2D> = [];
+    get pathNodes() { return [...this.#path] };
+
+    #edges: Array<GraphEdge> = [];
+    get pathEdges(): Array<GraphEdge> { return [...this.#edges] };
+
+    #cyclicPath = false;
+    get isPathCyclic() { return this.#cyclicPath; }
 
     #psd = 20;
     setPathSeekDist(n: number): AutoPilot { this.#psd = n * n; return this; }
@@ -942,56 +973,56 @@ class AutoPilot {
 
         if (this.isWallAvoidOn) {
             let f = this.wallAvoidance(owner, world, elapsedTime);
-            f = f.mult(this._weight[BIT_WALL_AVOID]);
+            f = f.mult(this.#weight[BIT_WALL_AVOID]);
             recorder?.addData(BIT_WALL_AVOID, f);
             if (!this.accumulateForce(sumForces, f, maxForce))
                 return Vector2D.from(sumForces);
         }
         if (this.isObsAvoidOn) {
             let f = this.obstacleAvoidance(owner, world, elapsedTime);
-            f = f.mult(this._weight[BIT_OBSTACLE_AVOID]);
+            f = f.mult(this.#weight[BIT_OBSTACLE_AVOID]);
             recorder?.addData(BIT_OBSTACLE_AVOID, f);
             if (!this.accumulateForce(sumForces, f, maxForce))
                 return Vector2D.from(sumForces);
         }
         if (this.isEvadeOn) {
             let f = this.evade(owner, this.evadeAgent);
-            f = f.mult(this._weight[BIT_EVADE]);
+            f = f.mult(this.#weight[BIT_EVADE]);
             recorder?.addData(BIT_EVADE, f);
             if (!this.accumulateForce(sumForces, f, maxForce))
                 return Vector2D.from(sumForces);
         }
         if (this.isFleeOn) {
             let f = this.flee(owner, this.fleeTarget);
-            f = f.mult(this._weight[BIT_FLEE]);
+            f = f.mult(this.#weight[BIT_FLEE]);
             recorder?.addData(BIT_FLEE, f);
             if (!this.accumulateForce(sumForces, f, maxForce))
                 return Vector2D.from(sumForces);
         }
         if (this.isFlockOn) {
             let f = this.flock(owner, world);
-            f = f.mult(this._weight[BIT_FLOCK]);
+            f = f.mult(this.#weight[BIT_FLOCK]);
             recorder?.addData(BIT_FLOCK, f);
             if (!this.accumulateForce(sumForces, f, maxForce))
                 return Vector2D.from(sumForces);
         } else {
             if (this.isSeparationOn) {
                 let f = this.separation(owner, world);
-                f.mult(this._weight[BIT_SEPARATION]);
+                f.mult(this.#weight[BIT_SEPARATION]);
                 recorder?.addData(BIT_SEPARATION, f);
                 if (!this.accumulateForce(sumForces, f, maxForce))
                     return Vector2D.from(sumForces);
             }
             if (this.isAlignmentOn) {
                 let f = this.alignment(owner, world);
-                f.mult(this._weight[BIT_ALIGNMENT]);
+                f.mult(this.#weight[BIT_ALIGNMENT]);
                 recorder?.addData(BIT_ALIGNMENT, f);
                 if (!this.accumulateForce(sumForces, f, maxForce))
                     return Vector2D.from(sumForces);
             }
             if (this.isCohesionOn) {
                 let f = this.cohesion(owner, world);
-                f.mult(this._weight[BIT_COHESION]);
+                f.mult(this.#weight[BIT_COHESION]);
                 recorder?.addData(BIT_COHESION, f);
                 if (!this.accumulateForce(sumForces, f, maxForce))
                     return Vector2D.from(sumForces);
@@ -999,56 +1030,56 @@ class AutoPilot {
         }
         if (this.isSeekOn) {
             let f = this.seek(owner, this.target);
-            f = f.mult(this._weight[BIT_SEEK]);
+            f = f.mult(this.#weight[BIT_SEEK]);
             recorder?.addData(BIT_SEEK, f);
             if (!this.accumulateForce(sumForces, f, maxForce))
                 return Vector2D.from(sumForces);
         }
         if (this.isArriveOn) {
             let f = this.arrive(owner, this.target);
-            f = f.mult(this._weight[BIT_ARRIVE]);
+            f = f.mult(this.#weight[BIT_ARRIVE]);
             recorder?.addData(BIT_ARRIVE, f);
             if (!this.accumulateForce(sumForces, f, maxForce))
                 return Vector2D.from(sumForces);
         }
         if (this.isWanderOn) {
             let f = this.wander(owner, elapsedTime);
-            f = f.mult(this._weight[BIT_WANDER]);
+            f = f.mult(this.#weight[BIT_WANDER]);
             recorder?.addData(BIT_WANDER, f);
             if (!this.accumulateForce(sumForces, f, maxForce))
                 return Vector2D.from(sumForces);
         }
         if (this.isPusuitOn) {
             let f = this.pursuit(owner, this.pursueAgent);
-            f = f.mult(this._weight[BIT_PURSUIT]);
+            f = f.mult(this.#weight[BIT_PURSUIT]);
             recorder?.addData(BIT_PURSUIT, f);
             if (!this.accumulateForce(sumForces, f, maxForce))
                 return Vector2D.from(sumForces);
         }
         if (this.isOffsetPusuitOn) {
             let f = this.offsetPursuit(owner, this.pursueAgent, this.pursueOffset);
-            f = f.mult(this._weight[BIT_OFFSET_PURSUIT]);
+            f = f.mult(this.#weight[BIT_OFFSET_PURSUIT]);
             recorder?.addData(BIT_OFFSET_PURSUIT, f);
             if (!this.accumulateForce(sumForces, f, maxForce))
                 return Vector2D.from(sumForces);
         }
         if (this.isInterposeOn) {
             let f = this.interpose(owner, this.agent0, this.agent1);
-            f = f.mult(this._weight[BIT_INTERPOSE]);
+            f = f.mult(this.#weight[BIT_INTERPOSE]);
             recorder?.addData(BIT_INTERPOSE, f);
             if (!this.accumulateForce(sumForces, f, maxForce))
                 return Vector2D.from(sumForces);
         }
         if (this.isHideOn) {
             let f = this.hide(owner, world, this.hideFromAgent);
-            f = f.mult(this._weight[BIT_HIDE]);
+            f = f.mult(this.#weight[BIT_HIDE]);
             recorder?.addData(BIT_HIDE, f);
             if (!this.accumulateForce(sumForces, f, maxForce))
                 return Vector2D.from(sumForces);
         }
         if (this.isPathOn) {
             let f = this.path(owner, world);
-            f = f.mult(this._weight[BIT_PATH]);
+            f = f.mult(this.#weight[BIT_PATH]);
             recorder?.addData(BIT_PATH, f);
             if (!this.accumulateForce(sumForces, f, maxForce))
                 return Vector2D.from(sumForces);
@@ -1105,7 +1136,7 @@ class AutoPilot {
     setWeighting(bhvr: number, weight: number): AutoPilot {
         if (Number.isFinite(bhvr) && Number.isFinite(weight)) {
             if (bhvr > 0 && bhvr < NBR_BEHAVIOURS)
-                this._weight[bhvr] = weight;
+                this.#weight[bhvr] = weight;
             else
                 console.error(`Uanble to set the weighting for behaiour ID ${bhvr}`);
         }
@@ -1114,15 +1145,15 @@ class AutoPilot {
 
     getWeighting(bhvr: number): number {
         if (Number.isFinite(bhvr) && bhvr > 0 && bhvr < NBR_BEHAVIOURS)
-            return this._weight[bhvr];
+            return this.#weight[bhvr];
         else
             return 0;
     }
 
     /** Default values for steering behaviour objects. */
-    _weight: Array<number> = [
-        100.0, // wall avoidance weight
-        25.0, // obstacle avoidance weight
+    #weight: Array<number> = [
+        200.0, // wall avoidance weight
+        80.0, // obstacle avoidance weight
         5.0, // evade weight
         0.5, // flee weight
         1.0, // separation weight
@@ -1138,8 +1169,9 @@ class AutoPilot {
         20.0, // follow path weight
         4.0 // flock weight
     ];
+    get weightsArray() { return this.#weight };
 
-    // _weight: Array<number> = [
+    // #weight: Array<number> = [
     //     220.0, // wall avoidance weight
     //     80.0, // obstacle avoidance weight
     //     1.0, // evade weight

@@ -1,10 +1,16 @@
 class ForceRecorder {
+    static FORCE_NAME = [
+        'Wall avoid     ', 'Obstacle avoid ', 'Evade          ', 'Flee           ',
+        'Separation     ', 'Alignment      ', 'Cohesion       ', 'Seek           ',
+        'Arrive         ', 'Wander         ', 'Pursuit        ', 'Offset Pursuit ',
+        'Interpose      ', 'Hide           ', 'Path           ', 'Flock          '
+    ];
     #owner;
     #forces;
     #nbrReadings = 0;
     constructor(owner, weights) {
         this.#owner = owner;
-        this.#forces = FORCE_NAME.map((v, i) => new Force(v, weights[i]));
+        this.#forces = ForceRecorder.FORCE_NAME.map((v, i) => new Force(v, weights[i]));
     }
     addData(typeFlag, force) {
         if (typeFlag >= 0 && typeFlag < NBR_BEHAVIOURS) {

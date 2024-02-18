@@ -17,60 +17,77 @@ class Mover extends Entity {
     get speed() { return this.#vel.length(); }
     get speedSq() { return this.#vel.lengthSq(); }
     /** Heading / facing (normalised) */
-    #heading = new Vector2D(1, 0); // facing East;
-    set heading(v) { this.#heading = v; }
-    get heading() { return this.#heading; }
+    __heading = new Vector2D(1, 0); // facing East;
+    set heading(v) { this.__heading = v; }
+    get heading() { return this.__heading; }
     /** Heading / facing angle */
-    set headingAngle(n) { this.#heading.x = Math.cos(n); this.#heading.x = Math.sin(n); }
+    set headingAngle(n) { this.__heading.x = Math.cos(n); this.__heading.x = Math.sin(n); }
     get headingAngle() { return this.heading.angle; }
     /** Heading at rest (normalised */
-    #headingAtRest; //= new Vector2D(1, 0); // facing East;
-    set headingAtRest(v) { this.#heading = v; }
-    get headingAtRest() { return this.#heading; }
+    __headingAtRest; //= new Vector2D(1, 0); // facing East;
+    set headingAtRest(v) { this.__headingAtRest = v; }
+    get headingAtRest() { return this.__headingAtRest; }
     /** Heading at rest angle */
-    set headingAtRestAngle(n) { this.#heading.x = Math.cos(n); this.#heading.x = Math.sin(n); }
+    set headingAtRestAngle(n) { this.__heading.x = Math.cos(n); this.__heading.x = Math.sin(n); }
     get headingAtRestAngle() { return this.heading.angle; }
     /** Perpendiclar to heading (normalised) */
     #side;
     get side() { return this.#side; }
     set side(n) { this.#side = n; }
     /** Mass */
-    #mass = 1;
-    set mass(n) { this.#mass = n; }
-    get mass() { return this.#mass; }
+    __mass = 1;
+    set mass(n) { this.__mass = n; }
+    get mass() { return this.__mass; }
     /** Max speed */
-    #maxSpeed = 100;
-    set maxSpeed(n) { this.#maxSpeed = n; }
-    get maxSpeed() { return this.#maxSpeed; }
+    __maxSpeed = 100;
+    set maxSpeed(n) { this.__maxSpeed = n; }
+    get maxSpeed() { return this.__maxSpeed; }
     /** Max force */
-    #maxForce = 200;
-    set maxForce(n) { this.#maxForce = n; }
-    get maxForce() { return this.#maxForce; }
+    __maxForce = 200;
+    set maxForce(n) { this.__maxForce = n; }
+    get maxForce() { return this.__maxForce; }
     /** Current turn rate */
-    #turnRate = 2;
-    set turnRate(n) { this.#turnRate = Math.min(Math.max(n, 0), MAX_TURN_RATE); }
-    get turnRate() { return this.#turnRate; }
+    __turnRate = 2;
+    set turnRate(n) { this.__turnRate = Math.min(Math.max(n, 0), MAX_TURN_RATE); }
+    get turnRate() { return this.__turnRate; }
     /** Distance a moving entity can see another one */
-    #viewDistance = 50;
-    set viewDistance(n) { this.#viewDistance = n; }
-    get viewDistance() { return this.#viewDistance; }
+    __viewDistance = 125;
+    set viewDistance(n) { this.__viewDistance = n; }
+    get viewDistance() { return this.__viewDistance; }
     /** Field of view (radians) */
-    #viewFOV = 1.047; // Default is 60 degrees
-    set viewFOV(n) { this.#viewFOV = n; }
-    get viewFOV() { return this.#viewFOV; }
+    __viewFOV = 1.047; // Default is 60 degrees
+    set viewFOV(n) { this.__viewFOV = n; }
+    get viewFOV() { return this.__viewFOV; }
     constructor(position, colRadius = 0) {
         super(position, colRadius);
         this.Z = 128;
         this.#prevPos.set(this.pos);
-        this.#mass = 1;
-        this.#side = this.#heading.getPerp();
+        this.__mass = 1;
+        this.#side = this.__heading.getPerp();
+    }
+    /**
+     * Set any of the properties
+     * @param props
+     * @returns
+     */
+    setProperties(props) {
+        if (!props || typeof props !== 'object')
+            return this;
+        for (let p in props) {
+            let pname = '__' + p;
+            if (this.hasOwnProperty(pname))
+                this[pname] = props[p];
+            else
+                console.error(`"${p} " is not a valid property name for a vehicle.`);
+        }
+        return this;
     }
     /**
      * See if the current speed exceeds the maximum speed permitted.
      * @return true if the speed is greater or equal to the max speed.
      */
     isSpeedMaxedOut() {
-        return this.#vel.lengthSq() >= this.#maxSpeed * this.#maxSpeed;
+        return this.#vel.lengthSq() >= this.__maxSpeed * this.__maxSpeed;
     }
     /**
      * After calculating the entity's position it is then constrained by
@@ -120,38 +137,30 @@ class Mover extends Entity {
      * If it is then it checks to see if there are any walls or obstacles between them.
      *
      * @param world the world responsible for this entity
-     * @param x0 the x position of the location to test
-     * @param y0 the y position of the location to test
+     * @param position the location to test
      * @return true if the entity can see the location
      */
-    canSee(world, x0, y0) {
-        let toTarget = new Vector2D(x0 - this.pos.x, y0 - this.pos.y);
+    canSee(world, position) {
+        let pos = this.pos;
+        let target = Vector2D.from(position);
+        let toTarget = target.sub(pos);
         // See if in view range
         let distToTarget = toTarget.length();
-        if (distToTarget > this.#viewDistance)
+        if (distToTarget > this.viewDistance)
             return false;
         // See if in field of view
-        toTarget.div(distToTarget); // normalise toTarget
-        let cosAngle = this.#heading.dot(toTarget);
-        if (cosAngle < Math.cos(this.#viewFOV / 2))
+        toTarget = toTarget.div(distToTarget); // normalise toTarget
+        let cosAngle = this.heading.dot(toTarget);
+        if (cosAngle < Math.cos(this.viewFOV / 2))
             return false;
-        // If we get here then the position is within range and field of view, but do we have an obstruction.
-        // First check for an intervening wall 
-        // Set < Wall > walls = world.getWalls(this, x0, y0);
-        // if (walls != null && !walls.isEmpty()) {
-        //     for (Wall wall : walls) {
-        //         if (wall.isEitherSide(pos.x, pos.y, x0, y0))
-        //             return false;
-        //     }
-        // }
-        // // Next check for an intervening obstacle 
-        // Set < Obstacle > obstacles = world.getObstacles(this, x0, y0);
-        // if (obstacles != null && !obstacles.isEmpty()) {
-        //     for (Obstacle obstacle : obstacles) {
-        //         if (obstacle.isEitherSide(pos.x, pos.y, x0, y0))
-        //             return false;
-        //     }
-        // }
+        // Do we have an obstruction?
+        let lowX = Math.min(pos.x, target.x), lowY = Math.min(pos.y, target.y);
+        let highX = Math.max(pos.x, target.x), highY = Math.max(pos.y, target.y);
+        let ents = world.tree.getItemsInRegion(lowX, lowY, highX, highY)
+            .entities.filter(e => e instanceof Obstacle || e instanceof Wall);
+        for (let entity of ents)
+            if (entity.isEitherSide(pos, target))
+                return false;
         return true;
     }
     /**
@@ -163,12 +172,6 @@ class Mover extends Entity {
      * @param pos the location to test
      * @return true if the entity can see the location
      */
-    // public boolean canSee(World world, Vector2D pos) {
-    //     if (pos == null)
-    //         return false;
-    //     else
-    //         return canSee(world, pos.x, pos.y);
-    // }
     /**
      * ----------------------- RotateHeadingToFacePosition ------------------
      *
@@ -194,12 +197,12 @@ class Mover extends Entity {
      */
     rotateHeadingToAlignWith(elapsedTime, alignTo) {
         // Calculate the angle between the heading vector and the target
-        let angleBetween = this.#heading.angleBetween(alignTo);
+        let angleBetween = this.__heading.angleBetween(alignTo);
         // Return true if the player is virtually facing the target
         if (Math.abs(angleBetween) < EPSILON)
             return true;
         // Calculate the amount of turn possible in time allowed
-        let angleToTurn = this.#turnRate * elapsedTime;
+        let angleToTurn = this.__turnRate * elapsedTime;
         // Prevent over steer by clamping the amount to turn to the angle angle 
         // between the heading vector and the target
         if (angleToTurn > angleBetween)
@@ -208,12 +211,12 @@ class Mover extends Entity {
         // vector accordingly
         let rotMatrix = new Matrix2D();
         // The direction of rotation is needed to create the rotation matrix
-        rotMatrix.rotate(angleToTurn * alignTo.sign(this.#heading));
+        rotMatrix.rotate(angleToTurn * alignTo.sign(this.__heading));
         // Rotate heading
-        this.#heading = rotMatrix.transformVector(this.#heading);
-        this.#heading.normalize();
+        this.__heading = rotMatrix.transformVector(this.__heading);
+        this.__heading.normalize();
         // Calculate new side
-        this.#side = this.#heading.getPerp();
+        this.#side = this.__heading.getPerp();
         return false;
     }
     /**
@@ -231,7 +234,7 @@ class Mover extends Entity {
      */
     isOver(px, py) {
         return ((this.pos.x - px) * (this.pos.x - px) + (this.pos.y - py) * (this.pos.y - py))
-            <= (this._colRad * this._colRad);
+            <= (this.colRad * this.colRad);
     }
     /**
      * Update method for any moving entity in the world that is not under
@@ -251,12 +254,12 @@ class Mover extends Entity {
             this.rotateHeadingToAlignWith(elapsedTime, this.#vel);
         else {
             this.#vel.set([0, 0]);
-            if (this.#headingAtRest)
-                this.rotateHeadingToAlignWith(elapsedTime, this.#headingAtRest);
+            if (this.headingAtRest)
+                this.rotateHeadingToAlignWith(elapsedTime, this.headingAtRest);
         }
         // Ensure heading and side are normalised
-        this.#heading.normalize();
-        this.#side = this.#heading.getPerp();
+        this.heading = this.heading.normalize();
+        this.#side = this.heading.getPerp();
     }
 }
 //# sourceMappingURL=mover.js.map
