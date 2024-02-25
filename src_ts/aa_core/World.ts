@@ -12,8 +12,8 @@ class World {
     get populationMap(): Map<number, Entity> { return this.#population; }
     get population(): Array<Entity> { return [...this.#population.values()]; }
 
-    #postman: Dispatcher;
-    get postman(): Dispatcher { return this.#postman; }
+    #dispatcher: Dispatcher;
+    get dispatcher(): Dispatcher { return this.#dispatcher; }
 
     #painter: Function;
     set painter(painter: Function) { this.#painter = painter; }
@@ -40,7 +40,7 @@ class World {
     constructor(wsizeX: number, wsizeY: number, depth: number = 1, border = 0) {
         this.#width = wsizeX;
         this.#height = wsizeY;
-        this.#postman = new Dispatcher(this);
+        this.#dispatcher = new Dispatcher(this);
         this.#population = new Map<number, Entity>();
         this.#births = [];
         this.#deaths = [];
@@ -49,15 +49,25 @@ class World {
         this.#tree = QPart.makeTree(-(ts - wsizeX) / 2, -(ts - wsizeY) / 2, ts, depth);
     }
 
-    birth(entity: Entity) {
-        if (entity) entity.born(this);
+    birth(entity: Array<Entity> | Entity) {
+        let a = [];
+        Array.isArray(entity) ? a = entity : a = [entity];
+        a.forEach(ent => ent.born(this));
     }
 
-    death(entity: Entity | number) {
-        if (Number.isFinite(entity))
-            entity = this.#population.get(Number(entity));
-        if (entity instanceof Entity)
-            entity.dies(this);
+    death(entity: Array<Entity | number> | Entity | number) {
+        let a = [];
+        Array.isArray(entity) ? a = entity : a = [entity];
+        a.forEach(ent => {
+            if (Number.isFinite(ent))
+                ent = this.#population.get(Number(entity));
+            if (ent instanceof Entity)
+                ent.dies(this);
+        });
+        // if (Number.isFinite(entity))
+        //     entity = this.#population.get(Number(entity));
+        // if (entity instanceof Entity)
+        //     entity.dies(this);
     }
 
     #addEntity(entity: Entity) {
@@ -74,23 +84,25 @@ class World {
 
     update(elapsedTime: number): void {
         this.#elapsedTime = elapsedTime;
-        // ======================================================================
+        // ====================================================================
         // Births and deaths
         while (this.#births.length > 0) this.#addEntity(this.#births.pop());
         while (this.#deaths.length > 0) this.#delEntity(this.#deaths.pop());
-        // ======================================================================
+        // ====================================================================
         // Process telegrams
-        this.#postman?.update();
-        // ======================================================================
+        this.#dispatcher?.update(elapsedTime);
+        // ====================================================================
         // Update FSMs
-        [...this.#population.values()].forEach(v => v.fsm?.update(elapsedTime, this));
-        // ======================================================================
+        [...this.#population.values()]
+            .forEach(v => v.fsm?.update(elapsedTime));
+        // ====================================================================
         // Update all entities
-        [...this.#population.values()].forEach(v => v.update(elapsedTime, this));
-        // ======================================================================
+        [...this.#population.values()]
+            .forEach(v => v.update(elapsedTime, this));
+        // ====================================================================
         // Ensure Zero Overlap?
         if (this.#preventOverlap) this.#ensureNoOverlap();
-        // ======================================================================
+        // ====================================================================
         // Correct partition data
         this.#tree.correctPartitionContents();
     }
@@ -99,7 +111,7 @@ class World {
         this.#painter?.call(this);
         let ents = [...this.#population.values()].sort((a, b) => a.Z - b.Z);
         //console.log
-        for (let e of ents) e.render(this, this.#elapsedTime);
+        for (let e of ents) e.render(this.#elapsedTime, this);
     }
 
     quadtreeAnalysis(): Array<string> {

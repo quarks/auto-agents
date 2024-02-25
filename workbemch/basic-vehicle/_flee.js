@@ -12,9 +12,9 @@ let demo = function (p) {
         p5canvas.parent('sketch');
         world = new World(400, 400, 1);
         world.domain.constraint = WRAP;
-        //p.makeSeek();
+        p.makeSeek();
         //p.makeArrive();
-        p.makeFlee();
+        //p.makeFlee();
         //p.makeWanderer();
         trail = new Trail(600, p.color(0, 180, 0), 0.95);
     }
@@ -60,9 +60,8 @@ let demo = function (p) {
         vEntity = new Vehicle([0.19 * world.width, 0.91 * world.height], 12);
         vEntity.vel = new Vector2D(20, 30);
         vEntity.heading = vEntity.vel.normalize();
-        vEntity.painter = vcePerson(p.color(200, 200, 255), p.color(20, 20, 160), p);
+        vEntity.painter = paintPerson(p.color(200, 200, 255), p.color(20, 20, 160), [showHeading, showVelocity], p);
         vEntity.maxSpeed = 60;
-        vEntity.addAutoPilot(world);
         vEntity.pilot.seekOn(new Vector2D(0.79 * world.width, 0.23 * world.height));
         vEntity.forceRecorderOn();
         world.birth(vEntity);
@@ -72,7 +71,7 @@ let demo = function (p) {
         vEntity = new Vehicle([0.19 * world.width, 0.91 * world.height], 12);
         vEntity.vel = new Vector2D(60, 80);
         vEntity.heading = vEntity.vel.normalize();
-        vEntity.painter = vcePerson(p.color(200, 200, 255), p.color(20, 20, 160), p);
+        vEntity.painter = paintPerson(p.color(200, 200, 255), p.color(20, 20, 160), [], p);
         vEntity.maxSpeed = 100;
         vEntity.pilot.fleeOn(new Vector2D(0.5 * world.width, 0.5 * world.height));
         vEntity.forceRecorderOn();
@@ -84,7 +83,7 @@ let demo = function (p) {
         vEntity = new Vehicle([0.19 * world.width, 0.91 * world.height], 12);
         vEntity.vel = new Vector2D(20, 30);
         vEntity.heading = vEntity.vel.normalize();
-        vEntity.painter = vcePerson(p.color(200, 200, 255), p.color(20, 20, 160), p);
+        vEntity.painter = paintPerson(p.color(200, 200, 255), p.color(20, 20, 160), [showHeading, showVelocity], p);
         vEntity.maxSpeed = 60;
         vEntity.pilot.arriveOn(new Vector2D(0.79 * world.width, 0.23 * world.height));
         vEntity.forceRecorderOn();
@@ -94,9 +93,8 @@ let demo = function (p) {
     p.makeWanderer = function () {
         vEntity = new Vehicle([world.width / 2, world.height / 2], 12);
         vEntity.vel = Vector2D.fromRandom(10, 20);
-        vEntity.painter = wanderPainter(p.color(200, 200, 255), p.color(20, 20, 160), p);
+        vEntity.painter = paintPerson(p.color(200, 200, 255), p.color(20, 20, 160), [showWanderCircle, showWanderForce, showHeading, showVelocity], p);
         vEntity.maxSpeed = 50;
-        vEntity.addAutoPilot(world);
         vEntity.pilot.wanderOn();
         vEntity.pilot.wanderDist = 70;
         vEntity.pilot.wanderRadius = 50;

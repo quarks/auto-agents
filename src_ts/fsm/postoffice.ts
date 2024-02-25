@@ -1,78 +1,67 @@
 class Telegram {
-
     #sender: number;
-    #receiver: number;
-    #msg: number;
-    #despatchAt: number;
-    #extraInfo: object;
-
     get sender(): number { return this.#sender; }
+
+    #receiver: number;
     get receiver(): number { return this.#receiver; }
-    get message(): number { return this.#msg; }
-    get despatchAt(): number { return this.#despatchAt; }
+
+    #msg: number | string;
+    get message(): number | string { return this.#msg; }
+
+    #delay: number;
+    get delay(): number { return this.#delay; }
+    reduceeDelayBy(time) { this.#delay -= time; }
+
+    #extraInfo: object;
     get extraInfo(): object { return this.#extraInfo; }
 
-    constructor(despatchAt = -1, sender = -1, receiver = -1, msg = -1, extraInfo: object) {
-        this.#despatchAt = despatchAt;
+    constructor(despatchAt: number, sender: number, receiver: number, msg: number | string, extraInfo?: object) {
+        this.#delay = despatchAt;
         this.#sender = sender;
         this.#receiver = receiver;
         this.#msg = msg;
         this.#extraInfo = extraInfo;
     }
-
-    equals(tgram: Telegram): boolean {
-        if (this.#sender == tgram.#sender && this.#receiver == tgram.#receiver &&
-            this.#msg == tgram.#msg &&
-            Math.abs(this.#despatchAt - tgram.#despatchAt) < SAFE_TIME_INTERVAL)
-            return true;
-        return false;
-    }
 }
 
 class Dispatcher {
-
-    _telegrams: Array<Telegram>;
-    _world: World;
+    #telegrams: Array<Telegram>;
+    #world: World;
 
     constructor(world: World) {
-        this._world = world;
-        this._telegrams = [];
-
+        this.#world = world;
+        this.#telegrams = [];
     }
 
     /**
-     * Receive a telegram for later sending.
-     * 
-     * @param delay time to wait before sending in ms
+     * Remember a telegram for later sending.
+     * @param delay time to wait before sending in seconds
      * @param sender id of sender
      * @param receiver id of receiver
      * @param msg message string
      * @param extraInfo optional object holding any extra information
      */
-    postTelegram(delay: number, sender: number, receiver: number, msg: number, extraInfo?: object) {
-        if (this._world.populationMap.has(receiver) && this._world.populationMap.get(receiver).hasFSM()) {
-            let tgram = new Telegram(Date.now() + delay, sender, receiver, msg, extraInfo);
-            this._telegrams.push(tgram);
+    postTelegram(delay: number, sender: number, receiver: number, msg: number | string, extraInfo?: object) {
+        if (this.#world.populationMap.has(receiver) && this.#world.populationMap.get(receiver).hasFSM()) {
+            let tgram = new Telegram(delay, sender, receiver, msg, extraInfo);
+            this.#telegrams.push(tgram);
         }
     }
 
-    /**
-     * Send the telegram
-     * @param tgram telegram
-     */
+    /** Send the telegram     */
     sendTelegram(tgram: Telegram) {
-        let entity = this._world.populationMap.get(tgram.receiver);
-        if (entity && entity.hasFSM()) {
+        let entity = this.#world.populationMap.get(tgram.receiver);
+        if (entity && entity.hasFSM())
             entity.fsm.onMessage(tgram);
-        }
     }
 
-    update() {
-        let time = Date.now();
-        let toSend = this._telegrams.filter(x => x.despatchAt <= time);
+    /** Send telegram and remove from tem from postnag */
+    update(elapsedTime: number) {
+        this.#telegrams.forEach(tgram => tgram.reduceeDelayBy(elapsedTime));
+        let toSend = this.#telegrams.filter(x => x.delay <= 0);
         for (let tgram of toSend)
             this.sendTelegram(tgram);
         if (toSend.length > 0)
-            this._telegrams = this._telegrams.filter(x => x.despatchAt > time);
+            this.#telegrams = this.#telegrams.filter(x => x.delay > 0);
     }
 }

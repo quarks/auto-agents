@@ -25,7 +25,7 @@ function setup() {
     backImage = createMazeWallImage(maze_data, cellsize, cellCol);
     // Create walkers
     walkerA = new Vehicle({ x: 15, y: 15 }, 8, world);
-    walkerA.painter = vcePerson(color(200, 200, 255), color(20, 20, 160));
+    walkerA.painter = paintPerson(color(200, 200, 255), color(20, 20, 160));
     walkerA.maxSpeed = 60;
     world.birth(walkerA);
     // #######  Make Maze Data  ##############

@@ -67,7 +67,6 @@ const MAX_TURN_RATE = 25;
 const PASS_THROUGH = Symbol.for('Pass through');
 const WRAP = Symbol.for('Wrap');
 const REBOUND = Symbol.for('Rebound');
-const SAFE_TIME_INTERVAL = 250;
 const EPSILON = 1E-10;
 const PREC = 5;
 const FXD = 2;

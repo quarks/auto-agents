@@ -37,9 +37,9 @@ function makeEntities() {
     obstacles = [], walls = [], movers = [], vehicles = [], data = [];
 
     // Obstacle Data
-    ppObs[0] = entBasic(color(160, 255, 160), color(20, 200, 20)); // Green
-    ppObs[1] = entBasic(color(180, 180, 255), color(20, 20, 160));  // Blue
-    ppObs[2] = entBasic(color(255, 180, 180), color(160, 20, 20));  // Red
+    ppObs[0] = paintEntity(color(160, 255, 160), color(20, 200, 20)); // Green
+    ppObs[1] = paintEntity(color(180, 180, 255), color(20, 20, 160));  // Blue
+    ppObs[2] = paintEntity(color(255, 180, 180), color(160, 20, 20));  // Red
     data = [
         [90, 90, 35],
         [75, 200, 10],
@@ -60,8 +60,8 @@ function makeEntities() {
         world.birth(obstacles[i]);
     }
     // Wander data
-    ppVehicle[0] = vcePerson(color(160, 255, 160, 48), color(20, 200, 20, 48)); // Green
-    ppVehicle[1] = vcePerson(color(180, 180, 255), color(20, 20, 200)); // Blue
+    ppVehicle[0] = paintPerson(color(160, 255, 160, 48), color(20, 200, 20, 48), [showObstacleDetectBox]); // Green
+    ppVehicle[1] = paintPerson(color(180, 180, 255), color(20, 20, 200), [showObstacleDetectBox]); // Blue
     data = [
         [200, 200, 10],
         // [222, 333, 10],

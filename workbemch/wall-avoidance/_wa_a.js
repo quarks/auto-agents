@@ -34,9 +34,9 @@ function makeEntities() {
     ppObs = [], ppWall = [], ppMover = [], ppVehicle = [];
     obstacles = [], walls = [], movers = [], vehicles = [], data = [];
     //Wall data
-    ppWall[0] = entWall(color(180, 240, 180), 10); // Green
-    ppWall[1] = entWall(color(180, 180, 240), 10); // Blue
-    ppWall[2] = entWall(color(240, 180, 180), 10); // Red
+    ppWall[0] = paintWall(color(180, 240, 180), 10); // Green
+    ppWall[1] = paintWall(color(180, 180, 240), 10); // Blue
+    ppWall[2] = paintWall(color(240, 180, 180), 10); // Red
     data = [
         [25, 175, 175, 125],
         [350, 190, 320, 120],
@@ -50,8 +50,8 @@ function makeEntities() {
     }
 
     // Wander data
-    ppVehicle[0] = vcePerson(color(160, 255, 160, 48), color(20, 200, 20, 48)); // Green
-    ppVehicle[1] = vcePerson(color(180, 180, 255), color(20, 20, 200)); // Blue
+    ppVehicle[0] = paintPerson(color(160, 255, 160, 48), color(20, 200, 20, 48), [showFeelers]); // Green
+    ppVehicle[1] = paintPerson(color(180, 180, 255), color(20, 20, 200), [showFeelers]); // Blue
     data = [
         [200, 200, 10],
     ]

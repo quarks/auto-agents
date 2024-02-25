@@ -22,7 +22,7 @@ function setup() {
     routeNodeCol = color(240, 0, 0);
     // Create walker
     walker = new Vehicle({ x: 15, y: 15 }, 10, world);
-    walker.painter = vcePerson(color(200, 200, 255), color(20, 20, 160));
+    walker.painter = paintPerson(color(200, 200, 255), color(20, 20, 160));
     walker.maxSpeed = 40;
     world.birth(walker);
     // #######  Make Maze Data  ##############

@@ -3,11 +3,6 @@ let intParts = [], intEnts = [];
 
 function setup() {
     console.clear();
-    hintHeading = hintVelocity = hintForce = false;
-    hintTrail = hintCircle = hintFleeCircle = false;
-    hintObsDetect = false;
-    hintCanSee = false;
-    showColCircle = false;
     let p5canvas = createCanvas(800, 440);
     p5canvas.parent('sketch');
     world = new World(wx, wy, depth);
@@ -19,7 +14,6 @@ function setup() {
 
 function draw() {
     push();
-    // translate(-width / 2, -height / 2);
     world.update(deltaTime / 1000);
     let wd = world.domain;
     background(240, 190, 240);
@@ -40,8 +34,8 @@ function makeFences() {
     let data = [75, 160, 145, 195, 190, 130, 165, 105, 180, 55, 140, 30, 110, 60];
     let f = makeVectorArray(data);
     let fence = new Fence(f, true);
-    fence.painter = fenceBasic(color(100, 255, 55));
-    fence.walls.forEach(w => w.painter = entWall(color(210, 220, 0), 6));
+    fence.painter = paintFencedArea(color(100, 255, 55));
+    fence.walls.forEach(w => w.painter = paintWall(color(210, 220, 0), 6));
     world.birth(fence);
     //fence.deleteWall(1, world);
     fence.wallRepelSide(1, NO_SIDE);
@@ -49,10 +43,7 @@ function makeFences() {
 }
 
 function makeMovers() {
-    ppVehicle = []; vehicles = []; data = [];
-    // Wander data
-    ppVehicle[0] = vcePerson(color(225, 200, 160), color(200, 50, 20)); // Green
-    ppVehicle[1] = vcePerson(color(180, 180, 255), color(20, 20, 200)); // Blue
+    vehicles = []; data = [];
     let ms = 6;
     data = [
         [200, 200, ms],
@@ -74,13 +65,12 @@ function makeMovers() {
     let pilotWeights = {
         "Wall Avoid": 299, Wander: 5.5, 'Offset Pursuit': 22
     }
-
     for (let i = 0; i < data.length; i++) {
         let d = data[i];
         v = new Vehicle([d[0], d[1]], d[2], world);
         vehicles.push(v);
         v.vel = Vector2D.fromRandom(20, 30);
-        v.painter = ppVehicle[1];
+        v.painter = paintPerson('blue', 'darkblue');
         v.setProperties(vehicleProps);
 
         v.pilot.setWeights(pilotWeights);
@@ -90,7 +80,7 @@ function makeMovers() {
 
         world.birth(v);
     }
-    vehicles[0].painter = ppVehicle[0];
+    vehicles[0].painter = paintPerson('red', 'darkred');
     vehicles[0].forceRecorderOn();
 }
 

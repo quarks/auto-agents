@@ -24,12 +24,12 @@ function makeEntities() {
     entities = [];
     let cr = 40;
     let data = [
-        [280, 125, cr, entObsAnim()],
-        [70, 135, cr, entObsAnim()],
-        [225, 320, cr, entObsAnim()],
-        [250, 230, cr, entObsAnim()],
-        [75, 50, cr, entObsAnim()],
-        [150, 260, cr, entObsAnim()],
+        [280, 125, cr, paintAnimBrolly()],
+        [70, 135, cr, paintAnimBrolly()],
+        [225, 320, cr, paintAnimBrolly()],
+        [250, 230, cr, paintAnimBrolly()],
+        [75, 50, cr, paintAnimBrolly()],
+        [150, 260, cr, paintAnimBrolly()],
     ]
     for (let i = 0; i < data.length; i++) {
         let d = data[i];

@@ -60,40 +60,34 @@ function keyTyped() {
 }
 
 function makeEntities() {
-    let ptrOb = entBasic(color(200, 200, 255), color(100, 100, 192));
-    let ptrWall = entWall(color(180, 180, 240), 6); // Blue
-    let ptrWdr = vcePerson(color(200, 200, 255), color(20, 20, 160));
-    let ptrMvr = mvrPerson(color(200, 200, 255), color(20, 20, 160));
     let ob;
-    ob = new Obstacle([175, 125], 20); ob.painter = ptrOb; world.birth(ob);
-    ob = new Obstacle([330, 150], 25); ob.painter = ptrOb; world.birth(ob);
-    ob = new Obstacle([250, 300], 50); ob.painter = ptrOb; world.birth(ob);
+    let obstaclePainter = paintEntity(color(200, 200, 255), color(100, 100, 192));
+    ob = new Obstacle([175, 125], 20); ob.painter = obstaclePainter; world.birth(ob);
+    ob = new Obstacle([330, 150], 25); ob.painter = obstaclePainter; world.birth(ob);
+    ob = new Obstacle([250, 300], 50); ob.painter = obstaclePainter; world.birth(ob);
 
     let wl;
-    wl = new Wall([150, 200], [100, 250]); wl.painter = ptrWall; world.birth(wl);
-    wl = new Wall([50, 175], [100, 50]); wl.painter = ptrWall; world.birth(wl);
+    let wallPainter = paintWall(color(180, 180, 240), 6); // Blue
+    wl = new Wall([150, 200], [100, 250]); wl.painter = wallPainter; world.birth(wl);
+    wl = new Wall([50, 175], [100, 50]); wl.painter = wallPainter; world.birth(wl);
 
-    let a = [
+    let fencePosts = [
         new Vector2D(300, 100),
         new Vector2D(330, 75),
         new Vector2D(294, 25),
         new Vector2D(200, 50),
         new Vector2D(220, 100),
     ]
-    fnc = new Fence(a, false);
-    fnc.walls.forEach(w => w.painter = ptrWall);
+    fnc = new Fence(fencePosts, false);
+    fnc.walls.forEach(w => w.painter = wallPainter);
 
     world.birth(fnc);
     //fnc.deleteWall(1, world);
 
-    // mvr = new Mover([20, 180], 10);
-    // mvr.vel = Vector2D.ZERO;
-    // mvr.painter = ptrMvr;
-    // world.birth(mvr);
 
     wdr = new Vehicle([world.width / 2, world.height / 2], 12, world);
     wdr.vel = Vector2D.fromRandom(30, 60);
-    wdr.painter = ptrWdr;
+    wdr.painter = paintPerson('lightblue', 'darkblue', [showCanSee]);
     wdr.maxSpeed = 60;
     wdr.viewFOV = 2 * Math.PI / 10;
     wdr.viewDistance = 200;

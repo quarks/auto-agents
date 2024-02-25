@@ -8,8 +8,8 @@ class World {
     #population;
     get populationMap() { return this.#population; }
     get population() { return [...this.#population.values()]; }
-    #postman;
-    get postman() { return this.#postman; }
+    #dispatcher;
+    get dispatcher() { return this.#dispatcher; }
     #painter;
     set painter(painter) { this.#painter = painter; }
     #width;
@@ -30,7 +30,7 @@ class World {
     constructor(wsizeX, wsizeY, depth = 1, border = 0) {
         this.#width = wsizeX;
         this.#height = wsizeY;
-        this.#postman = new Dispatcher(this);
+        this.#dispatcher = new Dispatcher(this);
         this.#population = new Map();
         this.#births = [];
         this.#deaths = [];
@@ -39,14 +39,23 @@ class World {
         this.#tree = QPart.makeTree(-(ts - wsizeX) / 2, -(ts - wsizeY) / 2, ts, depth);
     }
     birth(entity) {
-        if (entity)
-            entity.born(this);
+        let a = [];
+        Array.isArray(entity) ? a = entity : a = [entity];
+        a.forEach(ent => ent.born(this));
     }
     death(entity) {
-        if (Number.isFinite(entity))
-            entity = this.#population.get(Number(entity));
-        if (entity instanceof Entity)
-            entity.dies(this);
+        let a = [];
+        Array.isArray(entity) ? a = entity : a = [entity];
+        a.forEach(ent => {
+            if (Number.isFinite(ent))
+                ent = this.#population.get(Number(entity));
+            if (ent instanceof Entity)
+                ent.dies(this);
+        });
+        // if (Number.isFinite(entity))
+        //     entity = this.#population.get(Number(entity));
+        // if (entity instanceof Entity)
+        //     entity.dies(this);
     }
     #addEntity(entity) {
         this.#population.set(entity.id, entity);
@@ -60,26 +69,28 @@ class World {
     }
     update(elapsedTime) {
         this.#elapsedTime = elapsedTime;
-        // ======================================================================
+        // ====================================================================
         // Births and deaths
         while (this.#births.length > 0)
             this.#addEntity(this.#births.pop());
         while (this.#deaths.length > 0)
             this.#delEntity(this.#deaths.pop());
-        // ======================================================================
+        // ====================================================================
         // Process telegrams
-        this.#postman?.update();
-        // ======================================================================
+        this.#dispatcher?.update(elapsedTime);
+        // ====================================================================
         // Update FSMs
-        [...this.#population.values()].forEach(v => v.fsm?.update(elapsedTime, this));
-        // ======================================================================
+        [...this.#population.values()]
+            .forEach(v => v.fsm?.update(elapsedTime));
+        // ====================================================================
         // Update all entities
-        [...this.#population.values()].forEach(v => v.update(elapsedTime, this));
-        // ======================================================================
+        [...this.#population.values()]
+            .forEach(v => v.update(elapsedTime, this));
+        // ====================================================================
         // Ensure Zero Overlap?
         if (this.#preventOverlap)
             this.#ensureNoOverlap();
-        // ======================================================================
+        // ====================================================================
         // Correct partition data
         this.#tree.correctPartitionContents();
     }
@@ -88,7 +99,7 @@ class World {
         let ents = [...this.#population.values()].sort((a, b) => a.Z - b.Z);
         //console.log
         for (let e of ents)
-            e.render(this, this.#elapsedTime);
+            e.render(this.#elapsedTime, this);
     }
     quadtreeAnalysis() {
         let a = [];

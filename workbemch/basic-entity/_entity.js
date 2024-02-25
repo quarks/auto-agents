@@ -82,10 +82,10 @@ function keyTyped() {
 
 function makeEntities() {
     entities = [];
-    ppRed = entBasic(color(255, 200, 200), color(160, 20, 20));
-    ppPurple = entBasic(color(255, 200, 255), color(160, 20, 160));
-    ppBlue = entBasic(color(200, 200, 255), color(20, 20, 160));
-    ppCyan = entBasic(color(200, 255, 255), color(20, 200, 200));
+    ppRed = paintEntity(color(255, 200, 200), color(160, 20, 20));
+    ppPurple = paintEntity(color(255, 200, 255), color(160, 20, 160));
+    ppBlue = paintEntity(color(200, 200, 255), color(20, 20, 160));
+    ppCyan = paintEntity(color(200, 255, 255), color(20, 200, 200));
     let data = [
         [280, 125, 8, ppCyan],
         [70, 120, 8, ppCyan],

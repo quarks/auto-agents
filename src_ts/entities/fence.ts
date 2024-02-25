@@ -1,14 +1,13 @@
 class Fence extends Entity {
 
     #lowX: number;
-    get lowX(): number { return this.#lowX };
+    get lowX(): number { return this.#lowX }
     #lowY: number;
-    get lowY(): number { return this.#lowY };
+    get lowY(): number { return this.#lowY }
     #highX: number;
-    get highX(): number { return this.#highX };
+    get highX(): number { return this.#highX }
     #highY: number;
-    get highY(): number { return this.#highY };
-
+    get highY(): number { return this.#highY }
 
     #tri: Array<Vector2D>;
     get triangles(): Array<Vector2D> { return this.#tri; }

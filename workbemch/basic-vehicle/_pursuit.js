@@ -50,7 +50,7 @@ let demo = function (p) {
     p.makeAgents = function () {
         prey = new Vehicle([world.width / 2, world.height / 2], 15);
         prey.vel = Vector2D.fromRandom(10, 20);
-        prey.painter = vcePerson(p.color(200, 200, 255), p.color(20, 20, 160), p);
+        prey.painter = paintPerson(p.color(200, 200, 255), p.color(20, 20, 160), [], p);
         prey.maxSpeed = 50;
         prey.pilot.wanderOn();
         prey.pilot.wanderDist = 70;
@@ -60,7 +60,7 @@ let demo = function (p) {
 
         predator = new Vehicle([0.19 * world.width, 0.91 * world.height], 12);
         predator.vel = new Vector2D(20, 30);
-        predator.painter = vcePerson(p.color(255, 200, 255), p.color(160, 20, 160), p);
+        predator.painter = paintPerson(p.color(255, 200, 255), p.color(160, 20, 160), [], p);
         predator.maxSpeed = 55;
         predator.pilot.pursuitOn(prey);
         predator.forceRecorderOn();

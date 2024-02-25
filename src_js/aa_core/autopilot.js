@@ -79,8 +79,7 @@ class AutoPilot {
     /** Switch on seek behaviour and change target if anothe is provided    */
     seekOn(target) {
         this.#flags |= SEEK;
-        if (target)
-            this.target.set(target);
+        this.#target = Vector2D.from(target);
         return this;
     }
     /** Is seek switched on?   */
@@ -89,6 +88,54 @@ class AutoPilot {
     setTarget(t) { this.#target.set(t); return this; }
     set target(t) { this.#target.set(t); }
     get target() { return this.#target; }
+    /*
+     * ======================================================================
+     * ARRIVE
+     * ======================================================================
+     */
+    arrive(owner, target, tweak = this.#arriveRate) {
+        let toTarget = target.sub(owner.pos), dist = toTarget.length();
+        if (dist > this.#arriveDist) {
+            let rate = dist / DECEL_TWEEK[tweak];
+            let speed = Math.min(owner.maxSpeed, rate);
+            let desiredVelocity = toTarget.mult(speed / dist);
+            return desiredVelocity.sub(owner.vel);
+        }
+        return Vector2D.ZERO;
+    }
+    /** Switch off arrive  behaviour   */
+    arriveOff() {
+        this.#flags &= (ALL_SB_MASK - ARRIVE);
+        return this;
+    }
+    /**
+     * Switch on arrive behaviour
+     * @param target the position to arrive at
+     * @param rate rate of approach (SLOW, NORMAL or FAST)
+     */
+    arriveOn(target, rate) {
+        this.#flags |= ARRIVE;
+        this.#target = Vector2D.from(target);
+        if (rate)
+            this.#arriveRate = rate;
+        return this;
+    }
+    /** Is arrive switched on?   */
+    get isArriveOn() { return (this.#flags & ARRIVE) != 0; }
+    // Deceleration rate for arrive
+    #arriveRate = NORMAL;
+    setArriveRate(n) {
+        if (n == SLOW || n == FAST)
+            this.#arriveRate = n;
+        else
+            this.#arriveRate = NORMAL;
+        return this;
+    }
+    set arriveRate(n) { this.#arriveRate = n; }
+    get arriveRate() { return this.#arriveRate; }
+    #arriveDist = 1;
+    set arriveDist(n) { this.#arriveDist = n; }
+    get arriveDist() { return this.#arriveDist; }
     /*
      * ======================================================================
      * FLEE
@@ -111,7 +158,7 @@ class AutoPilot {
     /** Switch on flee behaviour and change flee target if provided.    */
     fleeOn(target, fleeRadius) {
         this.#flags |= FLEE;
-        this.#fleeTarget.set(target);
+        this.#fleeTarget = Vector2D.from(target);
         if (fleeRadius)
             this.#fleeRadius = fleeRadius;
         return this;
@@ -126,55 +173,6 @@ class AutoPilot {
     #fleeRadius = 100;
     get fleeRadius() { return this.#fleeRadius; }
     set fleeRadius(n) { this.#fleeRadius = n; }
-    /*
-     * ======================================================================
-     * ARRIVE
-     * ======================================================================
-     */
-    arrive(owner, target, tweak = this.#arriveRate) {
-        let toTarget = target.sub(owner.pos), dist = toTarget.length();
-        if (dist > this.#arriveDist) {
-            let rate = dist / DECEL_TWEEK[tweak];
-            let speed = Math.min(owner.maxSpeed, rate);
-            let desiredVelocity = toTarget.mult(speed / dist);
-            return desiredVelocity.sub(owner.vel);
-        }
-        return new Vector2D();
-    }
-    /** Switch off arrive  behaviour   */
-    arriveOff() {
-        this.#flags &= (ALL_SB_MASK - ARRIVE);
-        return this;
-    }
-    /**
-     * Switch on arrive behaviour
-     * @param target the position to arrive at
-     * @param rate rate of approach (SLOW, NORMAL or FAST)
-     */
-    arriveOn(target, rate) {
-        this.#flags |= ARRIVE;
-        if (target)
-            this.target.set(target);
-        if (rate)
-            this.#arriveRate = rate;
-        return this;
-    }
-    /** Is arrive switched on?   */
-    get isArriveOn() { return (this.#flags & ARRIVE) != 0; }
-    // Deceleration rate for arrive
-    #arriveRate = NORMAL;
-    setArriveRate(n) {
-        if (n == SLOW || n == FAST)
-            this.#arriveRate = n;
-        else
-            this.#arriveRate = NORMAL;
-        return this;
-    }
-    set arriveRate(n) { this.#arriveRate = n; }
-    get arriveRate() { return this.#arriveRate; }
-    #arriveDist = 1;
-    set arriveDist(n) { this.#arriveDist = n; }
-    get arriveDist() { return this.#arriveDist; }
     /*
      * ======================================================================
      * EVADE

@@ -25,8 +25,6 @@ let demo = function (p) {
         if (showTrail) trail.render();
         p.stroke(128, 0, 128); p.strokeWeight(4); p.fill(255, 220);
         p.rect(410, 10, 220, 380, 10);
-
-
         gui?.draw();
 
         if (sampleForces && p.frameCount >= sampleEnd) {
@@ -53,7 +51,7 @@ let demo = function (p) {
     p.makeAgents = function () {
         leader = new Vehicle([world.width / 2, world.height / 2], 8);
         leader.vel = Vector2D.fromRandom(10, 20);
-        leader.painter = vcePerson(p.color(200, 200, 255), p.color(20, 20, 160), p);
+        leader.painter = paintPerson(p.color(200, 200, 255), p.color(20, 20, 160), [], p);
         leader.maxSpeed = 60;
         leader.pilot.wanderOn();
         leader.pilot.wanderDist = 100;
@@ -63,7 +61,7 @@ let demo = function (p) {
 
         follower1 = new Vehicle([0.19 * world.width, 0.91 * world.height], 8);
         follower1.vel = new Vector2D(20, 30);
-        follower1.painter = vcePerson(p.color(255, 200, 255), p.color(160, 20, 160), p);
+        follower1.painter = paintPerson(p.color(255, 200, 255), p.color(160, 20, 160), [], p);
         follower1.maxSpeed = 80;
         follower1.pilot.offsetPursuitOn(leader, new Vector2D(-20, 0));
         follower1.forceRecorderOn();

@@ -71,10 +71,10 @@ function keyTyped() {
 
 function makeEntities() {
     entities = [];
-    ppRed = entWall(color(255, 200, 200), 4);
-    ppPurple = entWall(color(255, 200, 255), 4);
-    ppBlue = entWall(color(200, 200, 255), 4);
-    ppCyan = entWall(color(200, 255, 255), 4);
+    ppRed = paintWall(color(255, 200, 200), 4);
+    ppPurple = paintWall(color(255, 200, 255), 4);
+    ppBlue = paintWall(color(200, 200, 255), 4);
+    ppCyan = paintWall(color(200, 255, 255), 4);
     let data = [
         [125, 75, 60, 280, ppPurple],
         [75, 340, 120, 310, ppPurple],

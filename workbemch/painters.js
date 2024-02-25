@@ -4,23 +4,28 @@ let hintObsDetect = true, hintFeelers = true, hintInterpose = true;
 let hintCanSee = true;
 let showColCircle = true;
 
-function fenceBasic(colF, p = p5.instance) {
+
+function mvrArrowOffset(colF, colS, offset = 0, p = p5.instance) {
+    let body = [-0.7, -0.45 + offset, -0.7, 0.45 + offset, 0.85, offset];
     return (function (world, elapsedTime) {
+        let size = this.colRad;
         p.push();
-        p.stroke(colF);
-        p.fill(colF);
-        p.strokeJoin(ROUND);
-        p.strokeWeight(1.1); // Fix for antialiasing
-        let t = this.triangles;
-        beginShape(TRIANGLES);
-        t.forEach(pv => vertex(pv.x, pv.y));
-        endShape();
+        p.translate(this.pos.x, this.pos.y);
+        p.rotate(this.headingAngle);
+        p.fill(colF); p.stroke(colS); p.strokeWeight(1.1);
+        p.beginShape();
+        for (let idx = 0; idx < body.length; idx += 2)
+            p.vertex(body[idx] * size, body[idx + 1] * size);
+        p.endShape(CLOSE);
         p.pop();
     });
 }
 
-function entBasic(colF, colS, p = p5.instance) {
-    return (function (world, elapsedTime) {
+// --------------------------------------------------------------------------------------------------
+// Updated paimnters
+
+function paintEntity(colF, colS, p = p5.instance) {
+    return (function (elapsedTime, world) {
         p.push();
         p.translate(this.pos.x, this.pos.y);
         let size = 2 * this.colRad;
@@ -30,29 +35,11 @@ function entBasic(colF, colS, p = p5.instance) {
     });
 }
 
-function entPerson(colF, colS, p = p5.instance) {
-    let body = [0.15, -0.5, 0.15, 0.5, -0.18, 0.3, -0.18, -0.3];
-    return (function (world, elapsedTime) {
-        p.push();
-        p.translate(this.pos.x, this.pos.y);
-        let size = 2 * this.colRad;
-        p.fill(colF); p.stroke(colS); p.strokeWeight(1.1);
-        p.beginShape();
-        for (let idx = 0; idx < body.length; idx += 2)
-            p.vertex(body[idx] * size, body[idx + 1] * size);
-        p.endShape(CLOSE);
-        p.fill(colS); p.noStroke();
-        p.ellipse(0, 0, 0.6 * size, 0.56 * size);
-        p.pop();
-    });
-}
-
-function entObsAnim(p = p5.instance) {
-    let col = [p.color(255, 0, 0), p.color(255, 255, 0), p.color(0, 255, 0), p.color(0, 0, 255)];
+function paintAnimBrolly(p = p5.instance) {
+    let col = ['red', 'yellow', 'limegreen', 'blue'];
     let a = Math.PI * Math.random();
     let pi2 = Math.PI / 4;
-
-    return (function (world, elapsedTime) {
+    return (function (elapsedTime, world) {
         let size = 2 * this.colRad;
         a += elapsedTime;
         p.push();
@@ -69,8 +56,8 @@ function entObsAnim(p = p5.instance) {
     });
 }
 
-function entWall(col, weight, p = p5.instance) {
-    return (function (world, elapsedTime) {
+function paintWall(col, weight, p = p5.instance) {
+    return (function (elapsedTime, world) {
         p.push();
         p.stroke(col); p.strokeWeight(weight);
         p.line(this.start.x, this.start.y, this.end.x, this.end.y);
@@ -91,42 +78,46 @@ function entWall(col, weight, p = p5.instance) {
     });
 }
 
-function vcePerson(colF, colS, p = p5.instance) {
+function paintFencedArea(colF, p = p5.instance) {
+    return (function (elapsedTime, world) {
+        p.push();
+        p.stroke(colF);
+        p.fill(colF);
+        p.strokeJoin(ROUND);
+        p.strokeWeight(1.1); // Fix for antialiasing
+        let t = this.triangles;
+        beginShape(TRIANGLES);
+        t.forEach(pv => vertex(pv.x, pv.y));
+        endShape();
+        p.pop();
+    });
+}
+
+function paintArrow(colF, colS, hints = [], p = p5.instance) {
+    let body = [-0.7, -0.45, -0.7, 0.45, 0.85, 0];
+    return (function (elapsedTime, world) {
+        p.push();
+        let size = this.colRad;
+        p.translate(this.pos.x, this.pos.y);
+        for (let hint of hints) hint.call(this, p);
+        p.rotate(this.headingAngle)
+        p.fill(colF); p.stroke(colS); p.strokeWeight(1.1);
+        p.beginShape();
+        for (let idx = 0; idx < body.length; idx += 2)
+            p.vertex(body[idx] * size, body[idx + 1] * size);
+        p.endShape(CLOSE);
+        p.pop();
+    });
+}
+
+function paintPerson(colF, colS, hints = [], p = p5.instance) {
     let body = [0.15, -0.5, 0.15, 0.5, -0.18, 0.3, -0.18, -0.3];
-    return (function (world, elapsedTime) {
+    return (function (elapsedTime, world) {
+        let size = 2 * this.colRad;
         p.push();
         p.translate(this.pos.x, this.pos.y);
-        if (hintHeading) showHeading.call(this, p);
-        if (hintVelocity) showVelocity.call(this, p);
-        if (this.pilot.isWanderOn) { // Draw wander hints?
-            if (hintHeading) showHeading.call(this, p);
-            if (hintVelocity) showVelocity.call(this, p);
-            if (hintCircle) showWanderCircle.call(this, p);
-            if (hintForce) showWanderForce.call(this, p);
-        }
-        if (this.pilot.isObsAvoidOn) {
-            if (hintObsDetect) showObstacleDetectBox.call(this, p);
-            if (hintHeading) showHeading.call(this, p);
-            if (hintVelocity) showVelocity.call(this, p);
-        }
-        if (this.pilot.isFleeOn) { // Draw flee hints?
-            if (hintFleeCircle) showFleeCircle.call(this, p);
-        }
-        if (this.pilot.isWallAvoidOn) {
-            if (hintFeelers) showFeelers.call(this, p);
-        }
-        if (this.pilot.isInterposeOn) {
-            if (hintInterpose) showInterpose.call(this, p);
-        }
-        if (hintCanSee) {
-            showCanSee.call(this, p);
-        }
-        let size = 2 * this.colRad;
+        for (let hint of hints) hint.call(this, p);
         p.rotate(this.headingAngle);
-        if (showColCircle) {
-            p.fill(0, 32); p.noStroke();
-            p.ellipse(0, 0, 2 * this.colRad, 2 * this.colRad);
-        }
         p.fill(colF); p.stroke(colS); p.strokeWeight(1.1);
         p.beginShape();
         for (let idx = 0; idx < body.length; idx += 2)
@@ -138,93 +129,9 @@ function vcePerson(colF, colS, p = p5.instance) {
     });
 }
 
-function mvrPerson(colF, colS, p = p5.instance) {
-    let body = [0.15, -0.5, 0.15, 0.5, -0.18, 0.3, -0.18, -0.3];
-    return (function (world, elapsedTime) {
-        p.push();
-        p.translate(this.pos.x, this.pos.y);
-        if (hintCanSee) {
-            showCanSee.call(this, p);
-        }
-        p.rotate(this.headingAngle)
-        let size = 2 * this.colRad;
-        if (showColCircle) {
-            p.fill(0, 32); p.noStroke();
-            p.ellipse(0, 0, 2 * this.colRad, 2 * this.colRad);
-        }
-        p.fill(colF); p.stroke(colS); p.strokeWeight(1.1);
-        p.beginShape();
-        for (let idx = 0; idx < body.length; idx += 2)
-            p.vertex(body[idx] * size, body[idx + 1] * size);
-        p.endShape(CLOSE);
-        p.fill(colS); p.noStroke();
-        p.ellipse(0, 0, 0.6 * size, 0.56 * size)
-        p.pop();
-    });
-}
-
-function mvrArrow(colF, colS, p = p5.instance) {
-    let body = [-0.7, -0.45, -0.7, 0.45, 0.85, 0];
-    return (function (world, elapsedTime) {
-        p.push();
-        p.translate(this.pos.x, this.pos.y);
-        p.rotate(this.headingAngle)
-        let size = this.colRad;
-        if (showColCircle) {
-            p.fill(0, 32); p.noStroke();
-            p.ellipse(0, 0, 2 * this.colRad, 2 * this.colRad);
-        }
-        p.fill(colF); p.stroke(colS); p.strokeWeight(1.1);
-        p.beginShape();
-        for (let idx = 0; idx < body.length; idx += 2)
-            p.vertex(body[idx] * size, body[idx + 1] * size);
-        p.endShape(CLOSE);
-        p.pop();
-    });
-}
-
-function mvrArrowOffset(colF, colS, offset = 0, p = p5.instance) {
-    let body = [-0.7, -0.45 + offset, -0.7, 0.45 + offset, 0.85, offset];
-    return (function (world, elapsedTime) {
-        let size = this.colRad;
-        p.push();
-        p.translate(this.pos.x, this.pos.y);
-        p.rotate(this.headingAngle);
-        p.fill(colF); p.stroke(colS); p.strokeWeight(1.1);
-        p.beginShape();
-        for (let idx = 0; idx < body.length; idx += 2)
-            p.vertex(body[idx] * size, body[idx + 1] * size);
-        p.endShape(CLOSE);
-        p.pop();
-    });
-}
-
 // ###################################################################################
 //  RENDERING HINTS
 // ###################################################################################
-
-function showInterpose(p = p5.instance) {
-    let p0 = this.pilot.agent0.pos.sub(this.pos);
-    let p1 = this.pilot.agent1.pos.sub(this.pos);
-    let mid = p0.add(p1).div(2);
-    p.push();
-    // p.translate(p0.x, p0.y);
-    p.stroke(0, 64); p.strokeWeight(1);
-    p.line(p0.x, p0.y, p1.x, p1.y);
-    p.fill(0, 32); p.noStroke();
-    p.ellipse(mid.x, mid.y, 10, 10);
-    p.pop();
-}
-
-
-function showFeelers(p = p5.instance) {
-    let feelers = this.pilot.getFeelers();
-    let pos = this.pos;
-    p.push();
-    p.stroke(0, 128); p.strokeWeight(1);
-    feelers.forEach((f) => p.line(0, 0, f.x - pos.x, f.y - pos.y));
-    p.pop();
-}
 
 
 function showHeading(p = p5.instance) {
@@ -238,6 +145,33 @@ function showHeading(p = p5.instance) {
     p.pop();
 }
 
+function showInterpose(p = p5.instance) {
+    let pt = this.pilot;
+    if (pt && pt.isInterposeOn) {
+        let p0 = pt.agent0.pos.sub(this.pos);
+        let p1 = pt.agent1.pos.sub(this.pos);
+        let mid = p0.add(p1).div(2);
+        p.push();
+        p.stroke(0, 64); p.strokeWeight(1);
+        p.line(p0.x, p0.y, p1.x, p1.y);
+        p.fill(0, 32); p.noStroke();
+        p.ellipse(mid.x, mid.y, 10, 10);
+        p.pop();
+    }
+}
+
+function showFeelers(p = p5.instance) {
+    let pt = this.pilot;
+    if (pt && pt.isWallAvoidOn) {
+        let feelers = pt.getFeelers();
+        let pos = this.pos;
+        p.push();
+        p.stroke(0, 128); p.strokeWeight(1);
+        feelers.forEach((f) => p.line(0, 0, f.x - pos.x, f.y - pos.y));
+        p.pop();
+    }
+}
+
 function showCanSee(p = p5.instance) {
     let vd = 2 * this.viewDistance;
     let fov = this.viewFOV;
@@ -249,13 +183,16 @@ function showCanSee(p = p5.instance) {
 }
 
 function showObstacleDetectBox(p = p5.instance) {
-    let w = this.colRad;
-    let len = 2 * this.speed;
-    p.push();
-    p.rotate(this.velAngle);
-    p.noFill(); p.strokeWeight(1.2); p.stroke(180, 160, 10);
-    p.rect(0, -this.colRad, this.pilot.boxLength, 2 * this.colRad);
-    p.pop();
+    let pt = this.pilot;
+    if (pt && pt.isObsAvoidOn) {
+        let w = this.colRad;
+        let len = 2 * this.speed;
+        p.push();
+        p.rotate(this.velAngle);
+        p.noFill(); p.strokeWeight(1.2); p.stroke(180, 160, 10);
+        p.rect(0, -this.colRad, pt.boxLength, 2 * this.colRad);
+        p.pop();
+    }
 }
 
 function showVelocity(p = p5.instance) {
@@ -270,38 +207,45 @@ function showVelocity(p = p5.instance) {
 
 function showWanderCircle(p = p5.instance) {
     let pt = this.pilot;
-    let wd = pt.wanderDist, wr2 = 2 * pt.wanderRadius;
-    let wa = pt.wanderAngle;
-    p.push();
-    p.rotate(this.headingAngle);
-    p.translate(wd, 0);
-    p.strokeWeight(2); p.stroke(0, 32); p.fill(0, 10);
-    p.ellipse(0, 0, wr2, wr2);
-    p.rotate(wa);
-    p.stroke(255, 0, 0, 48); p.fill(255, 0, 0, 24);
-    p.arc(0, 0, wr2, wr2, -this.pilot.wanderAngleDelta, this.pilot.wanderAngleDelta, p.PIE);
-    p.pop();
+    if (pt && pt.isWanderOn) {
+        let wd = pt.wanderDist, wr2 = 2 * pt.wanderRadius;
+        let wa = pt.wanderAngle;
+        p.push();
+        p.rotate(this.headingAngle);
+        p.translate(wd, 0);
+        p.strokeWeight(2); p.stroke(0, 32); p.fill(0, 10);
+        p.ellipse(0, 0, wr2, wr2);
+        p.rotate(wa);
+        p.stroke(255, 0, 0, 48); p.fill(255, 0, 0, 24);
+        p.arc(0, 0, wr2, wr2, -this.pilot.wanderAngleDelta, this.pilot.wanderAngleDelta, p.PIE);
+        p.pop();
+    }
 }
 
 function showWanderForce(p = p5.instance) {
     let pt = this.pilot;
-    let wt = pt.wanderTarget;
-    let wta = Math.atan2(wt.y, wt.x);
-    p.push();
-    p.rotate(this.headingAngle);
-    p.noFill(); p.strokeWeight(2); p.stroke(200, 0, 0);
-    p.line(0, 0, wt.x, wt.y);
-    p.translate(wt.x, wt.y); p.rotate(wta);
-    p.noStroke(); p.fill(200, 0, 0); p.noStroke();
-    p.triangle(-14, -5, -14, 5, 0, 0);
-    p.pop();
+    if (pt && pt.isWanderOn) {
+        let wt = pt.wanderTarget;
+        let wta = Math.atan2(wt.y, wt.x);
+        p.push();
+        p.rotate(this.headingAngle);
+        p.noFill(); p.strokeWeight(2); p.stroke(200, 0, 0);
+        p.line(0, 0, wt.x, wt.y);
+        p.translate(wt.x, wt.y); p.rotate(wta);
+        p.noStroke(); p.fill(200, 0, 0); p.noStroke();
+        p.triangle(-14, -5, -14, 5, 0, 0);
+        p.pop();
+    }
 }
 
 function showFleeCircle(p = p5.instance) {
-    let fe2 = 2 * this.pilot.fleeRadius;
-    p.push();
-    p.fill(0, 8); p.noStroke();
-    p.ellipse(0, 0, fe2, fe2);
-    p.pop();
+    let pt = this.pilot;
+    if (pt && pt.isFleeOn) {
+        let fe2 = 2 * pt.fleeRadius;
+        p.push();
+        p.fill(0, 16); p.noStroke();
+        p.ellipse(0, 0, fe2, fe2);
+        p.pop();
+    }
 }
 

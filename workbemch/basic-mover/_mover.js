@@ -16,10 +16,10 @@ function setup() {
 
 function makeMovers() {
     let movers = [];
-    painters[1] = mvrPerson(color(255, 200, 200), color(160, 20, 20));
-    painters[2] = mvrPerson(color(200, 255, 255), color(20, 200, 200));
-    painters[3] = mvrPerson(color(255, 120, 255), color(200, 20, 200));
-    painters[4] = mvrPerson(color(200, 200, 255), color(20, 20, 160));
+    painters[1] = paintPerson(color(255, 200, 200), color(160, 20, 20));
+    painters[2] = paintPerson(color(200, 255, 255), color(20, 200, 200));
+    painters[3] = paintPerson(color(255, 120, 255), color(200, 20, 200));
+    painters[4] = paintPerson(color(200, 200, 255), color(20, 20, 160));
 
     let data = [
         [380, 125, 10, painters[1]],
@@ -40,7 +40,6 @@ function makeMovers() {
         world.birth(movers[i]);
     }
 }
-
 
 function draw() {
     world.update(deltaTime / 1000);
@@ -67,21 +66,4 @@ function renderTreeGrid() {
 function keyTyped() {
     if (key == 't') world.quadtreeAnalysis();
     if (key >= '0' && key <= '3') world.death(Number(key));
-}
-
-function printTree(tree) {
-    function pt(tree) {
-        if (tree._entities.size > 0)
-            console.log(tree.toString());
-        if (tree._children)
-            for (let child of tree._children)
-                pt(child);
-    }
-    console.log('=====================================================================================');
-    pt(tree);
-    console.log(`World population        ( Size = ${world._population.size} )`)
-    if (world._population.size > 0) {
-        let pop = [...world._population.values()].map(x => x.id).reduce((x, y) => x + ' ' + y, '{ ') + '  }';
-        console.log(pop);
-    }
 }

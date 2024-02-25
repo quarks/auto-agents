@@ -61,25 +61,11 @@ function makeNeighbours() {
 
 
 function makePainters() {
-    ppRed = mvrArrow(color(255, 180, 180), color(160, 20, 20));
-    ppPurple = mvrArrow(color(255, 180, 255), color(160, 20, 160));
-    ppBlue = mvrArrow(color(180, 180, 255), color(20, 20, 160));
-    ppCyan = mvrArrow(color(180, 255, 255), color(20, 200, 200));
+    ppRed = paintArrow(color(255, 180, 180), color(160, 20, 20));
+    ppPurple = paintArrow(color(255, 180, 255), color(160, 20, 160));
+    ppBlue = paintArrow(color(180, 180, 255), color(20, 20, 160));
+    ppCyan = paintArrow(color(180, 255, 255), color(20, 200, 200));
 }
-
-// function renderTreeGrid() {
-//     function renderPart(level) {
-//         level = (2 ** (level - 1));
-//         let delta = r.treeSize / level;
-//         for (let i = r.lowX; i <= r.highX; i += delta) line(i, r.lowY, i, r.highY);
-//         for (let i = r.lowY; i <= r.highY; i += delta) line(r.lowX, i, r.highX, i);
-//     }
-//     let r = world.tree;
-//     //let highX = Math.min(r.highX, d.highX), highY = Math.min(r.highY, d.highY);
-//     //let highX = r.highX, highY = r.highY;
-//     stroke(0, 32); strokeWeight(1.1);
-//     for (let i = 1; i <= depth; i++) renderPart(i);
-// }
 
 function keyTyped() {
     if (key == 'o') {

@@ -65,7 +65,7 @@ function draw() {
 function keyTyped() {
     switch (key) {
         case 'w': walkerA.printForceData(); break;
-        case 'd': console.log(graph.getData().join('\n')); break;
+        case 'g': console.log(graph.getData().join('\n')); break;
         case '1':
             cyclic = true;
             path = nodePathA;

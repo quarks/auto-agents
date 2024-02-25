@@ -21,7 +21,7 @@ class QPart {
     get cX() { return this.#cX; }
     #cY;
     get cY() { return this.#cY; }
-    get partSize() { return this.highX - this.#lowX; }
+    get partSize() { return this.#highX - this.#lowX; }
     get treeSize() { return this.getRoot().partSize; }
     get leafSize() {
         return this.getRoot().partSize / 2 ** (this.#depth - 1);

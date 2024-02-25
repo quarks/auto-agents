@@ -33,13 +33,13 @@ function draw() {
 }
 
 function makeEntities() {
-    ppObs = [], ppWall = [], ppMover = [], ppVehicle = [];
+    ppObs = [], ppWall = [], ppMover = [];
     obstacles = [], walls = [], movers = [], vehicles = [], data = [];
 
     // Obstacle Data
-    ppObs[0] = entBasic(color(160, 255, 160), color(20, 200, 20)); // Green
-    ppObs[1] = entBasic(color(180, 180, 255), color(20, 20, 160));  // Blue
-    ppObs[2] = entBasic(color(255, 180, 180), color(160, 20, 20));  // Red
+    ppObs[0] = paintEntity(color(160, 255, 160), color(20, 200, 20)); // Green
+    ppObs[1] = paintEntity(color(180, 180, 255), color(20, 20, 160));  // Blue
+    ppObs[2] = paintEntity(color(255, 180, 180), color(160, 20, 20));  // Red
     data = [
         [90, 90, 35],
         [75, 200, 10],
@@ -61,26 +61,23 @@ function makeEntities() {
     }
 
     // Wander data
-    ppVehicle[0] = vcePerson(color(160, 200, 160), color(20, 200, 20)); // Green
-    ppVehicle[1] = vcePerson(color(180, 180, 255), color(20, 20, 200)); // Blue
-    // ppVehicle[2] = vcePerson(color(180, 180, 255), color(20, 20, 200)); // Blue
     data = [
         [200, 200, 10],
         [222, 333, 8],
     ]
     for (let i = 0; i < data.length; i++) {
         let d = data[i];
-        let v = new Vehicle([d[0], d[1]], d[2], world);
+        let v = new Vehicle([d[0], d[1]], d[2]);
         vehicles.push(v);
         v.vel = Vector2D.fromRandom(20, 30);
-        v.painter = ppVehicle[1];
+        v.painter = paintPerson('lightblue', 'blue');
         v.maxSpeed = 60;
         v.pilot.wanderOn();
         v.pilot.obsAvoidOn();
         world.birth(v);
     }
 
-    vehicles[1].painter = ppVehicle[0];
+    vehicles[1].painter = paintPerson('plum', 'purple');
     vehicles[1].pilot.obsAvoidOn();
     vehicles[1].pilot.hideOn(vehicles[0]);
     vehicles[1].pilot.wanderOff();
@@ -89,25 +86,6 @@ function makeEntities() {
 }
 
 function keyTyped() {
-    if (key == 't') printTree(world._tree);
+    if (key == 'q') world.quadtreeAnalysis();
     if (key == 'r') vehicles[1].printForceData();
-}
-
-function printTree(tree) {
-    function pt(tree) {
-        //if (tree._entities.size > 0)
-        tree.$$();
-        //console.log(tree.toString());
-        if (tree._children)
-            for (let child of tree._children)
-                pt(child);
-    }
-    console.log('=====================================================================================');
-    pt(tree);
-    console.log(`World population        ( Size = ${world.population.size} )`)
-    // console.log([...world._population.values()]);
-    // if (world._population.size > 0) {
-    // let pop = [...world._population.values()].map(x => x.id).reduce((x, y) => x + ' ' + y, '{ ') + '  }';
-    // console.log(pop);
-    // }
 }

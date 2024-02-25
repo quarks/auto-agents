@@ -1,16 +1,12 @@
 class Fence extends Entity {
     #lowX;
     get lowX() { return this.#lowX; }
-    ;
     #lowY;
     get lowY() { return this.#lowY; }
-    ;
     #highX;
     get highX() { return this.#highX; }
-    ;
     #highY;
     get highY() { return this.#highY; }
-    ;
     #tri;
     get triangles() { return this.#tri; }
     #walls = new Map();

@@ -1,6 +1,6 @@
 class Entity {
     static #NEXT_ID = 0;
-    constructor(position, colRadius = 1) {
+    constructor(position = Vector2D.ZERO, colRadius = 1) {
         this.#id = Entity.#NEXT_ID++;
         this.#pos = Vector2D.from(position);
         this.#colRad = colRadius;
@@ -16,10 +16,6 @@ class Entity {
     /** Position coordinates */
     get x() { return this.#pos.x; }
     get y() { return this.#pos.y; }
-    /** The world */
-    // #world: World;
-    // get world(): World { return this.#world; }
-    // set world(world: World) { this.#world = world; }
     /** The colision radius */
     #colRad = 0;
     get colRad() { return this.#colRad; }
@@ -33,8 +29,8 @@ class Entity {
     /** The finite state machine */
     #fsm;
     get fsm() { return this.#fsm; }
-    set fsm(value) { this.#fsm = value; }
-    setFsm(value) { this.#fsm = value; return this; }
+    enableFsm(owner, world) { this.#fsm = new FiniteStateMachine(owner, world); }
+    ;
     /** Set the renderer */
     #painter;
     set painter(painter) { this.#painter = painter; }
@@ -67,8 +63,8 @@ class Entity {
     changeState(newState) { this.#fsm?.changeState(newState); }
     revertToPreviousState() { this.#fsm?.revertToPreviousState(); }
     hasFSM() { return this.#fsm ? true : false; }
-    render(world, elapsedTime) { if (this.isVisible)
-        this.#painter?.call(this, world, elapsedTime); }
+    render(elapsedTime, world) { if (this.isVisible)
+        this.#painter?.call(this, elapsedTime, world); }
     $$() {
         console.log(this.toString());
     }

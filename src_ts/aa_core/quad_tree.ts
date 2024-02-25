@@ -23,7 +23,7 @@ class QPart {
     #cY: number;
     get cY(): number { return this.#cY; }
 
-    get partSize(): number { return this.highX - this.#lowX; }
+    get partSize(): number { return this.#highX - this.#lowX; }
     get treeSize(): number { return this.getRoot().partSize; }
     get leafSize(): number {
         return this.getRoot().partSize / 2 ** (this.#depth - 1);

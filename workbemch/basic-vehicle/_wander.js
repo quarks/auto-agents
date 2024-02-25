@@ -2,7 +2,6 @@ let wanderdemo = function (p) {
     let allowLooping = true;
     let wanderer, trail, gui;
 
-
     p.setup = function () {
         console.clear();
         let p5canvas = p.createCanvas(640, 400, p);
@@ -11,11 +10,9 @@ let wanderdemo = function (p) {
         world.domain.constraint = WRAP;
         p.makeWanderer();
         trail = new Trail(300, p.color(0, 180, 0), 0.95);
-
         wanderer.pilot.setProperties({ 'wanderDist': 90, 'wanderRadius': 30, 'wanderJitter': 40 });
         let pn = 'toString', exists = wanderer.hasOwnProperty(pn);
         console.log(`Property ${pn}  ${exists ? "exists" : "does not exist"}`);
-
         gui = GUI.getNamed('WanderDemo', p5canvas, p);
         p.createGUI(gui);
     }
@@ -23,7 +20,6 @@ let wanderdemo = function (p) {
     p.draw = function () {
         if (p.frameCount == 300) wanderer.forceRecorderOn();
         if (p.frameCount == 360) wanderer.forceRecorderOff();
-
         world.update(p.deltaTime / 1000);
         trail.add(wanderer.pos);
         p.background(220, 160, 220);
@@ -47,7 +43,7 @@ let wanderdemo = function (p) {
     p.makeWanderer = function () {
         wanderer = new Vehicle([world.width / 2, world.height / 2], 12, world);
         wanderer.vel = Vector2D.fromRandom(30, 60);
-        wanderer.painter = vcePerson(p.color(200, 200, 255), p.color(20, 20, 160), p);
+        wanderer.painter = paintPerson(p.color(200, 200, 255), p.color(20, 20, 160), [showWanderCircle, showWanderForce, showVelocity, showHeading], p);
         wanderer.maxSpeed = 50;
         wanderer.pilot.wanderOn();
         // wanderer.pilot.wanderDist = 70;
@@ -55,7 +51,6 @@ let wanderdemo = function (p) {
         // wanderer.pilot.wanderJitter = 20;
         world.birth(wanderer);
     }
-
 
     p.createGUI = function (gui) {
         let pilot = wanderer.pilot;

@@ -55,7 +55,7 @@ let demo = function (p) {
     p.makeAgents = function () {
         wanderer = new Vehicle([world.width / 2, world.height / 2], 15);
         wanderer.vel = Vector2D.fromRandom(10, 20);
-        wanderer.painter = vcePerson(p.color(200, 200, 255), p.color(20, 20, 160), p);
+        wanderer.painter = paintPerson(p.color(200, 200, 255), p.color(20, 20, 160), [], p);
         wanderer.maxSpeed = 25;
         wanderer.pilot.wanderOn();
         wanderer.pilot.wanderDist = 70;
@@ -65,7 +65,7 @@ let demo = function (p) {
 
         evader = new Vehicle([0.19 * world.width, 0.91 * world.height], 12);
         evader.vel = new Vector2D(20, 30);
-        evader.painter = vcePerson(p.color(255, 200, 255), p.color(160, 20, 160), p);
+        evader.painter = paintPerson(p.color(255, 200, 255), p.color(160, 20, 160), [], p);
         evader.maxSpeed = 55;
         evader.fleeRadius = 3000;
         evader.pilot.evadeOn(wanderer);
