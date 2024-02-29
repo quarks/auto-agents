@@ -4,6 +4,7 @@ class State {
     get name() { return this.#name; }
     #world;
     get world() { return this.#world; }
+    get dispatcher() { return this.#world.dispatcher; }
     // This will execute when the state is entered.
     enter(user) { }
     ;

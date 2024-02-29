@@ -3,8 +3,8 @@ class Telegram {
     get sender() { return this.#sender; }
     #receiver;
     get receiver() { return this.#receiver; }
-    #msg;
-    get message() { return this.#msg; }
+    #msgID;
+    get msgID() { return this.#msgID; }
     #delay;
     get delay() { return this.#delay; }
     reduceeDelayBy(time) { this.#delay -= time; }
@@ -14,7 +14,7 @@ class Telegram {
         this.#delay = despatchAt;
         this.#sender = sender;
         this.#receiver = receiver;
-        this.#msg = msg;
+        this.#msgID = msg;
         this.#extraInfo = extraInfo;
     }
 }
@@ -34,18 +34,19 @@ class Dispatcher {
      * @param extraInfo optional object holding any extra information
      */
     postTelegram(delay, sender, receiver, msg, extraInfo) {
-        if (this.#world.populationMap.has(receiver) && this.#world.populationMap.get(receiver).hasFSM()) {
+        let pop = this.#world.populationMap;
+        sender = sender instanceof Entity ? sender : pop.get(sender);
+        receiver = receiver instanceof Entity ? receiver : pop.get(receiver);
+        if (sender && receiver && receiver.hasFSM()) {
             let tgram = new Telegram(delay, sender, receiver, msg, extraInfo);
             this.#telegrams.push(tgram);
         }
     }
     /** Send the telegram     */
     sendTelegram(tgram) {
-        let entity = this.#world.populationMap.get(tgram.receiver);
-        if (entity && entity.hasFSM()) {
-            entity.fsm.onMessage(tgram);
-        }
+        tgram.receiver.fsm.onMessage(tgram);
     }
+    /** Send telegram and remove from tem from postnag */
     update(elapsedTime) {
         this.#telegrams.forEach(tgram => tgram.reduceeDelayBy(elapsedTime));
         let toSend = this.#telegrams.filter(x => x.delay <= 0);

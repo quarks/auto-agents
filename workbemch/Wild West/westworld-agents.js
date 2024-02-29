@@ -3,25 +3,48 @@ function rnd() {
     return (random() + random() + random() + random() + random() + random()) / 6;
 }
 
-class Miner extends Entity {
+const SC = Symbol.for('State change');
+const PT = Symbol.for('Post telegram');
+const RT = Symbol.for('Receive telgram');
+
+// Simple relay functions
+function postTelegram(delay, sender, receiver, msg, extraInfo) {
+    world.dispatcher.postTelegram(delay, sender, receiver, msg, extraInfo);
+}
+
+function logItem(item) {
+    logger.add(item);
+}
+
+let bankBalance = 200;
+function incMoneyInBank(amt) { bankBalance += amt; }
+function decMoneyInBank(amt) { bankBalance -= amt; }
+function isWealthy() { return bankBalance > 400; }
+function moneyInBank() { return round(bankBalance); }
+
+class Agent extends Entity {
     _name = '';
     get name() { return this._name };
-    set name(name) { this._name = name };
-
-    _wife;
-    get wife() { return this._wife };
-    set wife(wife) { this._wife = wife; }
 
     _location = '';
-    get location() { return this._location };
-    set location(location) { this._location = location; }
+    get location() { return this._location; }
+    set location(where) { this._location = where; }
 
+    get currentState() { return this.fsm.currentState; }
+    isInState(state) { return state === this.fsm.currentState; }
+
+    constructor(world, name) {
+        super();
+        this._name = name;
+        this.enableFsm(this, world);
+    }
+}
+class Miner extends Agent {
     _thirst = 0;
-    _thirstLimit = 50;
+    _thirstLimit = 35;
     incThirst(delta) { this._thirst = min(this._thirst + delta, this._thirstLimit); }
     decThirst(delta) { this._thirst = max(this._thirst - delta, 0); }
     isThirsty() { return this._thirst >= this._thirstLimit; }
-    isThirstQuenched() { return this._thirst <= 0; }
     get propThirst() { return this._thirst / this._thirstLimit };
 
     _fatigue = 0;
@@ -34,98 +57,134 @@ class Miner extends Entity {
 
     _goldInPocket = 0;
     _goldInPocketLimit = 0;
-    incGoldInPocket(delta) { this._goldInPocket = min(this._goldInPocket + delta, this._goldInPocketLimit); }
-    decGoldInPocket(delta) { delta = min(delta, this._goldInPocket); this._goldInPocket -= delta; return delta; }
+    incGoldInPocket(delta) {
+        this._goldInPocket = min(this._goldInPocket + delta, this._goldInPocketLimit);
+    }
+    decGoldInPocket(delta) {
+        delta = min(delta, this._goldInPocket);
+        this._goldInPocket -= delta; return delta;
+    }
     isPocketFull() { return this._goldInPocket >= this._goldInPocketLimit; }
     isPocketEmpty() { return this._goldInPocket <= 0; }
-    emptyPocket() {
-        let amt = this._goldInPocket;
-        this._goldInPocket = 0;
-        return amt;
-    }
     get propGoldInPocket() { return this._goldInPocket / this._goldInPocketLimit; }
 
-    _moneyInBank = 200;
-    incMoneyInBank(amt) { this._moneyInBank += amt; }
-    decMoneyInBank(amt) { this._moneyInBank -= amt; }
-    hasMoneyInBank(needed) { return this._moneyInBank >= needed };
-    isWealthy() { return this._moneyInBank > 400; }
-    get moneyInBank() { return round(this._moneyInBank); }
-
     constructor(world, name = 'Miner') {
-        super();
-        this._name = name;
-        this.enableFsm(this, world);
+        super(world, name);
     }
 }
+
+class Wife extends Agent {
+    _moneyInWallet = 0;
+    _walletLimit = 100;
+    incMoneyInWallet(delta) {
+        this._moneyInWallet = min(this._moneyInWallet + delta, this._walletLimit);
+    }
+    decMoneyInWallet(delta) {
+        delta = min(delta, this._moneyInWallet);
+        this._moneyInWallet -= delta; return delta;
+    }
+    isWalletFull() { return this._moneyInWallet >= this._walletLimit; }
+    isWalletEmpty() { return this._moneyInWallet <= 0; }
+    get propMoneyInWallet() { return this._moneyInWallet / this._walletLimit; }
+    get moneyInWallet() { return this._moneyInWallet };
+    set walletLimit(amt) { if (amt > 0) this._walletLimit = amt; }
+
+    _inBathroomLimit = 6;
+    _inBathroom = 0;
+    get propBathroom() { return this._inBathroom / this._inBathroomLimit; }
+    incBathroom(amt) { this._inBathroom = min(this._inBathroom + amt, this._inBathroomLimit); }
+    initBathroom() { this._inBathroom = 0; this._bathroomTimeLimit = random(4, 8) };
+    get isFinishedInBathroom() { return this._inBathroom >= this._inBathroomLimit; }
+
+    _makeStewLimit = 5;
+    _makeStew = 0;
+    get propMakeStew() { return this._makeStew / this._makeStewLimit; }
+    incMakeStew(amt) { this._makeStew = min(this._makeStew + amt, this._makeStewLimit); }
+    initMakeStew() { this._makeStew = 0; this._makeStewLimit = random(5, 9) };
+    get isStewMade() { return this._makeStew >= this._makeStewLimit; }
+
+    get currentState() { return this.fsm.currentState }
+    isInState(state) { return state === this.fsm.currentState; }
+
+
+    constructor(world, name = 'Wife') {
+        super(world, name);
+    }
+}
+
+// ####################   STATES   #################################
 
 class DigForGold extends State {
     enter(user) {
         minerStateViewer.setStateIdx(0);
-        user.location = 'goldmine';
-        user._goldInPocketLimit = random(80, 120);
-        // console.log('Digging for Gold in goldmine');
+        user._goldInPocketLimit = random(120, 150);
+        logItem({
+            time: millis(), agent: user, type: SC,
+            msg: "MINE: Digging deep for gold !"
+        });
     }
 
     execute(user, elapsedTime, world) {
-        user.incGoldInPocket(rnd() * elapsedTime * 10);
-        user.incFatigue(rnd() * elapsedTime * 4);
-        user.incThirst(rnd() * elapsedTime * 2.5);
+        user.incGoldInPocket(rnd() * elapsedTime * 16);
+        user.incFatigue(rnd() * elapsedTime * 6);
+        user.incThirst(rnd() * elapsedTime * 1.5);
         if (user.isPocketFull())
             user.changeState(stateDepositGold);
         else if (user.isFatigued())
-            user.changeState(stateSleepUntilRested);
+            user.changeState(stateRelaxAtHome);
         else if (user.isThirsty())
             user.changeState(stateQuenchThirst);
     }
 
-    exit(user) { }
 }
 
 class QuenchThirst extends State {
     enter(user) {
         minerStateViewer.setStateIdx(1);
-        user.location = 'bar';
-        //console.log(`Going to bar to quench thirst`);
+        logItem({
+            time: millis(), agent: user, type: SC,
+            msg: "SALOON: I've a terrible thirst, must drink some beer !"
+        });
     }
 
     execute(user, elapsedTime, world) {
         user.decThirst(rnd() * elapsedTime * 5);
         user.decFatigue(rnd() * elapsedTime);
-        user.decMoneyInBank(elapsedTime * 5);
+        decMoneyInBank(elapsedTime * 5);
         if (user._thirst == 0)
             user.changeState(stateDigForGold);
     }
 
-    exit(user) { }
 }
 
 class DepositGold extends State {
     enter(user) {
         minerStateViewer.setStateIdx(2);
-        user.location = 'bank';
-        //console.log(`Gone to bank to deposit gold.   Balance: ${user.goldInBank}`)
+        logItem({
+            time: millis(), agent: user, type: SC,
+            msg: "BANK: Sell my gold and deposit the money here!"
+        });
     }
 
     execute(user, elapsedTime, world) {
         if (user.isPocketEmpty()) {
-            if (user.isWealthy())
-                user.changeState(stateSleepUntilRested);
+            if (isWealthy())
+                user.changeState(stateRelaxAtHome);
             else
                 user.changeState(stateDigForGold);
         }
-        user.incMoneyInBank(user.decGoldInPocket(rnd() * elapsedTime * 20));
+        incMoneyInBank(user.decGoldInPocket(rnd() * elapsedTime * 20));
     }
-
-    exit(user) { }
 }
 
 class RelaxAtHome extends State {
     enter(user) {
         minerStateViewer.setStateIdx(3);
-        user.location = 'home';
-        console.log(`Gone home:    sent telgram from ${user.id} to ${user.wife.id}`);
-        this.world.dispatcher.postTelegram(0, user.id, user.wife.id, 111);
+        postTelegram(1, user, elsa, 1201);
+        logItem({
+            time: millis(), agent: user, toAgent: elsa, type: PT, msgID: 1201,
+            msg: "HOME: \"Hi honey I\'m home !\""
+        });
     }
 
     execute(user, elapsedTime, world) {
@@ -140,97 +199,128 @@ class RelaxAtHome extends State {
     }
 }
 
-
-class Wife extends Entity {
-    _name = '';
-    get name() { return this._name };
-    set name(name) { this._name = name };
-
-    _miner;
-    get miner() { return this._miner };
-    set miner(miner) { this._miner = miner; }
-
-    _moneyInWallet = 0;
-    _walletLimit = 100;
-    incMoneyInWallet(delta) { this._moneyInWallet = min(this._moneyInWallet + delta, this._walletLimit); }
-    decMoneyInWallet(delta) { delta = min(delta, this._moneyInWallet); this._moneyInWallet -= delta; return delta; }
-    isWalletFull() { return this._moneyInWallet >= this._walletLimit; }
-    isWalletEmpty() { return this._moneyInWallet <= 0; }
-    emptyWallet() {
-        let amt = this._moneyInWallet;
-        this._moneyInWallet = 0;
-        return amt;
-    }
-    get propMoneyInWallet() { return this._moneyInWallet / this._walletLimit; }
-    get moneyInWallet() { return this._moneyInWallet };
-    set walletLimit(amt) { if (amt > 0) this._walletLimit = amt; }
-
-    constructor(world, name = 'Houseeeper') {
-        super();
-        this._name = name;
-        this.enableFsm(this, world);
-    }
-
-}
-
 class GetMoneyFromBank extends State {
-
     enter(user) {
         wifeStateViewer.setStateIdx(2);
-        let maxAvailable = user.miner.goldInBank;
-        this.walletLimit = random(0.25, 0.5) * maxAvailable;
-        user.location = 'bank';
-        console.log(`Going to bank for spending money`);
+        let maxAvailable = (moneyInBank());
+        user.walletLimit = random(0.25, 0.5) * maxAvailable;
+        logItem({
+            time: millis(), agent: user, type: SC,
+            msg: 'BANK: Withdraw some money for shopping'
+        });
     }
 
     execute(user, elapsedTime, world) {
         if (user.isWalletFull())
             user.changeState(stateShopping);
-        let amt = rnd() * elapsedTime * 25;
+        let amt = rnd() * elapsedTime * 35;
         user.incMoneyInWallet(amt);
-        user.miner.decMoneyInBank(amt);
+        decMoneyInBank(amt);
     }
-
-    exit(user) { }
 }
 
 class Shopping extends State {
-
     enter(user) {
         wifeStateViewer.setStateIdx(4);
-        let maxAvailable = user.miner.goldInBank;
-        this.walletLimit = random(0.25, 0.5) * maxAvailable;
-        user.location = 'store';
-        console.log(`At store spending money`);
+        logItem({
+            time: millis(), agent: user, type: SC,
+            msg: 'STORE: So many lovely things to buy'
+        });
     }
 
     execute(user, elapsedTime, world) {
+        if (random() < 0.0001)
+            user.changeState(stateBathroom);
         if (user.isWalletEmpty())
-            user.changeState(stateWaitForMiner);
-        let amt = rnd() * elapsedTime * 10;
+            user.changeState(stateAtHome);
+        let amt = rnd() * elapsedTime * 20;
         user.decMoneyInWallet(amt);
     }
-
-    exit(user) { }
 }
 
+class WifeGlobal extends State {
+    onMessage(user, tgram) {
+        if (tgram.msgID == 2201) {
+            if (moneyInBank() > 300) {
+                user.walletLimit = random(0.25, 0.5) * moneyInBank();
+                logItem({
+                    time: millis(), agent: user, toAgent: tgram.receiver, type: RT, msgID: 2201,
+                    msg: 'Time to go shopping'
+                });
+                user.changeState(stateGetMoneyFromBank);
 
-class WaitingForMiner extends State {
+            }
+            postTelegram(random(45, 60), elsa, elsa, 2201);  // Next shopping trip
+            return true;
+        }
+        return false;
+    }
+}
+
+class AtHome extends State {
     enter(user) {
         wifeStateViewer.setStateIdx(3);
-        user.location = 'home';
-        console.log(`Waiting for ${user.miner.name}`);
+        logItem({
+            time: millis(), agent: user, type: SC,
+            msg: 'HOME: Busy, busy, busy ... so much to do'
+        });
     }
 
     execute(user, elapsedTime, world) {
+        if (random() < 0.0002)
+            user.changeState(stateBathroom);
     }
 
     onMessage(user, tgram) {
-        if (tgram.message == 22001)
-            user.changeState(stateGetMoneyFromBank);
-        console.log(tgram.message);
-        return true;
+        if (tgram.msgID == 1201) {
+            user.changeState(stateMakeStew);
+            return true;
+        }
+        return false;
+    }
+}
+
+class Bathroom extends State {
+    enter(user) {
+        logItem({
+            time: millis(), agent: user, type: SC,
+            msg: 'BATHROOM: Call of nature ... Aghhh relief !!!'
+        });
     }
 
-    exit(user) { }
+    execute(user, elapsedTime, world) {
+        if (user.isFinishedInBathroom)
+            user.revertToPreviousState();
+        else
+            user.incBathroom(elapsedTime);
+    }
+
+    exit(user) {
+        user.initBathroom();
+    }
+}
+
+class MakeStew extends State {
+    enter(user) {
+        user.initMakeStew();
+        logItem({
+            time: millis(), agent: user, type: SC,
+            msg: 'MAKE STEW: Time to make our dinner'
+        });
+    }
+
+    execute(user, elapsedTime, world) {
+        if (user.isStewMade)
+            user.revertToPreviousState();
+        else
+            user.incMakeStew(elapsedTime);
+    }
+
+    exit(user) {
+        logItem({
+            time: millis(), agent: user, toAgent: bob, type: PT, msgID: 2101,
+            msg: 'Dinner is ready'
+        });
+        user.initMakeStew();
+    }
 }

@@ -1,12 +1,12 @@
 class Telegram {
-    #sender: number;
-    get sender(): number { return this.#sender; }
+    #sender: Entity;
+    get sender(): Entity { return this.#sender; }
 
-    #receiver: number;
-    get receiver(): number { return this.#receiver; }
+    #receiver: Entity;
+    get receiver(): Entity { return this.#receiver; }
 
-    #msg: number | string;
-    get message(): number | string { return this.#msg; }
+    #msgID: number;
+    get msgID(): number { return this.#msgID; }
 
     #delay: number;
     get delay(): number { return this.#delay; }
@@ -15,11 +15,11 @@ class Telegram {
     #extraInfo: object;
     get extraInfo(): object { return this.#extraInfo; }
 
-    constructor(despatchAt: number, sender: number, receiver: number, msg: number | string, extraInfo?: object) {
+    constructor(despatchAt: number, sender: Entity, receiver: Entity, msg: number, extraInfo?: object) {
         this.#delay = despatchAt;
         this.#sender = sender;
         this.#receiver = receiver;
-        this.#msg = msg;
+        this.#msgID = msg;
         this.#extraInfo = extraInfo;
     }
 }
@@ -41,8 +41,11 @@ class Dispatcher {
      * @param msg message string
      * @param extraInfo optional object holding any extra information
      */
-    postTelegram(delay: number, sender: number, receiver: number, msg: number | string, extraInfo?: object) {
-        if (this.#world.populationMap.has(receiver) && this.#world.populationMap.get(receiver).hasFSM()) {
+    postTelegram(delay: number, sender: number | Entity, receiver: number | Entity, msg: number, extraInfo?: object) {
+        let pop = this.#world.populationMap;
+        sender = sender instanceof Entity ? sender : pop.get(sender);
+        receiver = receiver instanceof Entity ? receiver : pop.get(receiver);
+        if (sender && receiver && receiver.hasFSM()) {
             let tgram = new Telegram(delay, sender, receiver, msg, extraInfo);
             this.#telegrams.push(tgram);
         }
@@ -50,9 +53,7 @@ class Dispatcher {
 
     /** Send the telegram     */
     sendTelegram(tgram: Telegram) {
-        let entity = this.#world.populationMap.get(tgram.receiver);
-        if (entity && entity.hasFSM())
-            entity.fsm.onMessage(tgram);
+        tgram.receiver.fsm.onMessage(tgram);
     }
 
     /** Send telegram and remove from tem from postnag */

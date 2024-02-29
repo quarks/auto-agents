@@ -7,6 +7,8 @@ class State {
     #world: World;
     get world() { return this.#world; }
 
+    get dispatcher() { return this.#world.dispatcher; }
+
     // This will execute when the state is entered.
     enter(user: Entity): void { };
 

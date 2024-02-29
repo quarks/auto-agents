@@ -1,5 +1,3 @@
-let stateSleepUntilRested;
-
 function preload() {
     stateicon = loadImage('wildwest.png');
     backdrop = loadImage('wwbg1.jpg');
@@ -13,56 +11,58 @@ function setup() {
     let p5canvas = createCanvas(640, 655);
     p5canvas.parent('sketch');
     createGUIitems();
-    createAAitems();
+    createAgentItems();
+    world.dispatcher.postTelegram(30, elsa, elsa, 2201);
 }
 
-function createGUIitems() {
-    minerStateViewer = new StateIconViewer(80, 20, stateicon, -46, 60, minericon);
-    minerStateViewer.setStateIdx(0);
-    wifeStateViewer = new StateIconViewer(width - 80 - 150, 20, stateicon, 115, 58, wifeicon);
-    wifeStateViewer.setStateIdx(3);
-    goldMinedGauge = new ProgressBar(60, 210, 180, 24, 'Gold nuggets found')
-    fatigueGauge = new ProgressBar(60, 240, 180, 24, 'Fatigue')
-    thirstGauge = new ProgressBar(60, 270, 180, 24, 'Thirst')
-    moneyGauge = new ProgressBar(400, 210, 180, 24, 'Money in wallet')
-}
 
-function createAAitems() {
+function createAgentItems() {
     world = new World(300, 300);
     bob = new Miner(world, 'Bob');
     elsa = new Wife(world, 'Elsa');
-    bob.wife = elsa;
-    elsa.miner = bob;
     world.birth([bob, elsa]);
+    // Create states
     stateDigForGold = new DigForGold(world);
     stateDepositGold = new DepositGold(world);
-    stateSleepUntilRested = new RelaxAtHome(world);
+    stateRelaxAtHome = new RelaxAtHome(world);
     stateQuenchThirst = new QuenchThirst(world);
-    stateWaitForMiner = new WaitingForMiner(world);
+    stateAtHome = new AtHome(world);
     stateGetMoneyFromBank = new GetMoneyFromBank(world);
     stateShopping = new Shopping(world);
+    stateBathroom = new Bathroom(world);
+    stateMakeStew = new MakeStew(world);
+    // Setup initial states
     bob.changeState(stateDigForGold);
-    elsa.changeState(stateWaitForMiner);
+    elsa.changeState(stateAtHome);
+    elsa.fsm.globalState = new WifeGlobal(world);
+}
 
-    world.update(0);
-    world.dispatcher.postTelegram(10, elsa.id, elsa.id, 22001);
+function createGUIitems() {
+    logger = new Logger(60, 320, 16);
+    minerStateViewer = new StateIconViewer(80, 20, stateicon, -46, 60, minericon);
+    minerStateViewer.setStateIdx(0);
+    wifeStateViewer = new StateIconViewer(width - 230, 20, stateicon, 120, 52, wifeicon);
+    wifeStateViewer.setStateIdx(3);
+    goldMinedGauge = new ProgressBar(60, 210, 180, 24, 'Gold nuggets found');
+    fatigueGauge = new ProgressBar(60, 240, 180, 24, 'Fatigue');
+    thirstGauge = new ProgressBar(60, 270, 180, 24, 'Thirst');
+    moneyGauge = new ProgressBar(400, 210, 180, 24, 'Money in wallet');
+    bathroomGauge = new ProgressBar(400, 240, 180, 24, 'Visiting bathroom');
+    makeStewGauge = new ProgressBar(400, 270, 180, 24, 'Making stew');
 }
 
 function draw() {
     background(backdrop);
     world.update(deltaTime / 1000);
-    goldMinedGauge.setValue(bob.propGoldInPocket);
-    fatigueGauge.setValue(bob.propFatigue);
-    thirstGauge.setValue(bob.propThirst);
-    moneyGauge.setValue(elsa.propMoneyInWallet);
-    minerStateViewer.render();
-    wifeStateViewer.render();
-    goldMinedGauge.render();
-    fatigueGauge.render();
-    thirstGauge.render();
-    moneyGauge.render();
+    goldMinedGauge.setValue(bob.propGoldInPocket); goldMinedGauge.render();
+    fatigueGauge.setValue(bob.propFatigue); fatigueGauge.render();
+    thirstGauge.setValue(bob.propThirst); thirstGauge.render();
+    moneyGauge.setValue(elsa.propMoneyInWallet); moneyGauge.render();
+    bathroomGauge.setValue(elsa.propBathroom); bathroomGauge.render();
+    makeStewGauge.setValue(elsa.propMakeStew); makeStewGauge.render();
+    minerStateViewer.render(); wifeStateViewer.render();
+    logger.render();
     moneyRender();
-
 }
 
 function layout() {
@@ -79,7 +79,7 @@ function moneyRender() {
     rect(40, 58, 60, 20);
     textAlign(CENTER, CENTER); textSize(16);
     noStroke(); fill(0);
-    text(bob.moneyInBank, 40, 59, 60, 20);
+    text(moneyInBank(), 40, 59, 60, 20);
     textStyle(BOLD);
     text('Money in Bank', 20, 106, 100, 40);
     pop();
