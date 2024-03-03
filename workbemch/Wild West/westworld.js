@@ -27,9 +27,9 @@ function createAgentItems() {
     stateRelaxAtHome = new RelaxAtHome(world);
     stateQuenchThirst = new QuenchThirst(world);
     stateAtHome = new AtHome(world);
-    stateGetMoneyFromBank = new GetMoneyFromBank(world);
+    stateGetMoneyFromBank = new GetMoney(world);
     stateShopping = new Shopping(world);
-    stateBathroom = new Bathroom(world);
+    stateBathroom = new InBathroom(world);
     stateMakeStew = new MakeStew(world);
     // Setup initial states
     bob.changeState(stateDigForGold);

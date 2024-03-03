@@ -45,7 +45,7 @@ class Vehicle extends Mover {
      */
     forceRecorderOn(): Vehicle {
         if (this.pilot)
-            this.#forceRecorder = new ForceRecorder(this, this.pilot.weightsArray);
+            this.#forceRecorder = new ForceRecorder(this);
         return this;
     }
 

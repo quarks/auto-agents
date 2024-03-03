@@ -16,6 +16,7 @@ class AutoPilot {
 
     // Valiables used to support testing
     testObstaclesFound: Array<Entity>;
+    testWallsConsidered: Array<Entity>;
     testWallsFound: Array<Entity>;
     testClosestObstacle: Entity;
     testNeighbours: Array<Vehicle>;
@@ -527,7 +528,6 @@ class AutoPilot {
         // Get all obstacles inside search distance
         let pos = owner.pos;
         let result = world.tree.getItemsInRegion(pos.x - sd, pos.y - sd, pos.x + sd, pos.y + sd);
-        //let obs = result.entities.filter(e => e.type == OBSTACLE);
         let obs = result.entities.filter(e => e instanceof Obstacle);
         this.testObstaclesFound = [...obs]; // ============================   TEST TEST  
         // Get vehicle velocity and side vectors (normalized)
@@ -597,9 +597,10 @@ class AutoPilot {
     wallAvoidance(owner: Vehicle, world: World, elapsedTime: number) {
         let pos = owner.pos, fl = this.__feelerLength;
         let result = world.tree.getItemsInRegion(pos.x - fl, pos.y - fl, pos.x + fl, pos.y + fl);
+        //this.testWallsConsidered = result.entities.filter(w => w instanceof Wall);      // ============================   TEST TEST  
         let walls = result.entities.filter(w => w instanceof Wall &&
             Geom2D.line_circle(w.start.x, w.start.y, w.end.x, w.end.y, pos.x, pos.y, fl));
-        this.testWallsFound = [...walls]; // ============================   TEST TEST  
+        //this.testWallsFound = [...walls];                                               // ============================   TEST TEST  
         // Details of  closest wall and closest intersection point
         let closestWall: Wall;
         let closestPoint: Vector2D;
@@ -730,12 +731,12 @@ class AutoPilot {
             // Cohesion
             cohForce = cohForce.div(nCount).sub(owner.pos).normalize()
                 .mult(owner.maxSpeed).sub(owner.vel).normalize()
-                .mult(this.#weight[BIT_COHESION]);
+                .mult(this.#weight[IDX_COHESION]);
             // Separation
-            sepForce = sepForce.mult(this.#weight[BIT_SEPARATION]);
+            sepForce = sepForce.mult(this.#weight[IDX_SEPARATION]);
             // Alignment
             alnForce = alnForce.div(nCount).sub(owner.heading)
-                .mult(this.#weight[BIT_ALIGNMENT]);
+                .mult(this.#weight[IDX_ALIGNMENT]);
             // Add them to get flock force
             let flockForce = cohForce.add(sepForce).add(alnForce);
             return flockForce;
@@ -974,114 +975,114 @@ class AutoPilot {
 
         if (this.isWallAvoidOn) {
             let f = this.wallAvoidance(owner, world, elapsedTime);
-            f = f.mult(this.#weight[BIT_WALL_AVOID]);
-            recorder?.addData(BIT_WALL_AVOID, f);
+            f = f.mult(this.#weight[IDX_WALL_AVOID]);
+            recorder?.addData(IDX_WALL_AVOID, f, this.#weight[IDX_WALL_AVOID]);
             if (!this.accumulateForce(sumForces, f, maxForce))
                 return Vector2D.from(sumForces);
         }
         if (this.isObsAvoidOn) {
             let f = this.obstacleAvoidance(owner, world, elapsedTime);
-            f = f.mult(this.#weight[BIT_OBSTACLE_AVOID]);
-            recorder?.addData(BIT_OBSTACLE_AVOID, f);
+            f = f.mult(this.#weight[IDX_OBSTACLE_AVOID]);
+            recorder?.addData(IDX_OBSTACLE_AVOID, f, this.#weight[IDX_OBSTACLE_AVOID]);
             if (!this.accumulateForce(sumForces, f, maxForce))
                 return Vector2D.from(sumForces);
         }
         if (this.isEvadeOn) {
             let f = this.evade(owner, this.evadeAgent);
-            f = f.mult(this.#weight[BIT_EVADE]);
-            recorder?.addData(BIT_EVADE, f);
+            f = f.mult(this.#weight[IDX_EVADE]);
+            recorder?.addData(IDX_EVADE, f, this.#weight[IDX_EVADE]);
             if (!this.accumulateForce(sumForces, f, maxForce))
                 return Vector2D.from(sumForces);
         }
         if (this.isFleeOn) {
             let f = this.flee(owner, this.fleeTarget);
-            f = f.mult(this.#weight[BIT_FLEE]);
-            recorder?.addData(BIT_FLEE, f);
+            f = f.mult(this.#weight[IDX_FLEE]);
+            recorder?.addData(IDX_FLEE, f, this.#weight[IDX_FLEE]);
             if (!this.accumulateForce(sumForces, f, maxForce))
                 return Vector2D.from(sumForces);
         }
         if (this.isFlockOn) {
             let f = this.flock(owner, world);
-            f = f.mult(this.#weight[BIT_FLOCK]);
-            recorder?.addData(BIT_FLOCK, f);
+            f = f.mult(this.#weight[IDX_FLOCK]);
+            recorder?.addData(IDX_FLOCK, f, this.#weight[IDX_FLOCK]);
             if (!this.accumulateForce(sumForces, f, maxForce))
                 return Vector2D.from(sumForces);
         } else {
             if (this.isSeparationOn) {
                 let f = this.separation(owner, world);
-                f.mult(this.#weight[BIT_SEPARATION]);
-                recorder?.addData(BIT_SEPARATION, f);
+                f.mult(this.#weight[IDX_SEPARATION]);
+                recorder?.addData(IDX_SEPARATION, f, this.#weight[IDX_SEPARATION]);
                 if (!this.accumulateForce(sumForces, f, maxForce))
                     return Vector2D.from(sumForces);
             }
             if (this.isAlignmentOn) {
                 let f = this.alignment(owner, world);
-                f.mult(this.#weight[BIT_ALIGNMENT]);
-                recorder?.addData(BIT_ALIGNMENT, f);
+                f.mult(this.#weight[IDX_ALIGNMENT]);
+                recorder?.addData(IDX_ALIGNMENT, f, this.#weight[IDX_ALIGNMENT]);
                 if (!this.accumulateForce(sumForces, f, maxForce))
                     return Vector2D.from(sumForces);
             }
             if (this.isCohesionOn) {
                 let f = this.cohesion(owner, world);
-                f.mult(this.#weight[BIT_COHESION]);
-                recorder?.addData(BIT_COHESION, f);
+                f.mult(this.#weight[IDX_COHESION]);
+                recorder?.addData(IDX_COHESION, f, this.#weight[IDX_COHESION]);
                 if (!this.accumulateForce(sumForces, f, maxForce))
                     return Vector2D.from(sumForces);
             }
         }
         if (this.isSeekOn) {
             let f = this.seek(owner, this.target);
-            f = f.mult(this.#weight[BIT_SEEK]);
-            recorder?.addData(BIT_SEEK, f);
+            f = f.mult(this.#weight[IDX_SEEK]);
+            recorder?.addData(IDX_SEEK, f, this.#weight[IDX_SEEK]);
             if (!this.accumulateForce(sumForces, f, maxForce))
                 return Vector2D.from(sumForces);
         }
         if (this.isArriveOn) {
             let f = this.arrive(owner, this.target);
-            f = f.mult(this.#weight[BIT_ARRIVE]);
-            recorder?.addData(BIT_ARRIVE, f);
+            f = f.mult(this.#weight[IDX_ARRIVE]);
+            recorder?.addData(IDX_ARRIVE, f, this.#weight[IDX_ARRIVE]);
             if (!this.accumulateForce(sumForces, f, maxForce))
                 return Vector2D.from(sumForces);
         }
         if (this.isWanderOn) {
             let f = this.wander(owner, elapsedTime);
-            f = f.mult(this.#weight[BIT_WANDER]);
-            recorder?.addData(BIT_WANDER, f);
+            f = f.mult(this.#weight[IDX_WANDER]);
+            recorder?.addData(IDX_WANDER, f, this.#weight[IDX_WANDER]);
             if (!this.accumulateForce(sumForces, f, maxForce))
                 return Vector2D.from(sumForces);
         }
         if (this.isPusuitOn) {
             let f = this.pursuit(owner, this.pursueAgent);
-            f = f.mult(this.#weight[BIT_PURSUIT]);
-            recorder?.addData(BIT_PURSUIT, f);
+            f = f.mult(this.#weight[IDX_PURSUIT]);
+            recorder?.addData(IDX_PURSUIT, f, this.#weight[IDX_PURSUIT]);
             if (!this.accumulateForce(sumForces, f, maxForce))
                 return Vector2D.from(sumForces);
         }
         if (this.isOffsetPusuitOn) {
             let f = this.offsetPursuit(owner, this.pursueAgent, this.pursueOffset);
-            f = f.mult(this.#weight[BIT_OFFSET_PURSUIT]);
-            recorder?.addData(BIT_OFFSET_PURSUIT, f);
+            f = f.mult(this.#weight[IDX_OFFSET_PURSUIT]);
+            recorder?.addData(IDX_OFFSET_PURSUIT, f, this.#weight[IDX_OFFSET_PURSUIT]);
             if (!this.accumulateForce(sumForces, f, maxForce))
                 return Vector2D.from(sumForces);
         }
         if (this.isInterposeOn) {
             let f = this.interpose(owner, this.agent0, this.agent1);
-            f = f.mult(this.#weight[BIT_INTERPOSE]);
-            recorder?.addData(BIT_INTERPOSE, f);
+            f = f.mult(this.#weight[IDX_INTERPOSE]);
+            recorder?.addData(IDX_INTERPOSE, f, this.#weight[IDX_INTERPOSE]);
             if (!this.accumulateForce(sumForces, f, maxForce))
                 return Vector2D.from(sumForces);
         }
         if (this.isHideOn) {
             let f = this.hide(owner, world, this.hideFromAgent);
-            f = f.mult(this.#weight[BIT_HIDE]);
-            recorder?.addData(BIT_HIDE, f);
+            f = f.mult(this.#weight[IDX_HIDE]);
+            recorder?.addData(IDX_HIDE, f, this.#weight[IDX_HIDE]);
             if (!this.accumulateForce(sumForces, f, maxForce))
                 return Vector2D.from(sumForces);
         }
         if (this.isPathOn) {
             let f = this.path(owner, world);
-            f = f.mult(this.#weight[BIT_PATH]);
-            recorder?.addData(BIT_PATH, f);
+            f = f.mult(this.#weight[IDX_PATH]);
+            recorder?.addData(IDX_PATH, f, this.#weight[IDX_PATH]);
             if (!this.accumulateForce(sumForces, f, maxForce))
                 return Vector2D.from(sumForces);
         }
@@ -1134,19 +1135,19 @@ class AutoPilot {
         return this;
     }
 
-    setWeighting(bhvr: number, weight: number): AutoPilot {
-        if (Number.isFinite(bhvr) && Number.isFinite(weight)) {
-            if (bhvr > 0 && bhvr < NBR_BEHAVIOURS)
-                this.#weight[bhvr] = weight;
+    setWeighting(bhvrIdx: number, weight: number): AutoPilot {
+        if (Number.isFinite(bhvrIdx) && Number.isFinite(weight)) {
+            if (bhvrIdx > 0 && bhvrIdx < NBR_BEHAVIOURS)
+                this.#weight[bhvrIdx] = weight;
             else
-                console.error(`Uanble to set the weighting for behaiour ID ${bhvr}`);
+                console.error(`Uanble to set the weighting for behaiour ID ${bhvrIdx}`);
         }
         return this;
     }
 
-    getWeighting(bhvr: number): number {
-        if (Number.isFinite(bhvr) && bhvr > 0 && bhvr < NBR_BEHAVIOURS)
-            return this.#weight[bhvr];
+    getWeighting(bhvrIdx: number): number {
+        if (Number.isFinite(bhvrIdx) && bhvrIdx > 0 && bhvrIdx < NBR_BEHAVIOURS)
+            return this.#weight[bhvrIdx];
         else
             return 0;
     }

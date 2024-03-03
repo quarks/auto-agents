@@ -15,6 +15,9 @@ class Fence extends Entity {
     #walls: Map<number, Wall> = new Map();
     get walls(): Array<Wall> { return [...this.#walls.values()]; }
 
+    #contour: Array<Vector2D>;
+    get contour() { return this.#contour; }
+
     /**
      * A series of walls joined end-to-end making a fence or enclosure.
      * 
@@ -52,6 +55,7 @@ class Fence extends Entity {
             this.#walls.set(contour.length - 1, new Wall(contour[contour.length - 1], contour[0], repelSide));
         let closed = contour[0].equals(contour[contour.length - 1]);
         this.#tri = Geom2D.triangulate(contour, closed).map(idx => contour[idx]);
+        this.#contour = contour;
     }
 
     /** Overrides entity.born */
@@ -68,10 +72,8 @@ class Fence extends Entity {
 
     deleteWall(idx: number, world: World) {
         let wall = this.#walls.get(idx);
-        if (world && wall) {
-            this.#walls.get(idx)
+        if (world && wall)
             world.deaths.push(wall);
-        }
     }
 
     wallRepelSide(idx: number, repelSide: symbol) {

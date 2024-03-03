@@ -139,7 +139,6 @@ class World {
             r0 += i.toString().padStart(4, ' ') + '  |';
             r1 += '------+'; hr += '=======';
         }
-        //  let r7 = 'Obstacles  |', r6 = 'Walls      |', r8 = 'Movers     |';
         let r5 = 'Fences     |', r7 = 'Obstacles  |', r6 = 'Walls      |', r8 = 'Movers     |';
         for (let i = 0; i <= d.depth; i++) {
             r5 += f[i].toString().padStart(5, ' ') + ' |';

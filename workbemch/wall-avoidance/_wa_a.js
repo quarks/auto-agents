@@ -7,7 +7,7 @@ function setup() {
     hintTrail = hintCircle = hintFleeCircle = false;
     hintObsDetect = false;
     showColCircle = false;
-    let p5canvas = createCanvas(800, 440);
+    let p5canvas = createCanvas(440, 440);
     p5canvas.parent('sketch');
     world = new World(wx, wy, depth);
     makeEntities();
@@ -19,6 +19,12 @@ function draw() {
     world.update(deltaTime / 1000);
     let wd = world.domain;
     background(240, 190, 240);
+    translate(20, 20);
+    push();
+    beginClip();
+    rect(wd.lowX, wd.lowY, wd.width, wd.height);
+    // ellipse(wd.cX, wd.cY, wd.width, wd.height);
+    endClip();
     // World background and tree grid
     noStroke(); fill(255, 240, 255); rect(wd.lowX, wd.lowY, wd.width, wd.height);
     renderTreeGrid();
@@ -28,6 +34,7 @@ function draw() {
     vehicles[0].pilot.testWallsFound?.forEach(x => x.painter = ppWall[1]);
 
     world.render();
+    pop();
 }
 
 function makeEntities() {
@@ -48,7 +55,6 @@ function makeEntities() {
         walls[i].painter = ppWall[0];
         world.birth(walls[i]);
     }
-
     // Wander data
     ppVehicle[0] = paintPerson(color(160, 255, 160, 48), color(20, 200, 20, 48), [showFeelers]); // Green
     ppVehicle[1] = paintPerson(color(180, 180, 255), color(20, 20, 200), [showFeelers]); // Blue

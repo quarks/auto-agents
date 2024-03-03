@@ -199,7 +199,7 @@ class RelaxAtHome extends State {
     }
 }
 
-class GetMoneyFromBank extends State {
+class GetMoney extends State {
     enter(user) {
         wifeStateViewer.setStateIdx(2);
         let maxAvailable = (moneyInBank());
@@ -280,7 +280,7 @@ class AtHome extends State {
     }
 }
 
-class Bathroom extends State {
+class InBathroom extends State {
     enter(user) {
         logItem({
             time: millis(), agent: user, type: SC,

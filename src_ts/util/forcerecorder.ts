@@ -11,15 +11,15 @@ class ForceRecorder {
 
     #nbrReadings = 0;
 
-    constructor(owner: Vehicle, weights: Array<number>) {
+    constructor(owner: Vehicle) {
         this.#owner = owner;
-        this.#forces = ForceRecorder.FORCE_NAME.map((v, i) => new Force(v, weights[i]));
+        this.#forces = ForceRecorder.FORCE_NAME.map((v, i) => new Force(v));
     }
 
-    addData(typeFlag: number, force: Vector2D) {
-        if (typeFlag >= 0 && typeFlag < NBR_BEHAVIOURS) {
+    addData(idxBhvr: number, force: Vector2D, weighting: number) {
+        if (idxBhvr >= 0 && idxBhvr < NBR_BEHAVIOURS) {
             this.#nbrReadings++;
-            this.#forces[typeFlag].addData(force.length());
+            this.#forces[idxBhvr].addData(force.length(), weighting);
         }
     }
 
@@ -47,11 +47,10 @@ class Force {
     #forceName = '';
     #min = Number.MAX_VALUE; #max = 0;
     #s1 = 0; #s2 = 0; #n = 0;
-    #weight: number;
+    #weight = 0;
 
-    constructor(forceName: string, weighting: number) {
+    constructor(forceName: string) {
         this.#forceName = forceName;
-        this.#weight = weighting;
     }
 
     clearData() {
@@ -62,7 +61,8 @@ class Force {
         this.#n = 0;
     }
 
-    addData(forceMagnitude: number) {
+    addData(forceMagnitude: number, weighting: number) {
+        this.#weight = weighting;
         if (forceMagnitude < this.#min) this.#min = forceMagnitude;
         if (forceMagnitude > this.#max) this.#max = forceMagnitude;
         this.#s1 += forceMagnitude;

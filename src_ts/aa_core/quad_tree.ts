@@ -84,11 +84,13 @@ class QPart {
     getItemsInRegion(lowX: number, lowY: number, highX: number, highY: number) {
         function getParent(part) {
             if (!part) return;
-            parts.push(part); ents.push(...part.#entities);
+            parts.push(part);
+            ents.push(...part.#entities);
             getParent(part.#parent);
         }
         function getChildren(part) {
-            parts.push(part); ents.push(...part.#entities);
+            parts.push(part);
+            ents.push(...part.#entities);
             if (part.hasChildren)
                 for (let child of part.#children)
                     if (Geom2D.box_box(lowX, lowY, highX, highY,

@@ -364,13 +364,13 @@ class Vector2D {
     }
     /**
      * Create a randomly orientated vector whose magnitude is in the range provided.
-     * @param m0 minimum length
-     * @param m1 maximum length
+     * @param mag0 minimum magnitude
+     * @param mag1 maximum magnitude
      * @return the randomised vector
      */
-    static fromRandom(m0 = 1, m1 = 1) {
+    static fromRandom(mag0 = 1, mag1 = 1) {
         let a = 2 * Math.PI * Math.random();
-        let m = Math.random() * (m1 - m0) + m0;
+        let m = Math.random() * (mag1 - mag0) + mag0;
         return new Vector2D(m * Math.cos(a), m * Math.sin(a));
     }
     /**
@@ -389,6 +389,7 @@ class Vector2D {
         console.log(this.$(precision));
         return this;
     }
+    // Return vector as array string su
     $(precision = 16) {
         let xv = this.x.toPrecision(precision);
         let yv = this.y.toPrecision(precision);

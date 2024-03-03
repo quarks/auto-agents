@@ -23,15 +23,15 @@ class Wall extends Entity {
         this.repelSide = repelSide;
     }
     fitsInside(lowX, lowY, highX, highY) {
-        let x0 = Math.min(this.x, this.end.x), y0 = Math.min(this.y, this.end.y);
-        let x1 = Math.max(this.x, this.end.x), y1 = Math.max(this.y, this.end.y);
+        let x0 = Math.min(this.start.x, this.end.x), y0 = Math.min(this.start.y, this.end.y);
+        let x1 = Math.max(this.start.x, this.end.x), y1 = Math.max(this.start.y, this.end.y);
         return x0 >= lowX && y0 >= lowY && x1 <= highX && y1 <= highY;
     }
     isEitherSide(p0, p1) {
         return Geom2D.line_line(p0.x, p0.y, p1.x, p1.y, this.start.x, this.start.y, this.end.x, this.end.y);
     }
     toString() {
-        let s = `${this.constructor.name}  @  [${this.x.toFixed(FXD)}, ${this.y.toFixed(FXD)}]  `;
+        let s = `${this.constructor.name}  @  [${this.start.x.toFixed(FXD)}, ${this.start.y.toFixed(FXD)}]  `;
         s += `from [${this.start.x.toFixed(FXD)}, ${this.start.y.toFixed(FXD)}]  `;
         s += `to [${this.end.x.toFixed(FXD)}, ${this.end.y.toFixed(FXD)}]  `;
         return s;

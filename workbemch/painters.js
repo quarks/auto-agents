@@ -78,6 +78,16 @@ function paintWall(col, weight, p = p5.instance) {
     });
 }
 
+function paitSimpleWall(col, weight, p = p5.instance) {
+    return (function (elapsedTime, world) {
+        p.push();
+        p.stroke(col); p.strokeWeight(weight);
+        p.line(this.start.x, this.start.y, this.end.x, this.end.y);
+        p.pop();
+    });
+}
+
+
 function paintFencedArea(colF, p = p5.instance) {
     return (function (elapsedTime, world) {
         p.push();
