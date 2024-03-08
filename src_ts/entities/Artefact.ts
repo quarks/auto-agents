@@ -1,11 +1,17 @@
 class Artefact extends Entity {
 
     #lowX: number;
+    get lowX() { return this.#lowX; }
     #highX: number;
+    get highX() { return this.#highX; }
     #lowY: number;
+    get lowY() { return this.#lowY; }
     #highY: number;
+    get highY() { return this.#highY; }
     #width: number;
+    get width() { return this.#width; }
     #height: number;
+    get height() { return this.#height; }
 
     constructor(center: Vector2D, width: number, height: number) {
         super(center);
@@ -23,8 +29,6 @@ class Artefact extends Entity {
             && (this.#lowY >= lowY) && (this.#highY <= highY);
         return fits;
     }
-
-    render() { }
 
     toString(): string {
         let s = `Artefact: [${this.#lowX}, ${this.#lowY}] - [${this.#highX}, ${this.#highY}]`;

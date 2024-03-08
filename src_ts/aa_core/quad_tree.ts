@@ -178,7 +178,9 @@ class QPart {
 
     getTreeLevelData() {
         function CountEntitiesByLevel(part: QPart) {
-            let s = 0; part.#entities.forEach(e => { if (e instanceof Fence) s++; })
+            let s = 0; part.#entities.forEach(e => { if (e instanceof Artefact) s++; })
+            levelArtefact[0] += s; levelArtefact[part.level] += s;
+            s = 0; part.#entities.forEach(e => { if (e instanceof Fence) s++; })
             levelFence[0] += s; levelFence[part.level] += s;
             s = 0; part.#entities.forEach(e => { if (e instanceof Wall) s++; })
             levelWall[0] += s; levelWall[part.level] += s;
@@ -189,6 +191,7 @@ class QPart {
             if (part.hasChildren)
                 for (let child of part.children) CountEntitiesByLevel(child);
         }
+        let levelArtefact = new Array(this.depth + 1).fill(0);
         let levelMover = new Array(this.depth + 1).fill(0);
         let levelFence = new Array(this.depth + 1).fill(0);
         let levelWall = new Array(this.depth + 1).fill(0);
@@ -197,7 +200,8 @@ class QPart {
         CountEntitiesByLevel(this.getRoot());
         return {
             'movers': levelMover, 'obstacles': levelObstacle, 'walls': levelWall,
-            'fences': levelFence, 'depth': this.depth, 'treesize': this.treeSize,
+            'fences': levelFence, 'artefacts': levelArtefact,
+            'depth': this.depth, 'treesize': this.treeSize,
             'leafsize': this.leafSize, 'lowX': this.lowX, 'lowY': this.lowY
         }
     }

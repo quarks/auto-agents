@@ -1,0 +1,36 @@
+{
+    "NODES":[
+      {"id":0, "position":[-50,50],"name":"A"},
+      {"id":1, "position":[150,75], "name":"B"},
+      {"id":2, "position":[300,50], "name":"C"},
+      {"id":3, "position":[500,100], "name":"D"},
+      {"id":4, "position":[-25,150], "name":"E"},
+      {"id":5, "position":[220,170], "name":"F"},
+      {"id":6, "position":[345,160], "name":"G"},
+      {"id":7, "position":[50,225], "name":"H"},
+      {"id":8, "position":[290,255], "name":"I"},
+      {"id":9, "position":[450,250], "name":"J"},
+      {"id":10, "position":[100,300], "name":"K"},
+      {"id":11, "position":[250,355], "name":"L"}   
+    ],
+    "EDGES":[
+        {"from":0, "to":1, "bidi":true, "cost":0, "name":["a-b","b-a"]},
+        {"from":1, "to":2, "bidi":true, "cost":0, "name":["b-c","c-b"]},
+        {"from":2, "to":3, "bidi":true, "cost":0, "name":["c-d","d-c"]},
+        {"from":0, "to":4, "bidi":true, "cost":0, "name":["a-e","e-a"]},
+        {"from":2, "to":6, "bidi":true, "cost":0, "name":["c-g","g-c"]},
+        {"from":6, "to":3, "bidi":true, "cost":0, "name":["g-d","d-g"]},
+        {"from":4, "to":5, "bidi":true, "cost":0, "name":["e-f","f-e"]},
+        {"from":5, "to":6, "bidi":true, "cost":0, "name":["f-g","g-f"]},
+        {"from":3, "to":9, "bidi":true, "cost":0, "name":["d-j","j-d"]},
+        {"from":4, "to":7, "bidi":true, "cost":0, "name":["e-h","h-e"]},
+        {"from":5, "to":7, "bidi":true, "cost":0, "name":["f-h","h-f"]},
+        {"from":6, "to":9, "bidi":true, "cost":0, "name":["g-j","j-g"]},
+        {"from":7, "to":10, "bidi":true, "cost":0, "name":["h-k","k-h"]},
+        {"from":8, "to":10, "bidi":true, "cost":0, "name":["i-k","k-i"]},
+        {"from":8, "to":9, "bidi":true, "cost":0, "name":["i-j","j-i"]},
+        {"from":10, "to":11, "bidi":true, "cost":0, "name":["k-l","l-k"]},
+        {"from":9, "to":11, "bidi":true, "cost":0, "name":["j-l","l-j"]}
+
+    ]
+}

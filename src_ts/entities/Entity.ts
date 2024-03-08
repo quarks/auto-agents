@@ -50,9 +50,9 @@ class Entity {
     isVisible() { return this.#visible; }
 
     /** The z-order display order property */
-    #zorder: number = 0;
-    get Z(): number { return this.#zorder; }
-    set Z(value) { this.#zorder = value; }
+    __Z: number = 0;
+    get Z(): number { return this.__Z; }
+    set Z(value) { this.__Z = value; }
 
     /** Override this in entities reqiiring special actions e.g. Obstacle, Fence */
     born(world: World) {

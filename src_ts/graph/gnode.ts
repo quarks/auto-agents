@@ -1,9 +1,6 @@
 /**
  * This class represents a node (vertex) that can be used with the Graph class.
- * <br>
- * The node has a 3D position but for 2D scenarios the z value should be zero.
- * <br>
- * 
+ * The node has a 3D position but for 2D scenarios the z value should be zero. <br>
  * Each node should be given a unique ID number >= 0. Node ID numbers do not
  * need to start at 0 (zero) or be sequential but they must be unique. <br>
  * 
@@ -11,7 +8,6 @@
  * as duplicate ID numbers can lead to unpredictable behaviour.
  * 
  * @author Peter Lager
- *
  */
 class GraphNode {
     #edges = new Map<number, GraphEdge>();
@@ -49,7 +45,6 @@ class GraphNode {
     set fullCost(n: number) { this.#fullCost = n; }
     get fullCost(): number { return this.#fullCost; }
 
-
     /** Create a node with a unique ID and an optional position */
     constructor(id: number, position: Array<number> = [0, 0, 0], name = '') {
         this.#id = id;
@@ -63,7 +58,6 @@ class GraphNode {
     /**
      * Add an edge to this node. It will replace any previous edge with the smae
      * destination.
-     * @param edge the edge to add
      */
     addEdge(edge: GraphEdge) {
         console.assert(!this.#edges.has(edge.to), `Duplicate edge from: ${this.id} to ${edge.to} - the original edge has been overwritten`);

@@ -889,11 +889,14 @@ class AutoPilot {
         if (this.#pathTarget) {
             let pd = (this.#path.length == 1) ? this.#pad : this.#psd;
             if (this.#pathTarget.distSq(owner.pos) < pd) {
+                this.#currEdge = this.#edges[0];
                 this.#cyclicPath ? this.#path.push(this.#path.shift()) : this.#path.shift();
-                if (this.#path.length > 0)
+                // if (this.#path.length > 0)
+                //     this.#cyclicPath ? this.#edges.push(this.#edges.shift()) : this.#edges.shift();
+                if (this.#path.length > 0) {
                     this.#cyclicPath ? this.#edges.push(this.#edges.shift()) : this.#edges.shift();
-                if (this.#path.length > 0)
                     this.#pathTarget = Vector2D.from(this.#path[0]);
+                }
             }
         }
         switch (this.#path.length) {
@@ -960,8 +963,11 @@ class AutoPilot {
     set pathArriveDist(n: number) { this.#pad = n * n; }
     get pathArriveDist(): number { return Math.sqrt(this.#pad); }
 
-    get pathEdge(): GraphEdge { return this.#edges.length > 0 ? this.#edges[0] : undefined; }
-    get pathNode(): GraphNode | Vector2D { return this.#path.length > 0 ? this.#path[0] : undefined; }
+    get nextEdge(): GraphEdge { return this.#edges.length > 0 ? this.#edges[0] : undefined; }
+    get currNode(): GraphNode | Vector2D { return this.#path.length > 0 ? this.#path[0] : undefined; }
+
+    #currEdge: GraphEdge;
+    get currEdge() { return this.#currEdge; }
 
     // ########################################################################
     //                          FORCE CALCULATOR

@@ -32,6 +32,7 @@ class Domain {
     setConstraint(c) {
         if (c == REBOUND || c == WRAP || c == PASS_THROUGH)
             this.#constraint = c;
+        return this;
     }
     constructor(lowX, lowY, highX, highY, constraint = REBOUND) {
         this.#lowX = lowX;

@@ -21,7 +21,7 @@ function draw() {
     translate(20, 20);
     push();
     beginClip();
-    rect(wd.lowX, wd.lowY, wd.width, wd.height);
+    rect(0, 0, world.width, world.height);
     endClip();
     // World background
     noStroke(); fill(255, 240, 255); rect(wd.lowX, wd.lowY, wd.width, wd.height);
@@ -34,7 +34,7 @@ function makeScene(filedata) {
     let obj = sceneFromJSON(filedata);
     obj.FENCES?.forEach(fence => {
         fence.painter = paintFencedArea(color(0, 255, 0));
-        fence.walls.forEach(w => w.painter = paintWall(color(200, 200, 255), 4));
+        fence.walls.forEach(w => w.painter = paintWall(color(200, 200, 255), 3));
         world.birth(fence);
     });
     obj.OBSTACLES?.forEach(obstacle => {
@@ -51,13 +51,13 @@ function makePeople(nbr) {
     let ptrBlue = paintPerson(color(200, 200, 255), color(0, 0, 128));
     let ptrRed = paintPerson(color(255, 220, 220), color(192, 0, 0));
     let pilotProps = {
-        'wanderDist': 70, 'wanderRadius': 30, 'wanderJitter': 20, 'feelerLength': 12, 'nbrFeelers': 5,
-        'detectBoxLength': 40
+        'wanderDist': 70, 'wanderRadius': 30, 'wanderJitter': 20, 'feelerLength': 12,
+        'nbrFeelers': 5, 'detectBoxLength': 40
     };
     let vehicleProps = { 'maxForce': 600, 'maxSpeed': 50 };
     for (let i = 0; i < nbr; i++) {
         let pos = new Vector2D(wx * random(), wy * random());
-        let vehicle = new Vehicle(pos, 6);
+        let vehicle = new Vehicle(pos, 4);
         vehicle.setProperties(vehicleProps);
         vehicle.heading = Vector2D.fromRandom();
         vehicle.painter = ptrBlue;

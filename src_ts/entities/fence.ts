@@ -38,7 +38,7 @@ class Fence extends Entity {
      * @param makeEnclosure make the fence a closed enclosure. 
      * @param repelSide which side of the wall is detectable to moving entities.
      */
-    constructor(contour: Array<Vector2D>, makeEnclosure = false, repelSide = BOTH_SIDES) {
+    constructor(contour: Array<Vector2D>, makeEnclosure = false, repelSide = BOTH_SIDES, noWallAt: Array<number> = []) {
         // Find XY limits
         let lowX = contour[0].x, lowY = contour[0].y;
         let highX = contour[0].x, highY = contour[0].y;
@@ -49,10 +49,12 @@ class Fence extends Entity {
         super([(lowX + highX) / 2, (lowY + highY) / 2], 1);
         this.#lowX = lowX; this.#lowY = lowY;
         this.#highX = highX; this.#highY = highY;
+
         for (let i = 1; i < contour.length; i++)
             this.#walls.set(i - 1, new Wall(contour[i - 1], contour[i], repelSide));
         if (makeEnclosure)
             this.#walls.set(contour.length - 1, new Wall(contour[contour.length - 1], contour[0], repelSide));
+        noWallAt.forEach(idx => this.#walls.delete(idx));
         let closed = contour[0].equals(contour[contour.length - 1]);
         this.#tri = Geom2D.triangulate(contour, closed).map(idx => contour[idx]);
         this.#contour = contour;

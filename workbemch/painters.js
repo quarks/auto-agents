@@ -1,26 +1,3 @@
-let hintHeading = true, hintVelocity = true, hintForce = true;
-let hintTrail = true, hintCircle = true, hintFleeCircle = true;
-let hintObsDetect = true, hintFeelers = true, hintInterpose = true;
-let hintCanSee = true;
-let showColCircle = true;
-
-
-function mvrArrowOffset(colF, colS, offset = 0, p = p5.instance) {
-    let body = [-0.7, -0.45 + offset, -0.7, 0.45 + offset, 0.85, offset];
-    return (function (world, elapsedTime) {
-        let size = this.colRad;
-        p.push();
-        p.translate(this.pos.x, this.pos.y);
-        p.rotate(this.headingAngle);
-        p.fill(colF); p.stroke(colS); p.strokeWeight(1.1);
-        p.beginShape();
-        for (let idx = 0; idx < body.length; idx += 2)
-            p.vertex(body[idx] * size, body[idx + 1] * size);
-        p.endShape(CLOSE);
-        p.pop();
-    });
-}
-
 // --------------------------------------------------------------------------------------------------
 // Updated paimnters
 
@@ -135,6 +112,26 @@ function paintPerson(colF, colS, hints = [], p = p5.instance) {
         p.endShape(p.CLOSE);
         p.fill(colS); p.noStroke();
         p.ellipse(0, 0, 0.6 * size, 0.56 * size)
+        p.pop();
+    });
+}
+
+function paintArtefact(img, p = p5.instance) {
+    return (function (elapsedTime, world) {
+        p.push();
+        p.translate(this.lowX, this.lowY);
+        p.image(img, 0, 0);
+        p.pop();
+    });
+}
+
+function paintImage(img, p = p5.instance) {
+    return (function (elapsedTime, world) {
+        p.push();
+        p.imageMode(CENTER);
+        p.translate(this.pos.x, this.pos.y);
+        p.rotate(this.headingAngle);
+        p.image(img, 0, 0);
         p.pop();
     });
 }

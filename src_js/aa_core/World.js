@@ -5,6 +5,7 @@ class World {
     get deaths() { return this.#deaths; }
     #domain;
     get domain() { return this.#domain; }
+    set domain(d) { this.#domain = d; }
     #population;
     get populationMap() { return this.#population; }
     get population() { return [...this.#population.values()]; }
@@ -97,19 +98,18 @@ class World {
     render() {
         this.#painter?.call(this);
         let ents = [...this.#population.values()].sort((a, b) => a.Z - b.Z);
-        //console.log
         for (let e of ents)
             e.render(this.#elapsedTime, this);
     }
     quadtreeAnalysis() {
-        let a = [];
+        let array = [];
         let d = this.tree.getTreeLevelData();
         //console.log(d);
-        let m = d.movers, o = d.obstacles, w = d.walls, f = d.fences;
-        a.push('#########   Quadtree Analysis Data   #########');
-        a.push(`Depth    :   ${d.depth} level(s)`);
-        a.push(`Position :   X ${d.lowX.toFixed(2)}   Y ${d.lowY.toFixed(2)}`);
-        a.push(`Size     :   Tree ${d.treesize.toFixed(1)}   Leaf ${d.leafsize.toFixed(1)}`);
+        let m = d.movers, o = d.obstacles, w = d.walls, f = d.fences, a = d.artefacts;
+        array.push('#########   Quadtree Analysis Data   #########');
+        array.push(`Depth    :   ${d.depth} level(s)`);
+        array.push(`Position :   X ${d.lowX.toFixed(2)}   Y ${d.lowY.toFixed(2)}`);
+        array.push(`Size     :   Tree ${d.treesize.toFixed(1)}   Leaf ${d.leafsize.toFixed(1)}`);
         if (m[0].length > 0) {
             let mvrs = this.population.filter(e => e instanceof Mover);
             let minCR = mvrs[0].colRad, maxCR = mvrs[0].colRad;
@@ -117,7 +117,7 @@ class World {
                 minCR = Math.min(minCR, m.colRad);
                 maxCR = Math.max(maxCR, m.colRad);
             });
-            a.push(`Movers col. radius :  Min ${minCR.toFixed(1)}   Max ${maxCR.toFixed(1)}`);
+            array.push(`Movers col. radius :  Min ${minCR.toFixed(1)}   Max ${maxCR.toFixed(1)}`);
         }
         let hr = '===================';
         let r0 = '  Levels > |  All |';
@@ -127,16 +127,17 @@ class World {
             r1 += '------+';
             hr += '=======';
         }
-        let r5 = 'Fences     |', r7 = 'Obstacles  |', r6 = 'Walls      |', r8 = 'Movers     |';
+        let r4 = 'Artefacts  |', r5 = 'Fences     |', r7 = 'Obstacles  |', r6 = 'Walls      |', r8 = 'Movers     |';
         for (let i = 0; i <= d.depth; i++) {
+            r4 += a[i].toString().padStart(5, ' ') + ' |';
             r5 += f[i].toString().padStart(5, ' ') + ' |';
             r6 += w[i].toString().padStart(5, ' ') + ' |';
             r7 += o[i].toString().padStart(5, ' ') + ' |';
             r8 += m[i].toString().padStart(5, ' ') + ' |';
         }
-        a.push(hr, r0, r1, r5, r6, r7, r8, hr);
-        console.log(a.join('\n'));
-        return a;
+        array.push(hr, r0, r1, r4, r5, r6, r7, r8, hr);
+        console.log(array.join('\n'));
+        return array;
     }
     #ensureNoOverlap() {
         function processPartitionData(part, w) {

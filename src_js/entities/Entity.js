@@ -41,9 +41,9 @@ class Entity {
     hide() { this.#visible = false; }
     isVisible() { return this.#visible; }
     /** The z-order display order property */
-    #zorder = 0;
-    get Z() { return this.#zorder; }
-    set Z(value) { this.#zorder = value; }
+    __Z = 0;
+    get Z() { return this.__Z; }
+    set Z(value) { this.__Z = value; }
     /** Override this in entities reqiiring special actions e.g. Obstacle, Fence */
     born(world) {
         world.births.push(this);

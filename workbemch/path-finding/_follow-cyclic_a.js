@@ -24,7 +24,7 @@ function setup() {
     // Make maze image
     backImage = createMazeWallImage(maze_data, cellsize, cellCol);
     // Create walkers
-    walkerA = new Vehicle({ x: 15, y: 15 }, 8, world);
+    walkerA = new Vehicle({ x: 15, y: 15 }, 8);
     walkerA.painter = paintPerson(color(200, 200, 255), color(20, 20, 160));
     walkerA.maxSpeed = 60;
     world.birth(walkerA);
@@ -44,7 +44,7 @@ function draw() {
     world.update(deltaTime / 1000);
     background(200);
     image(backImage, 0, 0);
-    //drawEdges();
+    drawEdges();
     // drawTestedEdges();
     drawNodes();
     drawRoute(path, cyclic);
