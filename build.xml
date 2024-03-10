@@ -1,0 +1,64 @@
+<project name="Testing ANT" default="default" basedir="./">
+
+    <property file="build.properties" />
+
+    <property name="js.src" location="./src_js" />
+    <property name="js.tmp" location="./dist/tmp" />
+    <property name="library.header" value="const ${library.constant}_VERSION = '${library.version}';" />
+
+	<!-- Create the time stamp -->
+	<tstamp> 
+		<format property="date" pattern="d-MMMM-yyyy  hh:mm aa" locale="en,GB" />
+	</tstamp>
+
+    <target name="default">
+        <echo message="Constant:   ${library.header}" />
+        <echo message="Date:   ${date}" />
+        <echo message="JavaScript source ${js.src}" />
+        <echo message="Temporary folder for JavaScript source files ${js.tmp}" />
+        <echo message="Library name ${library.name}" />
+    </target>
+
+    <target name="generate.structure" depends="default" >
+        <delete dir="${js.tmp}" />
+        <mkdir dir="${js.tmp}" />
+        <copy todir="${js.tmp}" flatten="true" >
+            <fileset dir="${js.src}" includes="**/*.js" />
+        </copy>
+    </target>
+
+    <target name="concat.files" depends="generate.structure" >
+        <concat destfile="./dist/src/aa.js" fixlastline="true" > 
+            <header>${library.header}</header>
+            <!-- Base class code should precede child class code -->
+            <filelist dir="${js.tmp}" >
+                <file name="entity.js" />
+                <file name="artefact.js" />
+                <file name="obstacle.js" />
+                <file name="wall.js" />
+                <file name="fence.js" />
+                <file name="mover.js" />
+                <file name="vehicle.js" />
+                <file name="constants.js" />
+                <file name="world.js" />
+                <file name="domain.js" />
+                <file name="quad_tree.js" />
+                <file name="autopilot.js" />
+                <file name="postoffice.js" />
+                <file name="fsm.js" />
+                <file name="state.js" />
+                <file name="graph.js" />
+                <file name="gnode.js" />
+                <file name="gedge.js" />
+                <file name="forcerecorder.js" />
+                <file name="json.js" />
+                <file name="vector2d.js" />
+                <file name="matrix2d.js" />
+                <file name="geom2d.js" />
+                <file name="transform.js" />
+            </filelist>
+
+        </concat>
+    </target>
+
+</project>

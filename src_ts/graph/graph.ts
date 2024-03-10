@@ -167,7 +167,6 @@ class Graph {
     }
 
     #searchAstar(startID: number, targetID: number, testedEdges: Set<GraphEdge>, ash: Function): Array<GraphNode> {
-        console.log(`Astar   :   ${ash.name}`);
         this.nodes.forEach(n => n.resetSearchCosts());
         let partPath = [];
         let start = this.node(startID), target = this.node(targetID);

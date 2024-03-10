@@ -1,70 +1,80 @@
+var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
+};
+var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
+    if (kind === "m") throw new TypeError("Private method is not writable");
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
+    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
+};
+var _Mover_domain, _Mover_prevPos, _Mover_vel, _Mover_side;
 class Mover extends Entity {
-    /** Movement domain - if none provided the world domain is used */
-    #domain;
-    set domain(d) { this.#domain = d; }
-    get domain() { return this.#domain; }
-    set domainConstraint(c) { this.#domain?.setConstraint(c); }
-    /** Prev world position */
-    #prevPos = new Vector2D();
-    set prevPos(v) { this.#prevPos = v; }
-    get prevPos() { return this.#prevPos; }
-    /** Velocity */
-    #vel = new Vector2D();
-    set vel(v) { this.#vel = v; }
-    get vel() { return this.#vel; }
-    get velAngle() { return this.#vel.angle; }
+    constructor(position, colRadius = 0) {
+        super(position, colRadius);
+        /** Movement domain - if none provided the world domain is used */
+        _Mover_domain.set(this, void 0);
+        /** Prev world position */
+        _Mover_prevPos.set(this, new Vector2D());
+        /** Velocity */
+        _Mover_vel.set(this, new Vector2D());
+        /** Heading / facing (normalised) */
+        this.__heading = new Vector2D(1, 0); // facing East;
+        /** Perpendiclar to heading (normalised) */
+        _Mover_side.set(this, void 0);
+        /** Mass */
+        this.__mass = 1;
+        /** Max speed */
+        this.__maxSpeed = 100;
+        /** Max force */
+        this.__maxForce = 200;
+        /** Current turn rate */
+        this.__turnRate = 2;
+        /** Distance a moving entity can see another one */
+        this.__viewDistance = 125;
+        /** Field of view (radians) */
+        this.__viewFOV = 1.047; // Default is 60 degrees
+        this.Z = 128;
+        __classPrivateFieldGet(this, _Mover_prevPos, "f").set(this.pos);
+        this.__mass = 1;
+        __classPrivateFieldSet(this, _Mover_side, this.__heading.getPerp(), "f");
+    }
+    set domain(d) { __classPrivateFieldSet(this, _Mover_domain, d, "f"); }
+    get domain() { return __classPrivateFieldGet(this, _Mover_domain, "f"); }
+    set domainConstraint(c) { __classPrivateFieldGet(this, _Mover_domain, "f")?.setConstraint(c); }
+    set prevPos(v) { __classPrivateFieldSet(this, _Mover_prevPos, v, "f"); }
+    get prevPos() { return __classPrivateFieldGet(this, _Mover_prevPos, "f"); }
+    set vel(v) { __classPrivateFieldSet(this, _Mover_vel, v, "f"); }
+    get vel() { return __classPrivateFieldGet(this, _Mover_vel, "f"); }
+    get velAngle() { return __classPrivateFieldGet(this, _Mover_vel, "f").angle; }
     /** Speed */
-    get speed() { return this.#vel.length(); }
-    get speedSq() { return this.#vel.lengthSq(); }
-    /** Heading / facing (normalised) */
-    __heading = new Vector2D(1, 0); // facing East;
+    get speed() { return __classPrivateFieldGet(this, _Mover_vel, "f").length(); }
+    get speedSq() { return __classPrivateFieldGet(this, _Mover_vel, "f").lengthSq(); }
     set heading(v) { this.__heading = v; }
     get heading() { return this.__heading; }
     /** Heading / facing angle */
     set headingAngle(n) { this.__heading.x = Math.cos(n); this.__heading.x = Math.sin(n); }
     get headingAngle() { return this.heading.angle; }
-    /** Heading at rest (normalised */
-    __headingAtRest; //= new Vector2D(1, 0); // facing East;
     set headingAtRest(v) { this.__headingAtRest = v; }
     get headingAtRest() { return this.__headingAtRest; }
     /** Heading at rest angle */
     set headingAtRestAngle(n) { this.__heading.x = Math.cos(n); this.__heading.x = Math.sin(n); }
     get headingAtRestAngle() { return this.heading.angle; }
-    /** Perpendiclar to heading (normalised) */
-    #side;
-    get side() { return this.#side; }
-    set side(n) { this.#side = n; }
-    /** Mass */
-    __mass = 1;
+    get side() { return __classPrivateFieldGet(this, _Mover_side, "f"); }
+    set side(n) { __classPrivateFieldSet(this, _Mover_side, n, "f"); }
     set mass(n) { this.__mass = n; }
     get mass() { return this.__mass; }
-    /** Max speed */
-    __maxSpeed = 100;
     set maxSpeed(n) { this.__maxSpeed = n; }
     get maxSpeed() { return this.__maxSpeed; }
-    /** Max force */
-    __maxForce = 200;
     set maxForce(n) { this.__maxForce = n; }
     get maxForce() { return this.__maxForce; }
-    /** Current turn rate */
-    __turnRate = 2;
     set turnRate(n) { this.__turnRate = Math.min(Math.max(n, 0), MAX_TURN_RATE); }
     get turnRate() { return this.__turnRate; }
-    /** Distance a moving entity can see another one */
-    __viewDistance = 125;
     set viewDistance(n) { this.__viewDistance = n; }
     get viewDistance() { return this.__viewDistance; }
-    /** Field of view (radians) */
-    __viewFOV = 1.047; // Default is 60 degrees
     set viewFOV(n) { this.__viewFOV = n; }
     get viewFOV() { return this.__viewFOV; }
-    constructor(position, colRadius = 0) {
-        super(position, colRadius);
-        this.Z = 128;
-        this.#prevPos.set(this.pos);
-        this.__mass = 1;
-        this.#side = this.__heading.getPerp();
-    }
     /**
      * Set any of the properties
      * @param props
@@ -87,7 +97,7 @@ class Mover extends Entity {
      * @return true if the speed is greater or equal to the max speed.
      */
     isSpeedMaxedOut() {
-        return this.#vel.lengthSq() >= this.__maxSpeed * this.__maxSpeed;
+        return __classPrivateFieldGet(this, _Mover_vel, "f").lengthSq() >= this.__maxSpeed * this.__maxSpeed;
     }
     /**
      * After calculating the entity's position it is then constrained by
@@ -108,13 +118,13 @@ class Mover extends Entity {
                     break;
                 case REBOUND:
                     if (this.pos.x < domain.lowX)
-                        this.#vel.x = Math.abs(this.#vel.x);
+                        __classPrivateFieldGet(this, _Mover_vel, "f").x = Math.abs(__classPrivateFieldGet(this, _Mover_vel, "f").x);
                     else if (this.pos.x > domain.highX)
-                        this.#vel.x = -Math.abs(this.#vel.x);
+                        __classPrivateFieldGet(this, _Mover_vel, "f").x = -Math.abs(__classPrivateFieldGet(this, _Mover_vel, "f").x);
                     if (this.pos.y < domain.lowY)
-                        this.#vel.y = Math.abs(this.#vel.y);
+                        __classPrivateFieldGet(this, _Mover_vel, "f").y = Math.abs(__classPrivateFieldGet(this, _Mover_vel, "f").y);
                     else if (this.pos.y > domain.highY)
-                        this.#vel.y = -Math.abs(this.#vel.y);
+                        __classPrivateFieldGet(this, _Mover_vel, "f").y = -Math.abs(__classPrivateFieldGet(this, _Mover_vel, "f").y);
                     break;
                 default:
                     break;
@@ -216,7 +226,7 @@ class Mover extends Entity {
         this.__heading = rotMatrix.transformVector(this.__heading);
         this.__heading.normalize();
         // Calculate new side
-        this.#side = this.__heading.getPerp();
+        __classPrivateFieldSet(this, _Mover_side, this.__heading.getPerp(), "f");
         return false;
     }
     /**
@@ -244,22 +254,23 @@ class Mover extends Entity {
      */
     update(elapsedTime, world) {
         // Remember the starting position
-        this.#prevPos.set(this.pos);
+        __classPrivateFieldGet(this, _Mover_prevPos, "f").set(this.pos);
         // Update position
-        this.pos = this.pos.add(this.#vel.mult(elapsedTime));
+        this.pos = this.pos.add(__classPrivateFieldGet(this, _Mover_vel, "f").mult(elapsedTime));
         // Apply domain constraint
-        this.applyDomainConstraint(this.#domain ? this.#domain : world.domain);
+        this.applyDomainConstraint(__classPrivateFieldGet(this, _Mover_domain, "f") ? __classPrivateFieldGet(this, _Mover_domain, "f") : world.domain);
         // Update heading
-        if (this.#vel.lengthSq() > 0.01)
-            this.rotateHeadingToAlignWith(elapsedTime, this.#vel);
+        if (__classPrivateFieldGet(this, _Mover_vel, "f").lengthSq() > 0.01)
+            this.rotateHeadingToAlignWith(elapsedTime, __classPrivateFieldGet(this, _Mover_vel, "f"));
         else {
-            this.#vel.set([0, 0]);
+            __classPrivateFieldGet(this, _Mover_vel, "f").set([0, 0]);
             if (this.headingAtRest)
                 this.rotateHeadingToAlignWith(elapsedTime, this.headingAtRest);
         }
         // Ensure heading and side are normalised
         this.heading = this.heading.normalize();
-        this.#side = this.heading.getPerp();
+        __classPrivateFieldSet(this, _Mover_side, this.heading.getPerp(), "f");
     }
 }
+_Mover_domain = new WeakMap(), _Mover_prevPos = new WeakMap(), _Mover_vel = new WeakMap(), _Mover_side = new WeakMap();
 //# sourceMappingURL=mover.js.map

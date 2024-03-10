@@ -1,5 +1,6 @@
 let wx = 400, wy = 400, depth = 3;
 let intParts = [], intEnts = [];
+let world;
 
 function setup() {
     // console.clear();

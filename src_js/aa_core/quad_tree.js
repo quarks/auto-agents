@@ -1,34 +1,16 @@
+var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
+    if (kind === "m") throw new TypeError("Private method is not writable");
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
+    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
+};
+var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
+};
+var _QPart_instances, _QPart_entities, _QPart_parent, _QPart_children, _QPart_level, _QPart_depth, _QPart_lowX, _QPart_highX, _QPart_lowY, _QPart_highY, _QPart_cX, _QPart_cY, _QPart_childAt;
 class QPart {
-    #entities;
-    get entities() { return [...this.#entities]; }
-    #parent;
-    get parent() { return this.#parent; }
-    #children;
-    get children() { return this.#children; }
-    #level;
-    get level() { return this.#level; }
-    #depth;
-    get depth() { return this.#depth; }
-    #lowX;
-    get lowX() { return this.#lowX; }
-    #highX;
-    get highX() { return this.#highX; }
-    #lowY;
-    get lowY() { return this.#lowY; }
-    #highY;
-    get highY() { return this.#highY; }
-    #cX;
-    get cX() { return this.#cX; }
-    #cY;
-    get cY() { return this.#cY; }
-    get partSize() { return this.#highX - this.#lowX; }
-    get treeSize() { return this.getRoot().partSize; }
-    get leafSize() {
-        return this.getRoot().partSize / 2 ** (this.#depth - 1);
-    }
-    get isLeaf() { return !this.#children; }
-    get isRoot() { return !this.#parent; }
-    get hasChildren() { return Boolean(this.#children); }
     /**
      * Creates a single partition in a quadtree structure.
      *
@@ -36,19 +18,50 @@ class QPart {
      * function.
      */
     constructor(parent, lowX, lowY, highX, highY, level, depth) {
-        this.#parent = parent;
-        this.#lowX = lowX;
-        this.#lowY = lowY;
-        this.#highX = highX;
-        this.#highY = highY;
-        this.#cX = (this.#lowX + this.#highX) / 2;
-        this.#cY = (this.#lowY + this.#highY) / 2;
-        this.#level = level;
-        this.#depth = depth;
-        this.#entities = new Set();
+        _QPart_instances.add(this);
+        _QPart_entities.set(this, void 0);
+        _QPart_parent.set(this, void 0);
+        _QPart_children.set(this, void 0);
+        _QPart_level.set(this, void 0);
+        _QPart_depth.set(this, void 0);
+        _QPart_lowX.set(this, void 0);
+        _QPart_highX.set(this, void 0);
+        _QPart_lowY.set(this, void 0);
+        _QPart_highY.set(this, void 0);
+        _QPart_cX.set(this, void 0);
+        _QPart_cY.set(this, void 0);
+        __classPrivateFieldSet(this, _QPart_parent, parent, "f");
+        __classPrivateFieldSet(this, _QPart_lowX, lowX, "f");
+        __classPrivateFieldSet(this, _QPart_lowY, lowY, "f");
+        __classPrivateFieldSet(this, _QPart_highX, highX, "f");
+        __classPrivateFieldSet(this, _QPart_highY, highY, "f");
+        __classPrivateFieldSet(this, _QPart_cX, (__classPrivateFieldGet(this, _QPart_lowX, "f") + __classPrivateFieldGet(this, _QPart_highX, "f")) / 2, "f");
+        __classPrivateFieldSet(this, _QPart_cY, (__classPrivateFieldGet(this, _QPart_lowY, "f") + __classPrivateFieldGet(this, _QPart_highY, "f")) / 2, "f");
+        __classPrivateFieldSet(this, _QPart_level, level, "f");
+        __classPrivateFieldSet(this, _QPart_depth, depth, "f");
+        __classPrivateFieldSet(this, _QPart_entities, new Set(), "f");
     }
+    get entities() { return [...__classPrivateFieldGet(this, _QPart_entities, "f")]; }
+    get parent() { return __classPrivateFieldGet(this, _QPart_parent, "f"); }
+    get children() { return __classPrivateFieldGet(this, _QPart_children, "f"); }
+    get level() { return __classPrivateFieldGet(this, _QPart_level, "f"); }
+    get depth() { return __classPrivateFieldGet(this, _QPart_depth, "f"); }
+    get lowX() { return __classPrivateFieldGet(this, _QPart_lowX, "f"); }
+    get highX() { return __classPrivateFieldGet(this, _QPart_highX, "f"); }
+    get lowY() { return __classPrivateFieldGet(this, _QPart_lowY, "f"); }
+    get highY() { return __classPrivateFieldGet(this, _QPart_highY, "f"); }
+    get cX() { return __classPrivateFieldGet(this, _QPart_cX, "f"); }
+    get cY() { return __classPrivateFieldGet(this, _QPart_cY, "f"); }
+    get partSize() { return __classPrivateFieldGet(this, _QPart_highX, "f") - __classPrivateFieldGet(this, _QPart_lowX, "f"); }
+    get treeSize() { return this.getRoot().partSize; }
+    get leafSize() {
+        return this.getRoot().partSize / 2 ** (__classPrivateFieldGet(this, _QPart_depth, "f") - 1);
+    }
+    get isLeaf() { return !__classPrivateFieldGet(this, _QPart_children, "f"); }
+    get isRoot() { return !__classPrivateFieldGet(this, _QPart_parent, "f"); }
+    get hasChildren() { return Boolean(__classPrivateFieldGet(this, _QPart_children, "f")); }
     getRoot() {
-        return this.isRoot ? this : this.#parent.getRoot();
+        return this.isRoot ? this : __classPrivateFieldGet(this, _QPart_parent, "f").getRoot();
     }
     // Find the partition that encompasses the specifies region. The specified region will be 
     // trimmed to fit inside the root if necessary.
@@ -56,14 +69,14 @@ class QPart {
         function findPartition(p, x0, y0, x1, y1) {
             if ((x0 >= p.lowX && x1 <= p.highX && y0 >= p.lowY && y1 <= p.highY)) {
                 if (p.hasChildren) {
-                    let q = ((x0 < p.#cX) ? 0 : 1) + ((y0 < p.#cY) ? 0 : 2);
-                    return findPartition(p.#children[q], x0, y0, x1, y1);
+                    let q = ((x0 < __classPrivateFieldGet(p, _QPart_cX, "f")) ? 0 : 1) + ((y0 < __classPrivateFieldGet(p, _QPart_cY, "f")) ? 0 : 2);
+                    return findPartition(__classPrivateFieldGet(p, _QPart_children, "f")[q], x0, y0, x1, y1);
                 }
                 else
                     return p;
             }
             else
-                return (p.isRoot ? p : p.#parent);
+                return (p.isRoot ? p : __classPrivateFieldGet(p, _QPart_parent, "f"));
         }
         let root = this.getRoot();
         let a = Geom2D.box_box_p(lowX, lowY, highX, highY, root.lowX, root.lowY, root.highX, root.highY);
@@ -78,47 +91,43 @@ class QPart {
             if (!part)
                 return;
             parts.push(part);
-            ents.push(...part.#entities);
-            getParent(part.#parent);
+            ents.push(...__classPrivateFieldGet(part, _QPart_entities, "f"));
+            getParent(__classPrivateFieldGet(part, _QPart_parent, "f"));
         }
         function getChildren(part) {
             parts.push(part);
-            ents.push(...part.#entities);
+            ents.push(...__classPrivateFieldGet(part, _QPart_entities, "f"));
             if (part.hasChildren)
-                for (let child of part.#children)
+                for (let child of __classPrivateFieldGet(part, _QPart_children, "f"))
                     if (Geom2D.box_box(lowX, lowY, highX, highY, child.lowX, child.lowY, child.highX, child.highY))
                         getChildren(child);
             return;
         }
         let parts = [], ents = [];
         let encPart = this.getEnclosingPartition(lowX, lowY, highX, highY);
-        getParent(encPart.#parent);
+        getParent(__classPrivateFieldGet(encPart, _QPart_parent, "f"));
         getChildren(encPart);
         return { partitions: parts, entities: ents, enc_partition: encPart };
-    }
-    #childAt(part, entity) {
-        let q = ((entity.pos.x < part.#cX) ? 0 : 1) + ((entity.pos.y < part.#cY) ? 0 : 2);
-        return part.#children[q];
     }
     addEntity(entity) {
         function findPartition(part, entity) {
             if (entity.fitsInside(part.lowX, part.lowY, part.highX, part.highY)) {
                 if (part.hasChildren)
-                    findPartition(part.#childAt(part, entity), entity);
+                    findPartition(__classPrivateFieldGet(part, _QPart_instances, "m", _QPart_childAt).call(part, part, entity), entity);
                 else
-                    part.#entities.add(entity);
+                    __classPrivateFieldGet(part, _QPart_entities, "f").add(entity);
             }
             else
-                part.isRoot ? part.#entities.add(entity) : part.#parent.#entities.add(entity);
+                part.isRoot ? __classPrivateFieldGet(part, _QPart_entities, "f").add(entity) : __classPrivateFieldGet(__classPrivateFieldGet(part, _QPart_parent, "f"), _QPart_entities, "f").add(entity);
         }
         findPartition(this.getRoot(), entity);
     }
     delEntity(entity) {
         function findPartition(part, entity) {
-            if (part.#entities.delete(entity))
+            if (__classPrivateFieldGet(part, _QPart_entities, "f").delete(entity))
                 return true;
             if (part.hasChildren)
-                return findPartition(part.#childAt(part, entity), entity);
+                return findPartition(__classPrivateFieldGet(part, _QPart_instances, "m", _QPart_childAt).call(part, part, entity), entity);
             else
                 return false;
         }
@@ -126,9 +135,9 @@ class QPart {
     }
     countEntities() {
         function entityCount(part) {
-            count += part.#entities.size;
+            count += __classPrivateFieldGet(part, _QPart_entities, "f").size;
             if (part.hasChildren)
-                for (let child of part.#children)
+                for (let child of __classPrivateFieldGet(part, _QPart_children, "f"))
                     entityCount(child);
         }
         let count = 0;
@@ -138,14 +147,14 @@ class QPart {
     correctPartitionContents() {
         function processPartition(part, root) {
             // Only need to consider entiies that can move i.e. a Mover or Vehicle
-            let me = [...part.#entities].filter(x => x instanceof Mover);
+            let me = [...__classPrivateFieldGet(part, _QPart_entities, "f")].filter(x => x instanceof Mover);
             for (let e of me) {
                 if (e.fitsInside(part.lowX, part.lowY, part.highX, part.highY)) {
                     // Fits inside this partition attempt to move down as far as possible
                     if (part.hasChildren) {
-                        let sp = part.#childAt(part, e);
+                        let sp = __classPrivateFieldGet(part, _QPart_instances, "m", _QPart_childAt).call(part, part, e);
                         if (e.fitsInside(sp.lowX, sp.lowY, sp.highX, sp.highY)) {
-                            part.#entities.delete(e);
+                            __classPrivateFieldGet(part, _QPart_entities, "f").delete(e);
                             sp.addEntity(e);
                         }
                     }
@@ -154,12 +163,12 @@ class QPart {
                     // Does not fit inside partition. If this is not the root then remove 
                     // from this partion and add back to tree
                     if (part != root) {
-                        part.#entities.delete(e);
+                        __classPrivateFieldGet(part, _QPart_entities, "f").delete(e);
                         root.addEntity(e);
                     }
                 }
             }
-            part.#children?.forEach(p => processPartition(p, root));
+            __classPrivateFieldGet(part, _QPart_children, "f")?.forEach(p => processPartition(p, root));
         }
         let root = this.getRoot();
         processPartition(root, root);
@@ -167,27 +176,27 @@ class QPart {
     getTreeLevelData() {
         function CountEntitiesByLevel(part) {
             let s = 0;
-            part.#entities.forEach(e => { if (e instanceof Artefact)
+            __classPrivateFieldGet(part, _QPart_entities, "f").forEach(e => { if (e instanceof Artefact)
                 s++; });
             levelArtefact[0] += s;
             levelArtefact[part.level] += s;
             s = 0;
-            part.#entities.forEach(e => { if (e instanceof Fence)
+            __classPrivateFieldGet(part, _QPart_entities, "f").forEach(e => { if (e instanceof Fence)
                 s++; });
             levelFence[0] += s;
             levelFence[part.level] += s;
             s = 0;
-            part.#entities.forEach(e => { if (e instanceof Wall)
+            __classPrivateFieldGet(part, _QPart_entities, "f").forEach(e => { if (e instanceof Wall)
                 s++; });
             levelWall[0] += s;
             levelWall[part.level] += s;
             s = 0;
-            part.#entities.forEach(e => { if (e instanceof Obstacle)
+            __classPrivateFieldGet(part, _QPart_entities, "f").forEach(e => { if (e instanceof Obstacle)
                 s++; });
             levelObstacle[0] += s;
             levelObstacle[part.level] += s;
             s = 0;
-            part.#entities.forEach(e => { if (e instanceof Mover)
+            __classPrivateFieldGet(part, _QPart_entities, "f").forEach(e => { if (e instanceof Mover)
                 s++; });
             levelMover[0] += s;
             levelMover[part.level] += s;
@@ -222,21 +231,21 @@ class QPart {
                 s = ' ' + s;
             return s;
         }
-        let p = this, t = '', s = `Partition Lvl: ${fmt(p.#level, 0, 2)}`;
+        let p = this, t = '', s = `Partition Lvl: ${fmt(__classPrivateFieldGet(p, _QPart_level, "f"), 0, 2)}`;
         s += `    @ [${fmt(p.lowX, 0, 5)}, ${fmt(p.lowY, 0, 5)}]`;
         s += ` to [${fmt(p.highX, 0, 5)}, ${fmt(p.highY, 0, 5)}]`;
-        s += ` contains ${this.#entities.size}  entities`;
-        if (p.#entities.size > 0)
-            t = [...p.#entities].map(x => x.id).reduce((x, y) => x + ' ' + y, '  ### ');
+        s += ` contains ${__classPrivateFieldGet(this, _QPart_entities, "f").size}  entities`;
+        if (__classPrivateFieldGet(p, _QPart_entities, "f").size > 0)
+            t = [...__classPrivateFieldGet(p, _QPart_entities, "f")].map(x => x.id).reduce((x, y) => x + ' ' + y, '  ### ');
         return s + t;
     }
     static makeTree(lowX, lowY, size, depth) {
         function buildSubTree(parent, level, depth) {
             if (level <= depth) {
-                let x0 = parent.#lowX, x2 = parent.#highX, x1 = (x0 + x2) / 2;
-                let y0 = parent.#lowY, y2 = parent.#highY, y1 = (y0 + y2) / 2;
-                parent.#children = [];
-                let a = parent.#children;
+                let x0 = __classPrivateFieldGet(parent, _QPart_lowX, "f"), x2 = __classPrivateFieldGet(parent, _QPart_highX, "f"), x1 = (x0 + x2) / 2;
+                let y0 = __classPrivateFieldGet(parent, _QPart_lowY, "f"), y2 = __classPrivateFieldGet(parent, _QPart_highY, "f"), y1 = (y0 + y2) / 2;
+                __classPrivateFieldSet(parent, _QPart_children, [], "f");
+                let a = __classPrivateFieldGet(parent, _QPart_children, "f");
                 a[0] = new QPart(parent, x0, y0, x1, y1, level, depth);
                 a[1] = new QPart(parent, x1, y0, x2, y1, level, depth);
                 a[2] = new QPart(parent, x0, y1, x1, y2, level, depth);
@@ -252,4 +261,8 @@ class QPart {
         return root;
     }
 }
+_QPart_entities = new WeakMap(), _QPart_parent = new WeakMap(), _QPart_children = new WeakMap(), _QPart_level = new WeakMap(), _QPart_depth = new WeakMap(), _QPart_lowX = new WeakMap(), _QPart_highX = new WeakMap(), _QPart_lowY = new WeakMap(), _QPart_highY = new WeakMap(), _QPart_cX = new WeakMap(), _QPart_cY = new WeakMap(), _QPart_instances = new WeakSet(), _QPart_childAt = function _QPart_childAt(part, entity) {
+    let q = ((entity.pos.x < __classPrivateFieldGet(part, _QPart_cX, "f")) ? 0 : 1) + ((entity.pos.y < __classPrivateFieldGet(part, _QPart_cY, "f")) ? 0 : 2);
+    return __classPrivateFieldGet(part, _QPart_children, "f")[q];
+};
 //# sourceMappingURL=quad_tree.js.map

@@ -11,7 +11,7 @@ function preload() {
 
 function setup() {
     // console.clear();
-    let p5canvas = createCanvas(800, 600);
+    let p5canvas = createCanvas(660, 420);
     p5canvas.parent('sketch');
     world = new World(wx, wy, depth);
     world.domain = new Domain(-100, -100, 700, 500, WRAP);
@@ -26,17 +26,14 @@ function setup() {
 function draw() {
     world.update(deltaTime / 1000);
     let wd = world.domain;
-    background(240, 190, 240);
-    translate(100, 100);
+    background(20);
+    translate(10, 10);
     push();
-    // beginClip();
-    // rect(0, 0, world.width, world.height);
-    // endClip();
+    beginClip();
+    rect(0, 0, world.width, world.height);
+    endClip();
     world.render();
-    // renderTreeGrid();
     pop();
-    drawNodes();
-    drawEdges();
 }
 
 function makeGraph(filedata) {
@@ -117,18 +114,65 @@ function makePeople(nbr) {
     }
 }
 
-function drawNodes() {
-    stroke(0); strokeWeight(0.7); fill(0, 64);
-    graph.nodes.forEach(n => {
-        ellipse(n.x, n.y, 10, 10);
+
+function paintPerson(colF, colS, hints = [], p = p5.instance) {
+    let body = [0.15, -0.5, 0.15, 0.5, -0.18, 0.3, -0.18, -0.3];
+    return (function (elapsedTime, world) {
+        let size = 2 * this.colRad;
+        p.push();
+        p.translate(this.pos.x, this.pos.y);
+        for (let hint of hints) hint.call(this, p);
+        p.rotate(this.headingAngle);
+        p.fill(colF); p.stroke(colS); p.strokeWeight(1.1);
+        p.beginShape();
+        for (let idx = 0; idx < body.length; idx += 2)
+            p.vertex(body[idx] * size, body[idx + 1] * size);
+        p.endShape(p.CLOSE);
+        p.fill(colS); p.noStroke();
+        p.ellipse(0, 0, 0.6 * size, 0.56 * size)
+        p.pop();
     });
 }
 
-function drawEdges() {
-    stroke(0, 32); strokeWeight(1);
-    graph.edges.forEach(e => {
-        let n0 = graph.node(e.from), n1 = graph.node(e.to);
-        line(n0.x, n0.y, n1.x, n1.y);
+function paintWall(col, weight, p = p5.instance) {
+    return (function (elapsedTime, world) {
+        p.push();
+        p.stroke(col); p.strokeWeight(weight);
+        p.line(this.start.x, this.start.y, this.end.x, this.end.y);
+        p.stroke(60); p.strokeWeight(1);
+        if (this.repelSide == OUTSIDE || this.repelSide == BOTH_SIDES) {
+            p.push();
+            p.translate(this.norm.x * 2, this.norm.y * 2);
+            p.line(this.start.x, this.start.y, this.end.x, this.end.y);
+            p.pop();
+        }
+        if (this.repelSide == INSIDE || this.repelSide == BOTH_SIDES) {
+            p.push();
+            p.translate(this.norm.x * -2, this.norm.y * -2);
+            p.line(this.start.x, this.start.y, this.end.x, this.end.y);
+            p.pop();
+        }
+        p.pop();
+    });
+}
+
+function paintArtefact(img, p = p5.instance) {
+    return (function (elapsedTime, world) {
+        p.push();
+        p.translate(this.lowX, this.lowY);
+        p.image(img, 0, 0);
+        p.pop();
+    });
+}
+
+function paintImage(img, p = p5.instance) {
+    return (function (elapsedTime, world) {
+        p.push();
+        p.imageMode(CENTER);
+        p.translate(this.pos.x, this.pos.y);
+        p.rotate(this.headingAngle);
+        p.image(img, 0, 0);
+        p.pop();
     });
 }
 
