@@ -3,7 +3,6 @@ class AutoPilot {
     get owner(): Vehicle { return this.#owner; }
     set owner(owner: Vehicle) { this.#owner = owner; }
 
-    // _world: World;
     #flags = 0;
 
     constructor(owner: Vehicle) {

@@ -438,6 +438,9 @@ const MANHATTAN = function (factor = 1): Function {
     });
 }
 
+/**
+ * 
+ */
 interface PathSearchResult {
     path: Array<GraphNode>,
     edges: Array<GraphEdge>,

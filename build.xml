@@ -3,8 +3,11 @@
     <property file="build.properties" />
 
     <property name="js.src" location="./src_js" />
-    <property name="js.tmp" location="./dist/tmp" />
-    <property name="library.header" value="const ${library.constant}_VERSION = '${library.version}';" />
+    <property name="ts.src" location="./src_ts" />
+    <property name="temp" location="./tmp" />
+
+    <!-- The first line in the minimised js file identifies liv=brary and version -->
+    <property name="min.file.header" value="const ${library.constant}_VERSION = '${library.version}';" />
 
 	<!-- Create the time stamp -->
 	<tstamp> 
@@ -12,26 +15,101 @@
 	</tstamp>
 
     <target name="default">
-        <echo message="Constant:   ${library.header}" />
-        <echo message="Date:   ${date}" />
-        <echo message="JavaScript source ${js.src}" />
-        <echo message="Temporary folder for JavaScript source files ${js.tmp}" />
-        <echo message="Library name ${library.name}" />
+        <echo message="########################################################" />
+        <echo message="${library.name}   V${library.version}" />
+        <echo message="Build started ${date}" />
+        <delete dir="${temp}" />
+        <mkdir dir="${temp}" />
     </target>
 
-    <target name="generate.structure" depends="default" >
-        <delete dir="${js.tmp}" />
-        <mkdir dir="${js.tmp}" />
-        <copy todir="${js.tmp}" flatten="true" >
+    <!-- Compiles TypeScript to JavaScript-->
+    <target name="tsc" depends="default">
+        <echo message="TypeScript Compiler" />
+        <exec executable="npm">
+            <arg line="run tsc" />
+        </exec>
+    </target>
+
+     <!-- Create the library min file for distribution -->
+    <target name="compile" depends="concat.js.files">
+        <property name="gcc.src" location="dist/lib/${library.filename.js}" />
+        <property name="gcc.dst" location="dist/lib/${library.filename.min.js}" />
+        <property name="gcc.lang.in" value="--language_in ECMASCRIPT_2021" />
+        <property name="gcc.lang.out" value="--language_out ECMASCRIPT_NEXT" />
+        <echo message="Google Closure Compiler" />
+        <exec executable="npx">
+            <arg line="google-closure-compiler ${gcc.src} --js_output_file ${gcc.dst}  ${gcc.lang.in} ${gcc.lang.out}" />
+        </exec>
+        <delete dir="${temp}" />
+    </target>
+
+
+    <target name="copy.js.files" depends="tsc" >
+        <echo message="Copying JavaScript files" />
+        <copy todir="${temp}" flatten="true" >
             <fileset dir="${js.src}" includes="**/*.js" />
         </copy>
     </target>
 
-    <target name="concat.files" depends="generate.structure" >
-        <concat destfile="./dist/src/aa.js" fixlastline="true" > 
-            <header>${library.header}</header>
+    <target name="copy.ts.files" depends="tsc" >
+        <echo message="Copying TypeScript files" />
+        <copy todir="${temp}" flatten="true" >
+            <fileset dir="${ts.src}" includes="**/*.ts" />
+        </copy>
+    </target>
+
+   <target name="document" depends="concat.ts.files">
+        <echo message="Create HTML documantation" />
+        <exec executable="npm">
+            <arg line="run typedoc" />
+        </exec>
+        <delete dir="${temp}" />
+    </target>
+
+
+   <target name="concat.ts.files" depends="copy.ts.files" >
+        <echo message="Concatenate TypeScript files into one ready for TypeDoc" />
+        <concat destfile="./dist/lib/${library.filename.ts}" fixlastline="true" > 
+        <!--
+            <header>export { AutoPilot, Graph, sceneFromJSON, graphFromJSON, VECTOR2D, MATRIX2D, GEOM2D };</header>
+            -->
+            <header file="resources/exports.txt" ></header>
+                       <!-- Base class code should precede child class code -->
+            <filelist dir="${temp}" >
+                <file name="entity.ts" />
+                <file name="artefact.ts" />
+                <file name="obstacle.ts" />
+                <file name="wall.ts" />
+                <file name="fence.ts" />
+                <file name="mover.ts" />
+                <file name="vehicle.ts" />
+                <file name="constants.ts" />
+                <file name="world.ts" />
+                <file name="domain.ts" />
+                <file name="quad_tree.ts" />
+                <file name="autopilot.ts" />
+                <file name="postoffice.ts" />
+                <file name="fsm.ts" />
+                <file name="state.ts" />
+                <file name="graph.ts" />
+                <file name="gnode.ts" />
+                <file name="gedge.ts" />
+                <file name="forcerecorder.ts" />
+                <file name="json.ts" />
+                <file name="vector2d.ts" />
+                <file name="matrix2d.ts" />
+                <file name="geom2d.ts" />
+                <file name="transform.ts" />
+            </filelist>
+        </concat>
+    </target>
+
+    <target name="concat.js.files" depends="copy.js.files" >
+        <echo message="Concatenate JavaScript files into one ready for GCC" />
+        <concat destfile="./dist/lib/${library.filename.js}" fixlastline="true" > 
+            <header>${min.file.header}</header>
             <!-- Base class code should precede child class code -->
-            <filelist dir="${js.tmp}" >
+            <filelist dir="${temp}" >
                 <file name="entity.js" />
                 <file name="artefact.js" />
                 <file name="obstacle.js" />
@@ -57,7 +135,6 @@
                 <file name="geom2d.js" />
                 <file name="transform.js" />
             </filelist>
-
         </concat>
     </target>
 

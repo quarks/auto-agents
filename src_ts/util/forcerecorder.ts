@@ -1,48 +1,7 @@
-class ForceRecorder {
-    static FORCE_NAME = [
-        'Wall avoid     ', 'Obstacle avoid ', 'Evade          ', 'Flee           ',
-        'Separation     ', 'Alignment      ', 'Cohesion       ', 'Seek           ',
-        'Arrive         ', 'Wander         ', 'Pursuit        ', 'Offset Pursuit ',
-        'Interpose      ', 'Hide           ', 'Path           ', 'Flock          '
-    ];
 
-    #owner: Vehicle;
-    #forces: Array<Force>;
-
-    #nbrReadings = 0;
-
-    constructor(owner: Vehicle) {
-        this.#owner = owner;
-        this.#forces = ForceRecorder.FORCE_NAME.map((v, i) => new Force(v));
-    }
-
-    addData(idxBhvr: number, force: Vector2D, weighting: number) {
-        if (idxBhvr >= 0 && idxBhvr < NBR_BEHAVIOURS) {
-            this.#nbrReadings++;
-            this.#forces[idxBhvr].addData(force.length(), weighting);
-        }
-    }
-
-    clearData() {
-        this.#nbrReadings = 0;
-        for (let f of this.#forces) f.clearData();
-    }
-
-    hasData(): boolean { return (this.#nbrReadings > 1); }
-
-    toString() {
-        let s = `----------------------------------------------------------------------------------------\n`;
-        s += `Owner ID: ${this.#owner.id} \n`;
-        s += `Force calculator:  Weighted Truncated Running Sum with Prioritization. \n`;
-        s += `Max force:  ${this.#owner.maxForce} \n`;
-        s += '                           Min         Max         Avg     Std Dev   Count   Weighting\n';
-        for (let force of this.#forces)
-            if (force.hasData()) s += `   ${force.toString()} \n`;
-        s += `----------------------------------------------------------------------------------------\n`;
-        return s;
-    }
-}
-
+/**
+ * Represents a single stearing force
+ */
 class Force {
     #forceName = '';
     #min = Number.MAX_VALUE; #max = 0;
@@ -102,3 +61,52 @@ class Force {
 
 }
 
+
+/**
+ * Records the steering forces applied to a vehicle. Can be used when tweeking
+ * stearing force weights and max. force acting on a vehicle.
+ */
+class ForceRecorder {
+    static FORCE_NAME = [
+        'Wall avoid     ', 'Obstacle avoid ', 'Evade          ', 'Flee           ',
+        'Separation     ', 'Alignment      ', 'Cohesion       ', 'Seek           ',
+        'Arrive         ', 'Wander         ', 'Pursuit        ', 'Offset Pursuit ',
+        'Interpose      ', 'Hide           ', 'Path           ', 'Flock          '
+    ];
+
+    #owner: Vehicle;
+    #forces: Array<Force>;
+
+    #nbrReadings = 0;
+
+    constructor(owner: Vehicle) {
+        this.#owner = owner;
+        this.#forces = ForceRecorder.FORCE_NAME.map((v, i) => new Force(v));
+    }
+
+    addData(idxBhvr: number, force: Vector2D, weighting: number) {
+        if (idxBhvr >= 0 && idxBhvr < NBR_BEHAVIOURS) {
+            this.#nbrReadings++;
+            this.#forces[idxBhvr].addData(force.length(), weighting);
+        }
+    }
+
+    clearData() {
+        this.#nbrReadings = 0;
+        for (let f of this.#forces) f.clearData();
+    }
+
+    hasData(): boolean { return (this.#nbrReadings > 1); }
+
+    toString() {
+        let s = `----------------------------------------------------------------------------------------\n`;
+        s += `Owner ID: ${this.#owner.id} \n`;
+        s += `Force calculator:  Weighted Truncated Running Sum with Prioritization. \n`;
+        s += `Max force:  ${this.#owner.maxForce} \n`;
+        s += '                           Min         Max         Avg     Std Dev   Count   Weighting\n';
+        for (let force of this.#forces)
+            if (force.hasData()) s += `   ${force.toString()} \n`;
+        s += `----------------------------------------------------------------------------------------\n`;
+        return s;
+    }
+}

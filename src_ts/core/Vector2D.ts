@@ -441,7 +441,10 @@ class Vector2D implements _XY_ {
     }
 
 }
-
+/** 
+ * Defines a simple object with 2 attributes x and y
+ * @interface
+ */
 interface _XY_ {
     x: number;
     y: number;

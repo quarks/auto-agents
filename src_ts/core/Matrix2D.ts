@@ -196,7 +196,6 @@ class Matrix2D {
 
 /**
  * Handy inner class to hold the intermediate transformation matrices.
- * @hidden
  */
 class Matrix {
     _11: number = 0; _12: number = 0; _13: number = 0;

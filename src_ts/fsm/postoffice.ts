@@ -1,3 +1,6 @@
+/**
+ * A message that can be passed between entities.
+ */
 class Telegram {
     #sender: Entity;
     get sender(): Entity { return this.#sender; }
@@ -24,6 +27,9 @@ class Telegram {
     }
 }
 
+/**
+ * Responcible for receiving, storing and dispatching telegrams.
+ */
 class Dispatcher {
     #telegrams: Array<Telegram>;
     #world: World;

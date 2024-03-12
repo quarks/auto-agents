@@ -93,7 +93,7 @@ class Entity {
     }
 
     toString(): string {
-        return `${this.constructor.name}  @  [${this.x.toFixed(FXD)}, ${this.y.toFixed(FXD)}]  Col. radius: ${this.colRad.toFixed(FXD)}`;
+        return `${this.constructor.name}  @  [${this.x.toFixed(2)}, ${this.y.toFixed(2)}]  Col. radius: ${this.colRad.toFixed(2)}`;
     }
 }
 

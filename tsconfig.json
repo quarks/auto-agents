@@ -93,12 +93,13 @@
     //"skipLibCheck": true                                 /* Skip type checking all .d.ts files. */
   },
   "include": [
-    "src_ts/**/*"
+    "src_ts/**/*",
+    "dist/lib/*.ts"
   ],
   "typedocOptions": {
     "emit": "docs",
     "entryPoints": [
-      "main.ts"
+      "dist/lib/aa.ts"
     ],
     "out": "dist/ref/"
   }

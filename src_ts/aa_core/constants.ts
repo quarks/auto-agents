@@ -1,10 +1,10 @@
-const ENTITY = Symbol.for('Entity');
-const ARTEFACT = Symbol.for('Artefact');
-const MOVER = Symbol.for('Mover');
-const VEHICLE = Symbol.for('Vehicle');
-const OBSTACLE = Symbol.for('Obstacle');
-const WALL = Symbol.for('Wall');
-const FENCE = Symbol.for('Fence');
+// const ENTITY = Symbol.for('Entity');
+// const ARTEFACT = Symbol.for('Artefact');
+// const MOVER = Symbol.for('Mover');
+// const VEHICLE = Symbol.for('Vehicle');
+// const OBSTACLE = Symbol.for('Obstacle');
+// const WALL = Symbol.for('Wall');
+// const FENCE = Symbol.for('Fence');
 
 // Bit positions for flags for internal library use.
 // These are used to index the force
@@ -79,6 +79,3 @@ const WRAP = Symbol.for('wrap');
 const REBOUND = Symbol.for('rebound');
 
 const EPSILON = 1E-10;
-
-const PREC = 5;
-const FXD = 2;

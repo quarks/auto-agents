@@ -706,7 +706,7 @@ class Geom2D {
 	}
 
 	/**
-	 * Code copied from {@link java.awt.geom.Rectangle2D#ersectsLine(, , , )}
+	 * Code copied from java.awt.geom.Rectangle2D#intersectsLine(, , , )
 	 */
 	static _outcode(pX: number, pY: number, rectX: number, rectY: number, rectWidth: number, rectHeight: number) {
 		let out = 0;

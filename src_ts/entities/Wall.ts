@@ -37,9 +37,9 @@ class Wall extends Entity {
     }
 
     toString() {
-        let s = `${this.constructor.name}  @  [${this.start.x.toFixed(FXD)}, ${this.start.y.toFixed(FXD)}]  `;
-        s += `from [${this.start.x.toFixed(FXD)}, ${this.start.y.toFixed(FXD)}]  `
-        s += `to [${this.end.x.toFixed(FXD)}, ${this.end.y.toFixed(FXD)}]  `
+        let s = `${this.constructor.name}  @  [${this.start.x.toFixed(2)}, ${this.start.y.toFixed(2)}]  `;
+        s += `from [${this.start.x.toFixed(2)}, ${this.start.y.toFixed(2)}]  `
+        s += `to [${this.end.x.toFixed(2)}, ${this.end.y.toFixed(2)}]  `
         return s;
     }
 }

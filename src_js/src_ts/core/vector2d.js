@@ -1,0 +1,409 @@
+var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
+};
+var _Vector2D_p;
+const VECTOR2D = '2 # 23 Dec 2023';
+/**
+* Simple 2D vector class
+*
+* Although it is possible to change the x and y properties with the set
+* methods it is not recommended as it changes the actual vector.
+*
+* Allother methods return a new vector representing the result of the
+* operation. For instance the statement
+*
+* <pre> v0.add(v1);  </pre>
+*
+* will return a the sum of the 2 vectors v0 and v1 as a new vector and
+* will leave v0 unchanged.
+*
+* To change the vector v0 then you must assign the resukt back to v0
+* like this
+*
+* <pre> v0 = v0.add(v1);  </pre>
+*
+* Last updated: 18 Nov 2023
+*
+* @author Peter Lager
+*/
+class Vector2D {
+    /**
+     * If no values are passed then a zero vector will be created.
+     *
+     * @param x x value
+     * @param y y value
+     */
+    constructor(x = 0, y = 0) {
+        _Vector2D_p.set(this, new Float64Array(2));
+        __classPrivateFieldGet(this, _Vector2D_p, "f")[0] = x;
+        __classPrivateFieldGet(this, _Vector2D_p, "f")[1] = y;
+    }
+    /** X coordinate value */
+    get x() { return __classPrivateFieldGet(this, _Vector2D_p, "f")[0]; }
+    set x(value) { if (Number.isFinite(value))
+        __classPrivateFieldGet(this, _Vector2D_p, "f")[0] = value; }
+    /** Y coordinate value */
+    get y() { return __classPrivateFieldGet(this, _Vector2D_p, "f")[1]; }
+    set y(value) { if (Number.isFinite(value))
+        __classPrivateFieldGet(this, _Vector2D_p, "f")[1] = value; }
+    /** Angle in 2D plane */
+    get angle() { return Math.atan2(__classPrivateFieldGet(this, _Vector2D_p, "f")[1], __classPrivateFieldGet(this, _Vector2D_p, "f")[0]); }
+    set angle(n) { __classPrivateFieldGet(this, _Vector2D_p, "f")[0] = Math.cos(n); __classPrivateFieldGet(this, _Vector2D_p, "f")[1] = Math.sin(n); }
+    /**
+     * Add a displacement (either vector object or 2 scalars )
+     * to this vector to create a new vector.
+     *
+     * @param x a number or a Vector
+     * @param y a number
+     * @return the sum as a new vector
+     */
+    add(x, y) {
+        let nv = this.copy();
+        if (typeof x === 'object') {
+            __classPrivateFieldGet(nv, _Vector2D_p, "f")[0] += __classPrivateFieldGet(x, _Vector2D_p, "f")[0];
+            __classPrivateFieldGet(nv, _Vector2D_p, "f")[1] += __classPrivateFieldGet(x, _Vector2D_p, "f")[1];
+        }
+        else if (Number.isFinite(x) && Number.isFinite(y)) {
+            __classPrivateFieldGet(nv, _Vector2D_p, "f")[0] += x;
+            __classPrivateFieldGet(nv, _Vector2D_p, "f")[1] += y;
+        }
+        return nv;
+    }
+    /**
+     * Calculate the angle between this and another vector.
+     * @param v the other vector
+     * @return the angle between in radians
+     */
+    angleBetween(v) {
+        let denom = Math.sqrt(__classPrivateFieldGet(this, _Vector2D_p, "f")[0] * __classPrivateFieldGet(this, _Vector2D_p, "f")[0] + __classPrivateFieldGet(this, _Vector2D_p, "f")[1] * __classPrivateFieldGet(this, _Vector2D_p, "f")[1]) *
+            Math.sqrt(__classPrivateFieldGet(v, _Vector2D_p, "f")[0] * __classPrivateFieldGet(v, _Vector2D_p, "f")[0] + __classPrivateFieldGet(v, _Vector2D_p, "f")[1] * __classPrivateFieldGet(v, _Vector2D_p, "f")[1]);
+        if (Number.isFinite(denom)) {
+            let a = Math.acos((__classPrivateFieldGet(this, _Vector2D_p, "f")[0] * __classPrivateFieldGet(v, _Vector2D_p, "f")[0] + __classPrivateFieldGet(this, _Vector2D_p, "f")[1] * __classPrivateFieldGet(v, _Vector2D_p, "f")[1]) / denom);
+            return Number.isFinite(a) ? a : 0;
+        }
+        return 0;
+    }
+    /**
+     * Creates a new vector object that duplicates this one
+     * @returns a copy of this vector
+     */
+    copy() {
+        return new Vector2D(__classPrivateFieldGet(this, _Vector2D_p, "f")[0], __classPrivateFieldGet(this, _Vector2D_p, "f")[1]);
+    }
+    /**
+     * Get the distance between this and an other point.
+     * @param v the other point
+     * @return distance to other point
+     */
+    dist(v) {
+        let dx = __classPrivateFieldGet(v, _Vector2D_p, "f")[0] - __classPrivateFieldGet(this, _Vector2D_p, "f")[0];
+        let dy = __classPrivateFieldGet(v, _Vector2D_p, "f")[1] - __classPrivateFieldGet(this, _Vector2D_p, "f")[1];
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+    /**
+     * Get the distance squared between this and another
+     * point.
+     * @param v the other point
+     * @return distance to other point squared
+     */
+    distSq(v) {
+        let dx = __classPrivateFieldGet(v, _Vector2D_p, "f")[0] - __classPrivateFieldGet(this, _Vector2D_p, "f")[0];
+        let dy = __classPrivateFieldGet(v, _Vector2D_p, "f")[1] - __classPrivateFieldGet(this, _Vector2D_p, "f")[1];
+        return dx * dx + dy * dy;
+    }
+    /**
+     * Divide the vector by a scalar to create a new vector.
+     * @param s scalar value to divide by
+     * @return the quotient as a new number
+     */
+    div(s) {
+        if (s == 0)
+            throw new Error('Cannot divide vector by zero)');
+        return new Vector2D(__classPrivateFieldGet(this, _Vector2D_p, "f")[0] / s, __classPrivateFieldGet(this, _Vector2D_p, "f")[1] / s);
+    }
+    /**
+     * Calculate the dot product between two un-normalised vectors.
+     * @param v the other vector
+     * @return the dot product
+     */
+    dot(v) {
+        return (__classPrivateFieldGet(this, _Vector2D_p, "f")[0] * __classPrivateFieldGet(v, _Vector2D_p, "f")[0] + __classPrivateFieldGet(this, _Vector2D_p, "f")[1] * __classPrivateFieldGet(v, _Vector2D_p, "f")[1]);
+    }
+    /**
+     * Calculate the dot product between two vectors using normalised values
+     * i.e. the cosine of the angle between them
+     * @param v the other vector
+     * @return the cosine of angle between them
+     */
+    dotNorm(v) {
+        let denom = Math.sqrt(__classPrivateFieldGet(this, _Vector2D_p, "f")[0] * __classPrivateFieldGet(this, _Vector2D_p, "f")[0] + __classPrivateFieldGet(this, _Vector2D_p, "f")[1] * __classPrivateFieldGet(this, _Vector2D_p, "f")[1]) *
+            Math.sqrt(__classPrivateFieldGet(v, _Vector2D_p, "f")[0] * __classPrivateFieldGet(v, _Vector2D_p, "f")[0] + __classPrivateFieldGet(v, _Vector2D_p, "f")[1] * __classPrivateFieldGet(v, _Vector2D_p, "f")[1]);
+        return (__classPrivateFieldGet(this, _Vector2D_p, "f")[0] * __classPrivateFieldGet(v, _Vector2D_p, "f")[0] + __classPrivateFieldGet(this, _Vector2D_p, "f")[1] * __classPrivateFieldGet(v, _Vector2D_p, "f")[1]) / denom;
+    }
+    /**
+     * This vector is considered equal to v if their x and y positions are
+     * closer than Vecor2D.EPSILON.
+     *
+     * @param v the other vector
+     * @returns true if this vector 'equals' v
+     */
+    equals(v) {
+        return (Math.abs(__classPrivateFieldGet(this, _Vector2D_p, "f")[0] - __classPrivateFieldGet(v, _Vector2D_p, "f")[0]) <= Vector2D.EPSILON
+            && Math.abs(__classPrivateFieldGet(this, _Vector2D_p, "f")[1] - __classPrivateFieldGet(v, _Vector2D_p, "f")[1]) <= Vector2D.EPSILON);
+    }
+    /**
+     * Get a vector perpendicular to this one.
+     * @return a perpendicular vector
+     */
+    getPerp() {
+        return new Vector2D(-__classPrivateFieldGet(this, _Vector2D_p, "f")[1], __classPrivateFieldGet(this, _Vector2D_p, "f")[0]);
+    }
+    /**
+     * Return the reflection of this vector about the norm
+     * @param norm
+     * @return the reflected vector
+     */
+    getReflect(norm, normalize = false) {
+        if (normalize)
+            norm = norm.normalize();
+        let dot = this.dot(norm);
+        let nx = __classPrivateFieldGet(this, _Vector2D_p, "f")[0] + (-2 * dot * __classPrivateFieldGet(norm, _Vector2D_p, "f")[0]);
+        let ny = __classPrivateFieldGet(this, _Vector2D_p, "f")[1] + (-2 * dot * __classPrivateFieldGet(norm, _Vector2D_p, "f")[1]);
+        return new Vector2D(nx, ny);
+    }
+    /**
+     * Get a vector that is the reverse of this vector
+     * @return the reverse vector
+     */
+    getReverse() {
+        return new Vector2D(-__classPrivateFieldGet(this, _Vector2D_p, "f")[0], -__classPrivateFieldGet(this, _Vector2D_p, "f")[1]);
+    }
+    /**
+     * Get the vector length
+     */
+    length() {
+        return Math.sqrt(__classPrivateFieldGet(this, _Vector2D_p, "f")[0] * __classPrivateFieldGet(this, _Vector2D_p, "f")[0] + __classPrivateFieldGet(this, _Vector2D_p, "f")[1] * __classPrivateFieldGet(this, _Vector2D_p, "f")[1]);
+    }
+    /**
+     * Get the vector length squared
+     */
+    lengthSq() {
+        return __classPrivateFieldGet(this, _Vector2D_p, "f")[0] * __classPrivateFieldGet(this, _Vector2D_p, "f")[0] + __classPrivateFieldGet(this, _Vector2D_p, "f")[1] * __classPrivateFieldGet(this, _Vector2D_p, "f")[1];
+    }
+    /**
+     * Multiply the vector by a scalar to create a new vector.
+     * @param s scalar value to multiply by
+     * @return the product as a new number
+     */
+    mult(s) {
+        let nv = this.copy();
+        __classPrivateFieldGet(nv, _Vector2D_p, "f")[0] *= s;
+        __classPrivateFieldGet(nv, _Vector2D_p, "f")[1] *= s;
+        return nv;
+    }
+    /**
+     * Multiplies this vetor by -1 effectively reversing
+     * the vector direction.
+     *
+     * @return the negated version as a new vector
+     */
+    negate() {
+        return new Vector2D(-__classPrivateFieldGet(this, _Vector2D_p, "f")[0], -__classPrivateFieldGet(this, _Vector2D_p, "f")[1]);
+    }
+    /**
+     * Normalise this vector
+     */
+    normalize() {
+        let mag = this.length();
+        if (!Number.isFinite(mag) || mag == 0)
+            throw new Error('Cannot normalise a vector of zero or infinite length');
+        return new Vector2D(__classPrivateFieldGet(this, _Vector2D_p, "f")[0] / mag, __classPrivateFieldGet(this, _Vector2D_p, "f")[1] / mag);
+    }
+    resize(size) {
+        let mag = this.length();
+        if (!Number.isFinite(mag) || mag == 0)
+            throw new Error('Cannot resize a vector of zero or infinite length');
+        let ratio = size / mag;
+        return new Vector2D(__classPrivateFieldGet(this, _Vector2D_p, "f")[0] * ratio, __classPrivateFieldGet(this, _Vector2D_p, "f")[1] * ratio);
+    }
+    /**
+     * =============   MUTATES VECTOR    ====================
+     * @param position change the coordinates to match position
+     * @returns the changed vetor
+     */
+    set(position) {
+        if (position instanceof Array) {
+            __classPrivateFieldGet(this, _Vector2D_p, "f")[0] = position[0];
+            __classPrivateFieldGet(this, _Vector2D_p, "f")[1] = position[1];
+        }
+        else {
+            __classPrivateFieldGet(this, _Vector2D_p, "f")[0] = position.x;
+            __classPrivateFieldGet(this, _Vector2D_p, "f")[1] = position.y;
+        }
+        return this;
+    }
+    /**
+     * Determines whether vector v is clockwise of this vector. <br>
+     * @param v a vector
+     * @return positive (+1) if clockwise else negative (-1)
+     */
+    sign(v) {
+        if (__classPrivateFieldGet(this, _Vector2D_p, "f")[1] * __classPrivateFieldGet(v, _Vector2D_p, "f")[0] > __classPrivateFieldGet(this, _Vector2D_p, "f")[0] * __classPrivateFieldGet(v, _Vector2D_p, "f")[1])
+            return Vector2D.CLOCKWISE;
+        else
+            return Vector2D.ANTI_CLOCKWISE;
+    }
+    /**
+     * Subtract a displacement (either vector object or 2 scalars )
+     * to this vector  to create a new vector.
+     *
+     * @param x a number or a Vector
+     * @param y a number
+     * @return the difference as a new vector
+     */
+    sub(x, y) {
+        let nv = this.copy();
+        if (typeof x === 'object') {
+            __classPrivateFieldGet(nv, _Vector2D_p, "f")[0] -= __classPrivateFieldGet(x, _Vector2D_p, "f")[0];
+            __classPrivateFieldGet(nv, _Vector2D_p, "f")[1] -= __classPrivateFieldGet(x, _Vector2D_p, "f")[1];
+        }
+        else if (Number.isFinite(x) && Number.isFinite(y)) {
+            __classPrivateFieldGet(nv, _Vector2D_p, "f")[0] -= x;
+            __classPrivateFieldGet(nv, _Vector2D_p, "f")[1] -= y;
+        }
+        return nv;
+    }
+    /**
+     * Truncate this vector so its length is no greater than
+     * the value provided and return as a new vector.
+     * @param max maximum size for the new vector
+     * @return the new truncated vector
+     */
+    truncate(max) {
+        let nv = this.copy();
+        let mag = nv.length();
+        if (Number.isFinite(mag) && mag > max)
+            nv = nv.mult(max / mag);
+        return nv;
+    }
+    /**
+     * Get the x,y coordinates as an array.
+     */
+    toArray() {
+        return [__classPrivateFieldGet(this, _Vector2D_p, "f")[0], __classPrivateFieldGet(this, _Vector2D_p, "f")[1]];
+    }
+    /**       +++++++++++++ CLASS METHODS +++++++++++++++        */
+    /**
+     * @returns true if these vectors have the same coordinates
+     */
+    static areEqual(v0, v1) {
+        return (Math.abs(__classPrivateFieldGet(v1, _Vector2D_p, "f")[0] - __classPrivateFieldGet(v0, _Vector2D_p, "f")[0]) <= Vector2D.EPSILON && Math.abs(__classPrivateFieldGet(v1, _Vector2D_p, "f")[1] - __classPrivateFieldGet(v0, _Vector2D_p, "f")[1]) <= Vector2D.EPSILON);
+    }
+    /**
+     * The distance between two vectors
+     * @param v0 the first vector
+     * @param v1 the second vector
+     * @return the distance between them
+     */
+    static dist(v0, v1) {
+        return Math.sqrt(Vector2D.distSq(v0, v1));
+    }
+    /**
+     * The square of the distance between two vectors
+     * @param v0 the first vector
+     * @param v1 the second vector
+     * @return square of the distance between them
+     */
+    static distSq(v0, v1) {
+        let dx = __classPrivateFieldGet(v1, _Vector2D_p, "f")[0] - __classPrivateFieldGet(v0, _Vector2D_p, "f")[0];
+        let dy = __classPrivateFieldGet(v1, _Vector2D_p, "f")[1] - __classPrivateFieldGet(v0, _Vector2D_p, "f")[1];
+        return dx * dx + dy * dy;
+    }
+    /**
+     * Calculate the angle between two vectors.
+     * @param v0 first vector
+     * @param v1 second vector
+     * @return the angle between in radians
+     */
+    static angleBetween(v0, v1) {
+        let denom = Math.sqrt(__classPrivateFieldGet(v0, _Vector2D_p, "f")[0] * __classPrivateFieldGet(v0, _Vector2D_p, "f")[0] + __classPrivateFieldGet(v0, _Vector2D_p, "f")[1] * __classPrivateFieldGet(v0, _Vector2D_p, "f")[1]) * Math.sqrt(__classPrivateFieldGet(v1, _Vector2D_p, "f")[0] * __classPrivateFieldGet(v1, _Vector2D_p, "f")[0] + __classPrivateFieldGet(v1, _Vector2D_p, "f")[1] * __classPrivateFieldGet(v1, _Vector2D_p, "f")[1]);
+        if (Number.isFinite(denom)) {
+            let a = Math.acos((__classPrivateFieldGet(v0, _Vector2D_p, "f")[0] * __classPrivateFieldGet(v1, _Vector2D_p, "f")[0] + __classPrivateFieldGet(v0, _Vector2D_p, "f")[1] * __classPrivateFieldGet(v1, _Vector2D_p, "f")[1]) / denom);
+            return Number.isFinite(a) ? a : 0;
+        }
+        return 0;
+    }
+    /**
+     * Determines whether entity 2 is visible from entity 1.
+     * @param pos1 position of first entity
+     * @param facing1 direction first entity is facing
+     * @param fov1 field of view (radians) of first entity
+     * @param pos2 position of second entity
+     * @return true if second entity is inside 'visible' to the first entity
+     */
+    static isSecondInFOVofFirst(pos1, facing1, fov1, pos2) {
+        let toTarget = pos2.sub(pos1); // Vector2D.sub(pos2, pos1);
+        let dd = toTarget.length() * facing1.length();
+        let angle = facing1.dot(toTarget) / dd;
+        return angle >= Math.cos(fov1 / 2);
+    }
+    /**
+     * Create a randomly orientated vector whose magnitude is in the range provided.
+     * @param mag0 minimum magnitude
+     * @param mag1 maximum magnitude
+     * @return the randomised vector
+     */
+    static fromRandom(mag0 = 1, mag1 = 1) {
+        let a = 2 * Math.PI * Math.random();
+        let m = Math.random() * (mag1 - mag0) + mag0;
+        return new Vector2D(m * Math.cos(a), m * Math.sin(a));
+    }
+    /**
+     *
+     * @param position
+     * @param colRadius
+     * @returns
+     */
+    static from(position) {
+        if (position instanceof Array)
+            return new Vector2D(position[0], position[1]);
+        else
+            return new Vector2D(position.x, position.y);
+    }
+    print(precision = 16) {
+        console.log(this.$(precision));
+        return this;
+    }
+    // Return vector as array string su
+    $(precision = 16) {
+        let xv = this.x.toPrecision(precision);
+        let yv = this.y.toPrecision(precision);
+        return `[${xv}, ${yv}]`;
+    }
+    toString() {
+        return this.$();
+    }
+}
+_Vector2D_p = new WeakMap();
+/** Null vector (coordinates: 0, 0). */
+Vector2D.ZERO = new Vector2D(0, 0);
+/** Null vector (coordinates: 1, 1). */
+Vector2D.ONE = new Vector2D(1, 1);
+/** First canonical vector (coordinates: 1, 0). */
+Vector2D.PLUS_I = new Vector2D(1, 0);
+/** Opposite of the first canonical vector (coordinates: -1, 0). */
+Vector2D.MINUS_I = new Vector2D(-1, 0);
+/** Second canonical vector (coordinates: 0, 1). */
+Vector2D.PLUS_J = new Vector2D(0, 1);
+/** Opposite of the second canonical vector (coordinates: 0, -1). */
+Vector2D.MINUS_J = new Vector2D(0, -1);
+/** A vector with all coordinates set to positive infinity. */
+Vector2D.POSITIVE_INFINITY = new Vector2D(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
+/** A vector with all coordinates set to negative infinity. */
+Vector2D.NEGATIVE_INFINITY = new Vector2D(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY);
+Vector2D.EPSILON = 1E-10;
+Vector2D.CLOCKWISE = 1;
+Vector2D.ANTI_CLOCKWISE = -1;
+//# sourceMappingURL=vector2d.js.map
