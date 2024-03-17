@@ -1,5 +1,8 @@
-const GEOM2D = '14 Feb 2024';
+/**
+ * Wide rnge of methods for 2D geometry calculations.
+ */
 class Geom2D {
+    /** @hidden */ constructor() { }
     /**
      * Rotate a vector (clockwise) about the origin [0,0] by the given ang.
      * The vector 'v' is unchanged.
@@ -651,7 +654,8 @@ class Geom2D {
         return side;
     }
     /**
-     * Code copied from {@link java.awt.geom.Rectangle2D#ersectsLine(, , , )}
+     * Code copied from java.awt.geom.Rectangle2D#intersectsLine(, , , )
+     * @hidden
      */
     static _outcode(pX, pY, rectX, rectY, rectWidth, rectHeight) {
         let out = 0;
@@ -1011,6 +1015,9 @@ class Geom2D {
             areaX2 += contour[p].x * contour[q].y - contour[q].x * contour[p].y;
         return areaX2 * 0.5;
     }
+    /**
+     * @hidden
+     */
     static _snip(contour, u, v, w, n, vList) {
         let p;
         let Ax = contour[vList[u]].x;
@@ -1032,13 +1039,13 @@ class Geom2D {
         return true;
     }
 }
-Geom2D.ACCY = 1E-30;
-Geom2D.ON_PLANE = 0b10000;
-Geom2D.PLANE_INSIDE = 0b10001;
-Geom2D.PLANE_OUTSIDE = 0b10010;
-Geom2D.OUT_LEFT = 0b0001;
-Geom2D.OUT_TOP = 0b0010;
-Geom2D.OUT_RIGHT = 0b0100;
-Geom2D.OUT_BOTTOM = 0b1000;
-Geom2D.NEARNESS = 1.0;
+/** @hidden */ Geom2D.ACCY = 1E-30;
+/** @hidden */ Geom2D.ON_PLANE = 0b10000;
+/** @hidden */ Geom2D.PLANE_INSIDE = 0b10001;
+/** @hidden */ Geom2D.PLANE_OUTSIDE = 0b10010;
+/** @hidden */ Geom2D.OUT_LEFT = 0b0001;
+/** @hidden */ Geom2D.OUT_TOP = 0b0010;
+/** @hidden */ Geom2D.OUT_RIGHT = 0b0100;
+/** @hidden */ Geom2D.OUT_BOTTOM = 0b1000;
+/** @hidden */ Geom2D.NEARNESS = 1.0;
 //# sourceMappingURL=geom2d.js.map

@@ -1,20 +1,22 @@
-<project name="Testing ANT" default="default" basedir="./">
+<!--    
+    Build file for JS project
+    Peter Lager 2024
+    V0.1
+-->
+<project name="Autonomous Agents" default="init" basedir="./" >
 
     <property file="build.properties" />
 
-    <property name="js.src" location="./src_js" />
-    <property name="ts.src" location="./src_ts" />
+    <!-- Temporary folder for intermdiate files created during documatation -->
     <property name="temp" location="./tmp" />
-
-    <!-- The first line in the minimised js file identifies liv=brary and version -->
-    <property name="min.file.header" value="const ${library.constant}_VERSION = '${library.version}';" />
 
 	<!-- Create the time stamp -->
 	<tstamp> 
 		<format property="date" pattern="d-MMMM-yyyy  hh:mm aa" locale="en,GB" />
 	</tstamp>
 
-    <target name="default">
+    <!-- Initialisation task for both compilation and documentation         -->
+    <target name="init">
         <echo message="########################################################" />
         <echo message="${library.name}   V${library.version}" />
         <echo message="Build started ${date}" />
@@ -22,18 +24,18 @@
         <mkdir dir="${temp}" />
     </target>
 
-    <!-- Compiles TypeScript to JavaScript-->
-    <target name="tsc" depends="default">
+    <!-- Transpiles TypeScript to JavaScript    -->
+    <target name="tsc" depends="init">
         <echo message="TypeScript Compiler" />
         <exec executable="npm">
             <arg line="run tsc" />
         </exec>
     </target>
 
-     <!-- Create the library min file for distribution -->
+     <!-- Create the library min.js file    -->
     <target name="compile" depends="concat.js.files">
-        <property name="gcc.src" location="dist/lib/${library.filename.js}" />
-        <property name="gcc.dst" location="dist/lib/${library.filename.min.js}" />
+        <property name="gcc.src" location="${library.dist.lib.dir}/${library.filename.js}" />
+        <property name="gcc.dst" location="${library.dist.lib.dir}/${library.filename.min.js}" />
         <property name="gcc.lang.in" value="--language_in ECMASCRIPT_2021" />
         <property name="gcc.lang.out" value="--language_out ECMASCRIPT_NEXT" />
         <echo message="Google Closure Compiler" />
@@ -43,99 +45,53 @@
         <delete dir="${temp}" />
     </target>
 
+    <!-- Concatenate the JavaScript files in the order they appear in the resource file   -->
+    <target name="concat.js.files" depends="copy.js.files" >
+        <echo message="Concatenate JavaScript files into one ready for GCC" />
+        <loadfile property="jslist" srcfile="${js.list.file}" />        
+        <concat destfile="${library.dist.lib.dir}/${library.filename.js}" fixlastline="true" > 
+            <header>/** ${line.separator} * @preserve   ${library.name} (${library.version})     License: ${library.license} ${line.separator} */</header>
+            <!-- Base class code should precede child class code -->
+            <filelist dir="${temp}" files="${jslist}" />
+        </concat>
+    </target>
 
+    <!-- Copy all the the JavaScript files into the temporary folder prior to concantenation -->
     <target name="copy.js.files" depends="tsc" >
         <echo message="Copying JavaScript files" />
         <copy todir="${temp}" flatten="true" >
-            <fileset dir="${js.src}" includes="**/*.js" />
+            <fileset dir="${js.source.dir}" includes="**/*.js" />
         </copy>
     </target>
 
-    <target name="copy.ts.files" depends="tsc" >
-        <echo message="Copying TypeScript files" />
-        <copy todir="${temp}" flatten="true" >
-            <fileset dir="${ts.src}" includes="**/*.ts" />
-        </copy>
-    </target>
-
-   <target name="document" depends="concat.ts.files">
+    <!-- Create the HTML documentation -->
+    <target name="document" depends="concat.ts.files">
         <echo message="Create HTML documantation" />
         <exec executable="npm">
             <arg line="run typedoc" />
         </exec>
         <delete dir="${temp}" />
+        <delete file="${library.dist.lib.dir}/${library.filename.ts}" />
     </target>
 
-
-   <target name="concat.ts.files" depends="copy.ts.files" >
+    <!-- Concatenate the TypeScript files in the order they appear in the resource file
+         and prepend export statements to enable documentation.             -->
+    <target name="concat.ts.files" depends="copy.ts.files" >
         <echo message="Concatenate TypeScript files into one ready for TypeDoc" />
-        <concat destfile="./dist/lib/${library.filename.ts}" fixlastline="true" > 
-        <!--
-            <header>export { AutoPilot, Graph, sceneFromJSON, graphFromJSON, VECTOR2D, MATRIX2D, GEOM2D };</header>
-            -->
-            <header file="resources/exports.txt" ></header>
-                       <!-- Base class code should precede child class code -->
-            <filelist dir="${temp}" >
-                <file name="entity.ts" />
-                <file name="artefact.ts" />
-                <file name="obstacle.ts" />
-                <file name="wall.ts" />
-                <file name="fence.ts" />
-                <file name="mover.ts" />
-                <file name="vehicle.ts" />
-                <file name="constants.ts" />
-                <file name="world.ts" />
-                <file name="domain.ts" />
-                <file name="quad_tree.ts" />
-                <file name="autopilot.ts" />
-                <file name="postoffice.ts" />
-                <file name="fsm.ts" />
-                <file name="state.ts" />
-                <file name="graph.ts" />
-                <file name="gnode.ts" />
-                <file name="gedge.ts" />
-                <file name="forcerecorder.ts" />
-                <file name="json.ts" />
-                <file name="vector2d.ts" />
-                <file name="matrix2d.ts" />
-                <file name="geom2d.ts" />
-                <file name="transform.ts" />
-            </filelist>
+        <loadfile property="tslist" srcfile="${ts.list.file}" />        
+        <concat destfile="${library.dist.lib.dir}/${library.filename.ts}" fixlastline="true" > 
+            <header file="${exports}" ></header>
+            <!-- Base class code should precede child class code -->
+            <filelist dir="${temp}" files="${tslist}" />
         </concat>
     </target>
 
-    <target name="concat.js.files" depends="copy.js.files" >
-        <echo message="Concatenate JavaScript files into one ready for GCC" />
-        <concat destfile="./dist/lib/${library.filename.js}" fixlastline="true" > 
-            <header>${min.file.header}</header>
-            <!-- Base class code should precede child class code -->
-            <filelist dir="${temp}" >
-                <file name="entity.js" />
-                <file name="artefact.js" />
-                <file name="obstacle.js" />
-                <file name="wall.js" />
-                <file name="fence.js" />
-                <file name="mover.js" />
-                <file name="vehicle.js" />
-                <file name="constants.js" />
-                <file name="world.js" />
-                <file name="domain.js" />
-                <file name="quad_tree.js" />
-                <file name="autopilot.js" />
-                <file name="postoffice.js" />
-                <file name="fsm.js" />
-                <file name="state.js" />
-                <file name="graph.js" />
-                <file name="gnode.js" />
-                <file name="gedge.js" />
-                <file name="forcerecorder.js" />
-                <file name="json.js" />
-                <file name="vector2d.js" />
-                <file name="matrix2d.js" />
-                <file name="geom2d.js" />
-                <file name="transform.js" />
-            </filelist>
-        </concat>
+    <!-- Copy all the the TransScript files into the temporary folder prior to concantenation -->
+    <target name="copy.ts.files" depends="tsc" >
+        <echo message="Copying TypeScript files" />
+        <copy todir="${temp}" flatten="true" >
+            <fileset dir="${ts.source.dir}" includes="**/*.ts" />
+        </copy>
     </target>
 
 </project>

@@ -4,15 +4,16 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 };
 var _Vector2D_p;
-const VECTOR2D = '2 # 23 Dec 2023';
 /**
 * Simple 2D vector class
 *
 * Although it is possible to change the x and y properties with the set
-* methods it is not recommended as it changes the actual vector.
+* methods it is not recommended as it makes the vector mutable.
 *
-* Allother methods return a new vector representing the result of the
-* operation. For instance the statement
+* All other methods return a new vector representing the result of the
+* operation leaving the original vector unchanged i.e. immutable.
+*
+* For instance the statement
 *
 * <pre> v0.add(v1);  </pre>
 *
@@ -24,7 +25,7 @@ const VECTOR2D = '2 # 23 Dec 2023';
 *
 * <pre> v0 = v0.add(v1);  </pre>
 *
-* Last updated: 18 Nov 2023
+* Last updated: 14 Mar 2024
 *
 * @author Peter Lager
 */

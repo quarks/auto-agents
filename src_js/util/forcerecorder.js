@@ -9,48 +9,10 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 };
-var _ForceRecorder_owner, _ForceRecorder_forces, _ForceRecorder_nbrReadings, _Force_forceName, _Force_min, _Force_max, _Force_s1, _Force_s2, _Force_n, _Force_weight;
-class ForceRecorder {
-    constructor(owner) {
-        _ForceRecorder_owner.set(this, void 0);
-        _ForceRecorder_forces.set(this, void 0);
-        _ForceRecorder_nbrReadings.set(this, 0);
-        __classPrivateFieldSet(this, _ForceRecorder_owner, owner, "f");
-        __classPrivateFieldSet(this, _ForceRecorder_forces, ForceRecorder.FORCE_NAME.map((v, i) => new Force(v)), "f");
-    }
-    addData(idxBhvr, force, weighting) {
-        var _a;
-        if (idxBhvr >= 0 && idxBhvr < NBR_BEHAVIOURS) {
-            __classPrivateFieldSet(this, _ForceRecorder_nbrReadings, (_a = __classPrivateFieldGet(this, _ForceRecorder_nbrReadings, "f"), _a++, _a), "f");
-            __classPrivateFieldGet(this, _ForceRecorder_forces, "f")[idxBhvr].addData(force.length(), weighting);
-        }
-    }
-    clearData() {
-        __classPrivateFieldSet(this, _ForceRecorder_nbrReadings, 0, "f");
-        for (let f of __classPrivateFieldGet(this, _ForceRecorder_forces, "f"))
-            f.clearData();
-    }
-    hasData() { return (__classPrivateFieldGet(this, _ForceRecorder_nbrReadings, "f") > 1); }
-    toString() {
-        let s = `----------------------------------------------------------------------------------------\n`;
-        s += `Owner ID: ${__classPrivateFieldGet(this, _ForceRecorder_owner, "f").id} \n`;
-        s += `Force calculator:  Weighted Truncated Running Sum with Prioritization. \n`;
-        s += `Max force:  ${__classPrivateFieldGet(this, _ForceRecorder_owner, "f").maxForce} \n`;
-        s += '                           Min         Max         Avg     Std Dev   Count   Weighting\n';
-        for (let force of __classPrivateFieldGet(this, _ForceRecorder_forces, "f"))
-            if (force.hasData())
-                s += `   ${force.toString()} \n`;
-        s += `----------------------------------------------------------------------------------------\n`;
-        return s;
-    }
-}
-_ForceRecorder_owner = new WeakMap(), _ForceRecorder_forces = new WeakMap(), _ForceRecorder_nbrReadings = new WeakMap();
-ForceRecorder.FORCE_NAME = [
-    'Wall avoid     ', 'Obstacle avoid ', 'Evade          ', 'Flee           ',
-    'Separation     ', 'Alignment      ', 'Cohesion       ', 'Seek           ',
-    'Arrive         ', 'Wander         ', 'Pursuit        ', 'Offset Pursuit ',
-    'Interpose      ', 'Hide           ', 'Path           ', 'Flock          '
-];
+var _Force_forceName, _Force_min, _Force_max, _Force_s1, _Force_s2, _Force_n, _Force_weight, _ForceRecorder_owner, _ForceRecorder_forces, _ForceRecorder_nbrReadings;
+/**
+ * Represents a single stearing force
+ */
 class Force {
     constructor(forceName) {
         _Force_forceName.set(this, '');
@@ -109,4 +71,49 @@ class Force {
     }
 }
 _Force_forceName = new WeakMap(), _Force_min = new WeakMap(), _Force_max = new WeakMap(), _Force_s1 = new WeakMap(), _Force_s2 = new WeakMap(), _Force_n = new WeakMap(), _Force_weight = new WeakMap();
+/**
+ * Records the steering forces applied to a vehicle. Can be used when tweeking
+ * stearing force weights and max. force acting on a vehicle.
+ */
+class ForceRecorder {
+    constructor(owner) {
+        _ForceRecorder_owner.set(this, void 0);
+        _ForceRecorder_forces.set(this, void 0);
+        _ForceRecorder_nbrReadings.set(this, 0);
+        __classPrivateFieldSet(this, _ForceRecorder_owner, owner, "f");
+        __classPrivateFieldSet(this, _ForceRecorder_forces, ForceRecorder.FORCE_NAME.map((v, i) => new Force(v)), "f");
+    }
+    addData(idxBhvr, force, weighting) {
+        var _a;
+        if (idxBhvr >= 0 && idxBhvr < NBR_BEHAVIOURS) {
+            __classPrivateFieldSet(this, _ForceRecorder_nbrReadings, (_a = __classPrivateFieldGet(this, _ForceRecorder_nbrReadings, "f"), _a++, _a), "f");
+            __classPrivateFieldGet(this, _ForceRecorder_forces, "f")[idxBhvr].addData(force.length(), weighting);
+        }
+    }
+    clearData() {
+        __classPrivateFieldSet(this, _ForceRecorder_nbrReadings, 0, "f");
+        for (let f of __classPrivateFieldGet(this, _ForceRecorder_forces, "f"))
+            f.clearData();
+    }
+    hasData() { return (__classPrivateFieldGet(this, _ForceRecorder_nbrReadings, "f") > 1); }
+    toString() {
+        let s = `----------------------------------------------------------------------------------------\n`;
+        s += `Owner ID: ${__classPrivateFieldGet(this, _ForceRecorder_owner, "f").id} \n`;
+        s += `Force calculator:  Weighted Truncated Running Sum with Prioritization. \n`;
+        s += `Max force:  ${__classPrivateFieldGet(this, _ForceRecorder_owner, "f").maxForce} \n`;
+        s += '                           Min         Max         Avg     Std Dev   Count   Weighting\n';
+        for (let force of __classPrivateFieldGet(this, _ForceRecorder_forces, "f"))
+            if (force.hasData())
+                s += `   ${force.toString()} \n`;
+        s += `----------------------------------------------------------------------------------------\n`;
+        return s;
+    }
+}
+_ForceRecorder_owner = new WeakMap(), _ForceRecorder_forces = new WeakMap(), _ForceRecorder_nbrReadings = new WeakMap();
+ForceRecorder.FORCE_NAME = [
+    'Wall avoid     ', 'Obstacle avoid ', 'Evade          ', 'Flee           ',
+    'Separation     ', 'Alignment      ', 'Cohesion       ', 'Seek           ',
+    'Arrive         ', 'Wander         ', 'Pursuit        ', 'Offset Pursuit ',
+    'Interpose      ', 'Hide           ', 'Path           ', 'Flock          '
+];
 //# sourceMappingURL=forcerecorder.js.map

@@ -1,19 +1,21 @@
-const GEOM2D = '14 Feb 2024';
-
+/**
+ * Wide rnge of methods for 2D geometry calculations.
+ */
 class Geom2D {
+	/** @hidden */ static ACCY = 1E-30;
 
-	static ACCY = 1E-30;
+	/** @hidden */ static ON_PLANE = 0b10000;
+	/** @hidden */ static PLANE_INSIDE = 0b10001;
+	/** @hidden */ static PLANE_OUTSIDE = 0b10010;
 
-	static ON_PLANE = 0b10000;
-	static PLANE_INSIDE = 0b10001;
-	static PLANE_OUTSIDE = 0b10010;
+	/** @hidden */ static OUT_LEFT = 0b0001;
+	/** @hidden */ static OUT_TOP = 0b0010;
+	/** @hidden */ static OUT_RIGHT = 0b0100;
+	/** @hidden */ static OUT_BOTTOM = 0b1000;
 
-	static OUT_LEFT = 0b0001;
-	static OUT_TOP = 0b0010;
-	static OUT_RIGHT = 0b0100;
-	static OUT_BOTTOM = 0b1000;
+	/** @hidden */ static NEARNESS = 1.0;
 
-	static NEARNESS = 1.0;
+	/** @hidden */ constructor() { }
 
 	/**
 	 * Rotate a vector (clockwise) about the origin [0,0] by the given ang.
@@ -707,6 +709,7 @@ class Geom2D {
 
 	/**
 	 * Code copied from java.awt.geom.Rectangle2D#intersectsLine(, , , )
+	 * @hidden
 	 */
 	static _outcode(pX: number, pY: number, rectX: number, rectY: number, rectWidth: number, rectHeight: number) {
 		let out = 0;
@@ -1085,6 +1088,9 @@ class Geom2D {
 		return areaX2 * 0.5;
 	}
 
+	/**
+	 * @hidden
+	 */
 	static _snip(contour: Array<Vector2D>, u: number, v: number, w: number, n: number, vList: Array<number>): boolean {
 		let p: number;
 

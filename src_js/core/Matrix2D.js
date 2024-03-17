@@ -1,6 +1,3 @@
-const MATRIX2D = '1 # 06 Nov 2022';
-// Some problems with translation yet to iron out
-// should this class be immutable
 /**
 * Class to represent a 2D matrix that can be used to create transformed
 * Vector2D objects.
@@ -204,7 +201,6 @@ class Matrix2D {
 }
 /**
  * Handy inner class to hold the intermediate transformation matrices.
- * @hidden
  */
 class Matrix {
     /**

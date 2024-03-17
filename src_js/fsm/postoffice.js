@@ -10,6 +10,9 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
     return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 };
 var _Telegram_sender, _Telegram_receiver, _Telegram_msgID, _Telegram_delay, _Telegram_extraInfo, _Dispatcher_telegrams, _Dispatcher_world;
+/**
+ * A message that can be passed between entities.
+ */
 class Telegram {
     constructor(despatchAt, sender, receiver, msg, extraInfo) {
         _Telegram_sender.set(this, void 0);
@@ -31,6 +34,9 @@ class Telegram {
     get extraInfo() { return __classPrivateFieldGet(this, _Telegram_extraInfo, "f"); }
 }
 _Telegram_sender = new WeakMap(), _Telegram_receiver = new WeakMap(), _Telegram_msgID = new WeakMap(), _Telegram_delay = new WeakMap(), _Telegram_extraInfo = new WeakMap();
+/**
+ * Responcible for receiving, storing and dispatching telegrams.
+ */
 class Dispatcher {
     constructor(world) {
         _Dispatcher_telegrams.set(this, void 0);

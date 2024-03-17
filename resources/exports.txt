@@ -6,5 +6,4 @@ export { FiniteStateMachine, State, Dispatcher, Telegram };
 export { Geom2D, Matrix2D, Matrix, Transform, Vector2D };
 export { sceneFromJSON, graphFromJSON};
 export { _XY_ , PathSearchResult};
-export { VECTOR2D, MATRIX2D, GEOM2D};
 
