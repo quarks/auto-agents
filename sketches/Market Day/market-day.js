@@ -1,5 +1,6 @@
 let wx = 640, wy = 400, depth = 4;
 
+
 function preload() {
     marketData = loadStrings('market_day_data.txt');
     back0 = loadImage('layer0.png');
