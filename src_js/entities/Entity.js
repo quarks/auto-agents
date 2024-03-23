@@ -47,22 +47,24 @@ class Entity {
     set tag(value) { __classPrivateFieldSet(this, _Entity_tag, value, "f"); }
     setTag(value) { __classPrivateFieldSet(this, _Entity_tag, value, "f"); return this; }
     get fsm() { return __classPrivateFieldGet(this, _Entity_fsm, "f"); }
-    enableFsm(owner, world) { __classPrivateFieldSet(this, _Entity_fsm, new FiniteStateMachine(owner, world), "f"); }
+    enableFsm(world) { __classPrivateFieldSet(this, _Entity_fsm, new FiniteStateMachine(this, world), "f"); return this; }
     ;
     set painter(painter) { __classPrivateFieldSet(this, _Entity_painter, painter, "f"); }
     setPainter(painter) { __classPrivateFieldSet(this, _Entity_painter, painter, "f"); return this; }
-    show() { __classPrivateFieldSet(this, _Entity_visible, true, "f"); }
-    hide() { __classPrivateFieldSet(this, _Entity_visible, false, "f"); }
+    show() { __classPrivateFieldSet(this, _Entity_visible, true, "f"); return this; }
+    hide() { __classPrivateFieldSet(this, _Entity_visible, false, "f"); return this; }
     isVisible() { return __classPrivateFieldGet(this, _Entity_visible, "f"); }
     get Z() { return this.__Z; }
     set Z(value) { this.__Z = value; }
     /** Override this in entities reqiiring special actions e.g. Obstacle, Fence */
     born(world) {
         world.births.push(this);
+        return this;
     }
     /** Override this in entities reqiiring special actions e.g. Fence */
     dies(world) {
         world.deaths.push(this);
+        return this;
     }
     fitsInside(lowX, lowY, highX, highY) {
         let p = __classPrivateFieldGet(this, _Entity_pos, "f"), cr = __classPrivateFieldGet(this, _Entity_colRad, "f");

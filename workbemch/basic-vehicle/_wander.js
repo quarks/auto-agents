@@ -1,6 +1,7 @@
 let wanderdemo = function (p) {
     let allowLooping = true;
     let wanderer, trail, gui;
+    let hintTrail = true;
 
     p.setup = function () {
         console.clear();

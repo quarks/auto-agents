@@ -36,7 +36,7 @@ class Entity {
     /** The finite state machine */
     #fsm: FiniteStateMachine;
     get fsm(): FiniteStateMachine { return this.#fsm; }
-    enableFsm(owner: Entity, world: World) { this.#fsm = new FiniteStateMachine(owner, world) };
+    enableFsm(world: World): Entity { this.#fsm = new FiniteStateMachine(this, world); return this; };
 
     /** Set the renderer */
     #painter: Function;
@@ -45,8 +45,8 @@ class Entity {
 
     /** visibility */
     #visible = true;
-    show() { this.#visible = true; }
-    hide() { this.#visible = false; }
+    show(): Entity { this.#visible = true; return this; }
+    hide(): Entity { this.#visible = false; return this; }
     isVisible() { return this.#visible; }
 
     /** The z-order display order property */
@@ -55,13 +55,15 @@ class Entity {
     set Z(value) { this.__Z = value; }
 
     /** Override this in entities reqiiring special actions e.g. Obstacle, Fence */
-    born(world: World) {
+    born(world: World): Entity {
         world.births.push(this);
+        return this;
     }
 
     /** Override this in entities reqiiring special actions e.g. Fence */
-    dies(world: World) {
+    dies(world: World): Entity {
         world.deaths.push(this);
+        return this;
     }
 
     fitsInside(lowX: number, lowY: number, highX: number, highY: number): boolean {

@@ -43,11 +43,13 @@ class Mover extends Entity {
     set domain(d) { __classPrivateFieldSet(this, _Mover_domain, d, "f"); }
     get domain() { return __classPrivateFieldGet(this, _Mover_domain, "f"); }
     set domainConstraint(c) { __classPrivateFieldGet(this, _Mover_domain, "f")?.setConstraint(c); }
+    setDomain(d) { __classPrivateFieldSet(this, _Mover_domain, d, "f"); return this; }
     set prevPos(v) { __classPrivateFieldSet(this, _Mover_prevPos, v, "f"); }
     get prevPos() { return __classPrivateFieldGet(this, _Mover_prevPos, "f"); }
     set vel(v) { __classPrivateFieldSet(this, _Mover_vel, v, "f"); }
     get vel() { return __classPrivateFieldGet(this, _Mover_vel, "f"); }
     get velAngle() { return __classPrivateFieldGet(this, _Mover_vel, "f").angle; }
+    setVel(v) { __classPrivateFieldSet(this, _Mover_vel, v, "f"); return this; }
     /** Speed */
     get speed() { return __classPrivateFieldGet(this, _Mover_vel, "f").length(); }
     get speedSq() { return __classPrivateFieldGet(this, _Mover_vel, "f").lengthSq(); }

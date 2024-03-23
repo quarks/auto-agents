@@ -5,9 +5,10 @@ class Obstacle extends Entity {
         this.Z = 80;
     }
 
-    born(world: World) {
+    born(world: World): Obstacle {
         world.births.push(this);
         world.maxObstacleSize = this.colRad;
+        return this;
     }
 
 

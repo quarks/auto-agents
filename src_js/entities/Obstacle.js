@@ -6,6 +6,7 @@ class Obstacle extends Entity {
     born(world) {
         world.births.push(this);
         world.maxObstacleSize = this.colRad;
+        return this;
     }
     isEitherSide(p0, p1) {
         // console.log(` Sight line Position ${p0.$(4)}   Target ${p1.$(4)}`)

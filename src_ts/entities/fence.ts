@@ -61,15 +61,17 @@ class Fence extends Entity {
     }
 
     /** Overrides entity.born */
-    born(world: World) {
+    born(world: World): Fence {
         world.births.push(this);
         world.births.push(...this.#walls.values());
+        return this;
     }
 
     /** Overrides entity.dies */
-    dies(world: World) {
+    dies(world: World): Fence {
         world.deaths.push(this);
         world.deaths.push(...this.#walls.values());
+        return this;
     }
 
     deleteWall(idx: number, world: World) {

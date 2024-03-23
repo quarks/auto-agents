@@ -4,7 +4,7 @@
   "description": "AutonomousAgents",
   "main": "index.js",
   "scripts": {
-    "tsc": "tsc",
+    "tsc": "tsc > tsc_err.log 2>&1",
     "typedoc": "npx typedoc",
     "gcc": "npx google-closure-compiler dist/lib/aa.js --js_output_file dist/lib/aa.min.js --language_in ECMASCRIPT_2021 --language_out ECMASCRIPT_NEXT "
   },

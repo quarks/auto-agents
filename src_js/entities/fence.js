@@ -73,11 +73,13 @@ class Fence extends Entity {
     born(world) {
         world.births.push(this);
         world.births.push(...__classPrivateFieldGet(this, _Fence_walls, "f").values());
+        return this;
     }
     /** Overrides entity.dies */
     dies(world) {
         world.deaths.push(this);
         world.deaths.push(...__classPrivateFieldGet(this, _Fence_walls, "f").values());
+        return this;
     }
     deleteWall(idx, world) {
         let wall = __classPrivateFieldGet(this, _Fence_walls, "f").get(idx);

@@ -94,13 +94,13 @@
   },
   "include": [
     "src_ts/**/*.ts",
-    "dist/lib/*.ts"
+    "dist/index.ts"
   ],
   "typedocOptions": {
     "emit": "docs",
     "entryPoints": [
-      "dist/lib/aa.ts"
+      "dist/index.ts"
     ],
-    "out": "dist/ref/"
+    "out": "./dist/ref/"
   }
 }

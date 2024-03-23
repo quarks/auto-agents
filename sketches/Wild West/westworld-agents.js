@@ -36,7 +36,7 @@ class Agent extends Entity {
     constructor(world, name) {
         super();
         this._name = name;
-        this.enableFsm(this, world);
+        this.enableFsm(world);
     }
 }
 class Miner extends Agent {

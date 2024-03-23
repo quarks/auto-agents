@@ -4,6 +4,7 @@ class Mover extends Entity {
     set domain(d: Domain) { this.#domain = d; }
     get domain(): Domain { return this.#domain; }
     set domainConstraint(c: symbol) { this.#domain?.setConstraint(c); }
+    setDomain(d: Domain): Mover { this.#domain = d; return this; }
 
     /** Prev world position */
     #prevPos = new Vector2D();
@@ -15,6 +16,7 @@ class Mover extends Entity {
     set vel(v: Vector2D) { this.#vel = v; }
     get vel(): Vector2D { return this.#vel; }
     get velAngle(): number { return this.#vel.angle; }
+    setVel(v: Vector2D): Mover { this.#vel = v; return this; }
 
     /** Speed */
     get speed(): number { return this.#vel.length(); }

@@ -33,24 +33,18 @@ const BALL_MASS = 1.0;
 
 const PLAYER_RADIUS = 5.5;
 const PLAYER_MASS = 1.0;
+const PLAYER_TURNRATE = 3.0;
 
 
 const PITCH_LENGTH = 600;
 const PITCH_WIDTH = 300;
 const GOAL_WIDTH = 100;
 const GOAL_DEPTH = 30;
+const GOAL_NET_DEPTH = 18;
 
-// const LINE_COL = 'white';
-// const LINE_WEIGHT = 3;
 // Limits for goal scoring
 const GOAL_HIGH_Y = (PITCH_WIDTH + GOAL_WIDTH) / 2 - BALL_RADIUS;
 const GOAL_LOW_Y = (PITCH_WIDTH - GOAL_WIDTH) / 2 + BALL_RADIUS;
-
-
-// const GOAL_FILL = 'darkgrey';
-// const GOAL_STROKE = 'lightgrey';
-// const GOAL_WEIGHT = 3;
-// const GOAL_NET_DEPTH = 14;
 
 const KEEPER_TEND_DIST = GOAL_DEPTH / 2;
 

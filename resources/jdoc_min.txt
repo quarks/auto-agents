@@ -1,0 +1,5 @@
+ /**
+ * @preserve Autonomous Agents    (c) Peter Lager  2024
+ * @license MIT
+ * @version 0.0.1
+ */
