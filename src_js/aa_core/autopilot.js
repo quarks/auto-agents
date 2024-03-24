@@ -142,13 +142,14 @@ class AutoPilot {
     /** Switch on seek behaviour and change target if anothe is provided    */
     seekOn(target) {
         __classPrivateFieldSet(this, _AutoPilot_flags, __classPrivateFieldGet(this, _AutoPilot_flags, "f") | SEEK, "f");
-        __classPrivateFieldSet(this, _AutoPilot_target, Vector2D.from(target), "f");
+        if (target)
+            __classPrivateFieldSet(this, _AutoPilot_target, Vector2D.from(target), "f");
         return this;
     }
     /** Is seek switched on?   */
     get isSeekOn() { return (__classPrivateFieldGet(this, _AutoPilot_flags, "f") & SEEK) != 0; }
-    setTarget(t) { __classPrivateFieldGet(this, _AutoPilot_target, "f").set(t); return this; }
-    set target(t) { __classPrivateFieldGet(this, _AutoPilot_target, "f").set(t); }
+    setTarget(t) { __classPrivateFieldSet(this, _AutoPilot_target, t, "f"); return this; }
+    set target(t) { __classPrivateFieldSet(this, _AutoPilot_target, t, "f"); }
     get target() { return __classPrivateFieldGet(this, _AutoPilot_target, "f"); }
     /*
      * ======================================================================
@@ -177,7 +178,8 @@ class AutoPilot {
      */
     arriveOn(target, rate) {
         __classPrivateFieldSet(this, _AutoPilot_flags, __classPrivateFieldGet(this, _AutoPilot_flags, "f") | ARRIVE, "f");
-        __classPrivateFieldSet(this, _AutoPilot_target, Vector2D.from(target), "f");
+        if (target)
+            __classPrivateFieldSet(this, _AutoPilot_target, Vector2D.from(target), "f");
         if (rate)
             __classPrivateFieldSet(this, _AutoPilot_arriveRate, rate, "f");
         return this;
@@ -224,8 +226,8 @@ class AutoPilot {
     }
     /** Is seek switched on?   */
     get isFleeOn() { return (__classPrivateFieldGet(this, _AutoPilot_flags, "f") & FLEE) != 0; }
-    setFleeTarget(t) { __classPrivateFieldGet(this, _AutoPilot_fleeTarget, "f").set(t); return this; }
-    set fleeTarget(t) { __classPrivateFieldGet(this, _AutoPilot_fleeTarget, "f").set(t); }
+    setFleeTarget(t) { __classPrivateFieldSet(this, _AutoPilot_fleeTarget, t, "f"); return this; }
+    set fleeTarget(t) { __classPrivateFieldSet(this, _AutoPilot_fleeTarget, t, "f"); }
     get fleeTarget() { return __classPrivateFieldGet(this, _AutoPilot_fleeTarget, "f"); }
     get fleeRadius() { return __classPrivateFieldGet(this, _AutoPilot_fleeRadius, "f"); }
     set fleeRadius(n) { __classPrivateFieldSet(this, _AutoPilot_fleeRadius, n, "f"); }
@@ -380,8 +382,8 @@ class AutoPilot {
     }
     /** Is pursuit switched off? */
     get isOffsetPusuitOn() { return (__classPrivateFieldGet(this, _AutoPilot_flags, "f") & OFFSET_PURSUIT) != 0; }
-    setPursueOffset(v) { __classPrivateFieldGet(this, _AutoPilot_pursueOffset, "f").set(v); return this; }
-    set pursueOffset(v) { __classPrivateFieldGet(this, _AutoPilot_pursueOffset, "f").set(v); }
+    setPursueOffset(v) { __classPrivateFieldSet(this, _AutoPilot_pursueOffset, v, "f"); return this; }
+    set pursueOffset(v) { __classPrivateFieldSet(this, _AutoPilot_pursueOffset, v, "f"); }
     get pursueOffset() { return __classPrivateFieldGet(this, _AutoPilot_pursueOffset, "f"); }
     /*
      * ======================================================================

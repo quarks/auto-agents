@@ -25,7 +25,6 @@ class State {
     get dispatcher() { return __classPrivateFieldGet(this, _State_world, "f").dispatcher; }
     // This will execute when the state is entered.
     enter(user) { }
-    ;
     // This is the state's normal update function.
     execute(user, elapsedTime) { }
     // This will execute when the state is exited.

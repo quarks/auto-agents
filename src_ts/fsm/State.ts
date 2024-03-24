@@ -10,7 +10,7 @@ class State {
     get dispatcher() { return this.#world.dispatcher; }
 
     // This will execute when the state is entered.
-    enter(user: Entity): void { };
+    enter(user: Entity): void { }
 
     // This is the state's normal update function.
     execute(user: Entity, elapsedTime: number): void { }
@@ -22,7 +22,7 @@ class State {
     // returns true if telegram message is used.
     onMessage(user: Entity, tgram: Telegram): boolean { return false; }
 
-    constructor(world: World, name?: string,) {
+    constructor(world: World, name?: string) {
         if (!name) name = this.constructor.name;
         this.#name = name;
         this.#world = world;

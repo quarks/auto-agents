@@ -9,33 +9,58 @@ function setup() {
     let p5canvas = createCanvas(640, 600);
     p5canvas.parent('sketch');
     world = new World(600, 300);
-    teamColor = initTeamColors(); // Array of schemes id 0-5 incl
+    world.domain = new Domain(-10, -10, 610, 600, REBOUND);
+    createStates(world);
+    teamColors = initTeamColors(); // Array of schemes id 0-5 incl
+
     pitch = new Pitch(pitchImage, world);
+
+    //world.update(0);
+    for (let p of pitch.getAllPlayers())
+        p.changeState(plyLeavePitch);
 }
 
+function createStates(w) {
+    preMatch = new PreMatch(w);
+    endMatch = new EndMatch(w);
+    plyWait = new Wait(w);
+    pchGlobal = new PitchGlobal(w);
+    plyReturnToHomeRegion = new ReturnToHomeRegion(w);
+    plyLeavePitch = new LeavePitch(w);
+}
+1
 function keyTyped() {
     switch (key) {
-        case 'p':
-            for (let p of pitch.getAllPlayers()) {
-                p.pos = p.offPitchPos;
-                p.headingAtRest = p.offPitchHeading;
+        case '0':
+            pitch.counter = 0; 1
+            for (let p of pitch.changeTeamColors()) {
+                p.changeState(plyLeavePitch);
             }
             break;
-        case 'd':
+        case '1':
+            pitch.counter = 0;
             for (let p of pitch.getAllPlayers()) {
-                p.pos = p.regionPos[0];
-                p.headingAtRest = pitch.goal[p.team.side].norm;
+                p.changeState(plyReturnToHomeRegion);
             }
             break;
         case 'a':
-            for (let p of pitch.getAllPlayers()) {
-                p.pos = p.regionPos[1];
-                p.headingAtRest = pitch.goal[p.team.side].norm;
-            }
+            //console.log('Team mode > ATTACKING');
+            pitch.team[0].setTeamMode(ATTACKING);
+            pitch.team[1].setTeamMode(ATTACKING);
+            break;
+        case 'd':
+            //console.log('Team mode > DEFENDING');
+            pitch.team[0].setTeamMode(DEFENDING);
+            pitch.team[1].setTeamMode(DEFENDING);
+            break;
+        case 'n':
+            pitch.changeTeamColors();
+            break;
+        case 'e':
+            pitch.changeState(endMatch);
             break;
     }
 }
-
 
 function draw() {
     world.update(deltaTime / 1000);

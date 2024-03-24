@@ -87,9 +87,9 @@ class AutoPilot {
     }
 
     /** Switch on seek behaviour and change target if anothe is provided    */
-    seekOn(target: Array<number> | _XY_): AutoPilot {
+    seekOn(target?: Array<number> | _XY_): AutoPilot {
         this.#flags |= SEEK;
-        this.#target = Vector2D.from(target);
+        if (target) this.#target = Vector2D.from(target);
         return this;
     }
 
@@ -97,8 +97,8 @@ class AutoPilot {
     get isSeekOn(): boolean { return (this.#flags & SEEK) != 0; }
 
     #target = new Vector2D();   // Target for both arrive and seek behaviours
-    setTarget(t: Vector2D): AutoPilot { this.#target.set(t); return this; }
-    set target(t: Vector2D) { this.#target.set(t); }
+    setTarget(t: Vector2D): AutoPilot { this.#target = t; return this; }
+    set target(t: Vector2D) { this.#target = t; }
     get target(): Vector2D { return this.#target; }
 
 
@@ -128,9 +128,9 @@ class AutoPilot {
      * @param target the position to arrive at
      * @param rate rate of approach (SLOW, NORMAL or FAST)
      */
-    arriveOn(target: Array<number> | _XY_, rate?: number): AutoPilot {
+    arriveOn(target?: Array<number> | _XY_, rate?: number): AutoPilot {
         this.#flags |= ARRIVE;
-        this.#target = Vector2D.from(target);
+        if (target) this.#target = Vector2D.from(target);
         if (rate) this.#arriveRate = rate;
         return this;
     }
@@ -186,8 +186,8 @@ class AutoPilot {
     get isFleeOn(): boolean { return (this.#flags & FLEE) != 0; }
 
     #fleeTarget = new Vector2D();
-    setFleeTarget(t: Vector2D): AutoPilot { this.#fleeTarget.set(t); return this; }
-    set fleeTarget(t: Vector2D) { this.#fleeTarget.set(t); }
+    setFleeTarget(t: Vector2D): AutoPilot { this.#fleeTarget = t; return this; }
+    set fleeTarget(t: Vector2D) { this.#fleeTarget = t; }
     get fleeTarget(): Vector2D { return this.#fleeTarget; }
 
     // Panic distance squared for flee to be effective
@@ -378,8 +378,8 @@ class AutoPilot {
     get isOffsetPusuitOn(): boolean { return (this.#flags & OFFSET_PURSUIT) != 0; }
 
     #pursueOffset = new Vector2D();
-    setPursueOffset(v: Vector2D): AutoPilot { this.#pursueOffset.set(v); return this; }
-    set pursueOffset(v: Vector2D) { this.#pursueOffset.set(v); }
+    setPursueOffset(v: Vector2D): AutoPilot { this.#pursueOffset = v; return this; }
+    set pursueOffset(v: Vector2D) { this.#pursueOffset = v; }
     get pursueOffset(): Vector2D { return this.#pursueOffset; }
 
 

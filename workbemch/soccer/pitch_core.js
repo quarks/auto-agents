@@ -3,20 +3,42 @@ class Pitch extends Entity {
     constructor(img, world) {
         super();
         this.image = img;
-        this.playerDomain = new Domain(-10, -10, 610, 600, REBOUND);
+        this.domain = new Domain(0, 0, PITCH_LENGTH, PITCH_WIDTH, REBOUND);
         this.region = this.createRegions();
+        this.centerSpot = new Vector2D(PITCH_LENGTH / 2, PITCH_WIDTH / 2);
         this.goal = [];
         this.goal.push(
             new Goal(this, 'left', getGoalImage('left')).enableFsm(world).born(world),
             new Goal(this, 'right', getGoalImage('right')).enableFsm(world).born(world));
-        this.ball = new Ball(this).setVel(Vector2D.fromRandom(150, 150)).enableFsm(world).born(world);
+        this.ball = new Ball(this).setVel(Vector2D.fromRandom(150, 150)).setDomain(this.domain).enableFsm(world).born(world);
         this.team = [];
         this.team.push(
             new Team(this, 0, Vector2D.PLUS_I, [1, 3, 5, 6, 8], [1, 4, 8, 12, 14], 0, world),
             new Team(this, 1, Vector2D.MINUS_I, [16, 12, 14, 9, 11], [16, 13, 9, 3, 5], 1, world),
         );
+        this.changeTeamColors();
+        this.matchInProgress = false;
         this.Z = 9;
         this.enableFsm(world).born(world);
+        this.counter = 0;
+    }
+
+    changeTeamColors() {
+        let c0 = floor(random(0, teamColors.length)), c1;
+        do {
+            c1 = floor(random(0, teamColors.length));
+        } while (c0 == c1);
+        this.setTeamColors(c0, c1);
+        // this.teamScheme = [teamColors[c0], teamColors[c1]];
+        // for (let p of this.team[0].player) p.painter = paintPlayer(this.teamScheme[0]);
+        // for (let p of this.team[1].player) p.painter = paintPlayer(this.teamScheme[1]);
+        // console.log(`Next match ${this.teamScheme[0].name} vs ${this.teamScheme[1].name}`);
+    }
+    setTeamColors(c0, c1) {
+        this.teamScheme = [teamColors[c0], teamColors[c1]];
+        for (let p of this.team[0].player) p.painter = paintPlayer(this.teamScheme[0]);
+        for (let p of this.team[1].player) p.painter = paintPlayer(this.teamScheme[1]);
+        console.log(`Next match ${this.teamScheme[0].name} vs ${this.teamScheme[1].name}`);
     }
 
     getAllPlayers() {
