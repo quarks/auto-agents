@@ -1,6 +1,6 @@
 class Team extends Entity {
 
-    constructor(pitch, side, rest_heading, def_regions, att_regions, colSchemeID, world) {
+    constructor(pitch, side, rest_heading, def_regions, att_regions, world) {
         super();
         this.pitch = pitch;
         this.side = side; // 0 = LHS  : 1 = RHS
@@ -9,11 +9,11 @@ class Team extends Entity {
         let offPitchX = side == 0 ? 285 : 315;
         this.player = [];
         this.player.push(
-            new GoalKeeper(this, rest_heading, def_regions[0], att_regions[0], new Vector2D(offPitchX, 350)),
-            new FieldPlayer(this, rest_heading, def_regions[1], att_regions[1], new Vector2D(offPitchX, 370), DEFENDER),
-            new FieldPlayer(this, rest_heading, def_regions[2], att_regions[2], new Vector2D(offPitchX, 410), DEFENDER),
-            new FieldPlayer(this, rest_heading, def_regions[3], att_regions[3], new Vector2D(offPitchX, 390), ATTACKER),
-            new FieldPlayer(this, rest_heading, def_regions[4], att_regions[4], new Vector2D(offPitchX, 430), ATTACKER),
+            new GoalKeeper(this, rest_heading, def_regions[0], att_regions[0], new Vector2D(offPitchX, 335)),
+            new FieldPlayer(this, rest_heading, def_regions[1], att_regions[1], new Vector2D(offPitchX, 380), DEFENDER),
+            new FieldPlayer(this, rest_heading, def_regions[2], att_regions[2], new Vector2D(offPitchX, 350), DEFENDER),
+            new FieldPlayer(this, rest_heading, def_regions[3], att_regions[3], new Vector2D(offPitchX, 365), ATTACKER),
+            new FieldPlayer(this, rest_heading, def_regions[4], att_regions[4], new Vector2D(offPitchX, 395), ATTACKER),
         )
         for (let p of this.player) {
             p.enableFsm(world).born(world);
@@ -21,6 +21,31 @@ class Team extends Entity {
         }
         this.enableFsm(world).born(world);
     }
+
+    getClosestTeamMemberToBall() {
+        let bp = this.pitch.ball.pos, d = Number.MAX_VALUE, nearest = undefined;
+        for (let ply of this.player) {
+            let d2 = Vector2D.distSq(ply.pos, bp);
+            if (d2 <= d) {
+                d = d2;
+                nearest = ply;
+            }
+        }
+        return nearest;
+    }
+
+    // getClosestTeamMemberToBall() {
+    //     let bp = this.pitch.ball.pos, d = Number.MAX_VALUE, nearest = undefined;
+    //     for (let ply of this.player) {
+    //         let d2 = Vector2D.distSq(ply.pos, bp);
+    //         if (d2 <= d) {
+    //             d = d2;
+    //             nearest = ply;
+    //         }
+    //     }
+    //     return nearest;
+    // }
+
 
     // mode = DEFENDING or ATTACKING
     // move = true if game isin progress

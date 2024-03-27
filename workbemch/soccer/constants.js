@@ -19,6 +19,10 @@ const TEAMS_READY_FOR_KICK_OFF = 302;
 const GOAL_SCORED = 303;
 const STOP_GAME = 304;
 
+const START_CLOCK = 310;
+const KICKOFF = 311;
+const PREMATCH = 312;
+
 // State IDs
 const PREPARE_FOR_KICKOFF_STATE = 901;
 const DEFENDING_STATE = 902;
@@ -48,7 +52,7 @@ const GOAL_LOW_Y = (PITCH_WIDTH - GOAL_WIDTH) / 2 + BALL_RADIUS;
 
 const KEEPER_TEND_DIST = GOAL_DEPTH / 2;
 
-const MATCH_TIME = 120;
+const MATCH_TIME = 20;              // Change to 120 when tested
 const TIMER_LENGTH = 200;
 
 //these values tweak the various rules used to calculate the support spots
@@ -77,7 +81,7 @@ const KeeperInBallRange = PLAYER_RADIUS + BALL_RADIUS; // was 10
 const KeeperInBallRangeSq = KeeperInBallRange * KeeperInBallRange;
 const PlayerNearTargetRange = 20.0;
 const PlayerNearTargetRangeSq = PlayerNearTargetRange * PlayerNearTargetRange;
-const PlayerAtTargetRange = 1.0;
+const PlayerAtTargetRange = 2.0;
 const PlayerAtTargetRangeSq = PlayerAtTargetRange * PlayerAtTargetRange;
 
 // Player has to be this close to the ball to be able to kick it. The higher

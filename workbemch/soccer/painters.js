@@ -16,13 +16,13 @@ function paintPlayer(scheme, p = p5.instance) {
     });
 }
 
-function initTeamColors() {
+function initTeamDetails() {
     let t = [];
-    t.push({ name: 'Red Socks', stroke: color(255, 0, 0), body: color(255, 190, 190), head: color(128, 0, 0) });
+    t.push({ name: 'Red Roses', stroke: color(255, 0, 0), body: color(255, 190, 190), head: color(128, 0, 0) });
     t.push({ name: 'Blue Bottles', stroke: color(0, 0, 255), body: color(200, 200, 255), head: color(0, 0, 128) });
     t.push({ name: 'Purple Hearts', stroke: color(255, 0, 255), body: color(255, 200, 255), head: color(128, 0, 128) });
     t.push({ name: 'Orange Pips', stroke: color(255, 128, 0), body: color(255, 192, 64), head: color(166, 82, 0) });
-    t.push({ name: 'Cyan Eyeds', stroke: color(0, 255, 255), body: color(200, 255, 255), head: color(0, 96, 96) });
+    t.push({ name: 'Cyan Ides', stroke: color(0, 255, 255), body: color(200, 255, 255), head: color(0, 96, 96) });
     t.push({ name: 'Grey Beards', stroke: color(230), body: color(190), head: color(128) });
     return t;
 }

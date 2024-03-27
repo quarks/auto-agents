@@ -89,13 +89,13 @@ class Vehicle extends Mover {
         // Apply domain constraints
         this.applyDomainConstraint(this.domain ? this.domain : world.domain);
         // Update heading
-        if (this.vel.lengthSq() > 0.02)
+        let velSq = this.vel.lengthSq();
+        if (velSq < 1 && this.headingAtRest)
+            this.rotateHeadingToAlignWith(elapsedTime, this.headingAtRest);
+        else if (velSq > 0.000001)
             this.rotateHeadingToAlignWith(elapsedTime, this.vel);
-        else {
+        else
             this.vel.set([0, 0]);
-            if (this.headingAtRest)
-                this.rotateHeadingToAlignWith(elapsedTime, this.headingAtRest);
-        }
         // Ensure heading and side are normalised
         this.heading = this.heading.normalize();
         this.side.set([-this.heading.y, this.heading.x]);

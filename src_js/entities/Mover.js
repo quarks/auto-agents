@@ -19,7 +19,7 @@ class Mover extends Entity {
         _Mover_prevPos.set(this, new Vector2D());
         /** Velocity */
         _Mover_vel.set(this, new Vector2D());
-        /** Heading / facing (normalised) */
+        /** Heading (normalised) */
         this.__heading = new Vector2D(1, 0); // facing East;
         /** Perpendiclar to heading (normalised) */
         _Mover_side.set(this, void 0);

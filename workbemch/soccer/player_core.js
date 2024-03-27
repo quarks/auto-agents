@@ -36,7 +36,10 @@ class Player extends Vehicle {
     isAtTarget() {
         let dist = Vector2D.distSq(this.pos, this.pilot.target);
         return dist <= PlayerAtTargetRange;
+    }
 
+    isClosestToBall() {
+        return this.team.getClosestTeamMemberToBall() == this;
     }
 }
 

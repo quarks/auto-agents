@@ -1,56 +1,18 @@
-class PitchGlobal extends State {
-
-    constructor(world) {
-        super(world, 'Pitch Global State');
-    }
-
-    enter(user) { }
-
-    execute(user, elapsedTime) { }
-
-    exit(user) { }
-
-    onMessage(user, tgram) {
-        switch (tgram.msgID) {
-            case PREPARE_FOR_KICKOFF:
-                return false;
-            case TEAMS_READY_FOR_KICK_OFF:
-                return false;
-            case GOAL_SCORED:
-                return false;
-            case STOP_GAME:
-                return false;
-        }
-        return false;
-    }
-}
-
-class StartMatch extends State {
-    constructor(world) {
-        super(world, 'Game start');
-    }
-
-    enter(user) {
-
-    }
-}
-
 class EndMatch extends State { // Pitch state
-    constructor(world) {
-        super(world, 'End match');
-    }
+    constructor(world) { super(world, 'End match'); }
 
     enter(pitch) {
-        pitch.counter = 0;
-        pitch.ball.pos = pitch.centerSpot;
-        pitch.ball.vel = Vector2D.ZERO;
-        for (let p of pitch.getAllPlayers()) {
+        pitch.counterA = 0;
+        pitch.ball.pos = pitch.centerSpot; pitch.ball.vel = Vector2D.ZERO;
+        for (let p of pitch.getAllPlayers())
             p.changeState(plyLeavePitch);
-        }
     }
 
     execute(pitch, elapsedTime) {
-        if (pitch.counter >= 10) pitch.changeState(preMatch);
+        if (pitch.counterA >= 10) {
+            pitch.counterA = 0;
+            this.sendMessage(1, pitch.id, pitch.id, PREMATCH);
+        }
     }
 
     exit(pitch) {
@@ -59,29 +21,65 @@ class EndMatch extends State { // Pitch state
     }
 }
 
+
 class PreMatch extends State { // Pitch state
-    constructor(world) {
-        super(world, 'Pre match');
-    }
+    constructor(world) { super(world, 'Pre match'); }
 
     enter(pitch) {
-        pitch.changeTeamColors();
+        pitch.clock = 0;
+        pitch.changeTeams();
+        this.sendMessage(8, pitch.id, pitch.id, PREPARE_FOR_KICKOFF);
+    }
+}
+
+// Move players to defensive
+class PrepForKickOff extends State {
+    constructor(world) { super(world, 'Prepare for kick off'); }
+
+    enter(pitch) {
+        pitch.counterB = 0;
+        pitch.ball.pos = pitch.centerSpot;
+        pitch.ball.vel = Vector2D.ZERO;
+        pitch.team[0].setTeamMode(DEFENDING, false);
+        pitch.team[1].setTeamMode(DEFENDING, false);
+        for (let p of pitch.getAllPlayers())
+            p.changeState(plyReturnToHomeRegion);
     }
 
     execute(pitch, elapsedTime) {
+        if (pitch.counterB >= 10) {
+            pitch.counterB = 0;
+            this.sendMessage(5, pitch.id, pitch.id, KICKOFF);
+        }
+    }
+}
 
+
+class KickOff extends State {
+    constructor(world) { super(world, 'Kick off'); }
+
+    enter(pitch) {
+        if (pitch.clock == 0) {
+            pitch.gameStarted = millis();
+            this.sendMessage(MATCH_TIME, pitch.id, pitch.id, STOP_GAME);
+        }
+        pitch.team[0].getClosestTeamMemberToBall().changeState(plyChaseBall);
+        pitch.team[1].getClosestTeamMemberToBall().changeState(plyChaseBall);
+        pitch.changeState(pchGameOn);
     }
 
-    exit(pitch) {
+}
 
+class GameOn extends State {
+    constructor(world) { super(world, 'Game on'); }
+
+    execute(player, elapsedTime) {
+        pitch.clock = millis() - pitch.gameStarted;
     }
 }
 
 class ReturnToHomeRegion extends State {
-
-    constructor(world) {
-        super(world, 'Return to home region');
-    }
+    constructor(world) { super(world, 'Return to home region'); }
 
     enter(player) {
         player.pilot.arriveOn(player.homeRegionPos);
@@ -90,48 +88,24 @@ class ReturnToHomeRegion extends State {
 
     execute(player, elapsedTime) {
         if (player.isAtTarget()) {
-            player.pilot.arriveOff();
+            player.vel = Vector2D.ZERO;
+            player.trackBall();
             player.changeState(plyWait);
         }
     }
 
     exit(player) {
-        player.team.pitch.counter++;
-        // console.log(`Returned home ${player.team.pitch.counter}`);
+        player.pilot.arriveOff();
+        player.team.pitch.counterB++;
     }
-
 }
 
-
-class LeavePitch extends State { // Player state
-
-    constructor(world) {
-        super(world, 'Leave Pitch');
-    }
-
-    enter(player) {
-        player.pilot.arriveOn(player.offPitchPos, FAST);
-        player.headingAtRest = player.offPitchHeading;
-    }
-
-    execute(player, elapsedTime) {
-        if (player.isAtTarget()) {
-            player.pilot.arriveOff();
-            player.changeState(plyWait);
-        }
-    }
-
-    exit(player) {
-        player.team.pitch.counter++;
-        // console.log(`Arrived off pitch ${player.team.pitch.counter}`);
-    }
-
-}
 
 class Wait extends State {
+    constructor(world) { super(world, 'Wait'); }
 
-    constructor(world) {
-        super(world, 'Wait');
+    enter(player) {
+        player.vel = Vector2D.ZERO;
     }
 
     execute(player, elapsedTime) {
@@ -144,5 +118,75 @@ class Wait extends State {
             player.trackBall();
         }
     }
+}
 
+
+class LeavePitch extends State {
+    constructor(world) { super(world, 'Leave Pitch'); }
+
+    enter(player) {
+        player.pilot.arriveOn(player.offPitchPos, FAST);
+        player.headingAtRest = player.offPitchHeading;
+    }
+
+    execute(player, elapsedTime) {
+        if (player.isAtTarget())
+            player.changeState(plyWait);
+    }
+
+    exit(player) {
+        player.team.pitch.counterA++;
+        player.pilot.arriveOff();
+    }
+}
+
+
+class ChaseBall extends State {
+    constructor(world) { super(world, 'Chase ball'); }
+
+    enter(player) {
+        player.pilot.seekOn(player.team.pitch.ball.pos);
+    }
+
+    execute(player, elapsedTime) {
+        if (player.isClosestToBall()) {
+            player.pilot.target = player.team.pitch.ball.pos;
+            return;
+        }
+        player.changeState(plyReturnToHomeRegion);
+    }
+
+    exit(player) {
+        player.pilot.seekOff();
+    }
+}
+
+// Message central
+class PitchGlobal extends State {
+    constructor(world) { super(world, 'Pitch Global State'); }
+
+    onMessage(pitch, tgram) {
+        switch (tgram.msgID) {
+            case PREPARE_FOR_KICKOFF:
+                pitch.changeState(pchPrepForKickOff);
+                return true;
+            case PREMATCH:
+                pitch.changeState(pchPreMatch);
+                return true;
+            case KICKOFF:
+                pitch.changeState(pchKickOff);
+                return true;
+            case START_CLOCK:
+                pitch.clock = millis();
+            case TEAMS_READY_FOR_KICK_OFF:
+                return true;
+            case GOAL_SCORED:
+                return true;
+            case STOP_GAME:
+                pitch.clock = MATCH_TIME * 1000;
+                pitch.changeState(pchEndMatch);
+                return true;
+        }
+        return false;
+    }
 }

@@ -22,7 +22,7 @@ class Mover extends Entity {
     get speed(): number { return this.#vel.length(); }
     get speedSq(): number { return this.#vel.lengthSq(); }
 
-    /** Heading / facing (normalised) */
+    /** Heading (normalised) */
     __heading = new Vector2D(1, 0); // facing East;
     set heading(v: Vector2D) { this.__heading = v; }
     get heading(): Vector2D { return this.__heading; }

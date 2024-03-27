@@ -45,7 +45,7 @@ class Dispatcher {
         __classPrivateFieldSet(this, _Dispatcher_telegrams, [], "f");
     }
     /**
-     * Remember a telegram for later sending.
+     * Receive a telegram for later sending.
      * @param delay time to wait before sending in seconds
      * @param sender id of sender
      * @param receiver id of receiver

@@ -74,6 +74,8 @@ class Entity {
         return Geom2D.line_circle(p0.x, p0.y, p1.x, p1.y, this.pos.x, this.pos.y, this.colRad);
     }
     update(elapsedTime, world) { }
+    currentState() { return __classPrivateFieldGet(this, _Entity_fsm, "f")?.currentState; }
+    isCurrentState(state) { return __classPrivateFieldGet(this, _Entity_fsm, "f")?.currentState == state; }
     changeState(newState) { __classPrivateFieldGet(this, _Entity_fsm, "f")?.changeState(newState); }
     revertToPreviousState() { __classPrivateFieldGet(this, _Entity_fsm, "f")?.revertToPreviousState(); }
     hasFSM() { return __classPrivateFieldGet(this, _Entity_fsm, "f") ? true : false; }

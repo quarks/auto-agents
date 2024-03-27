@@ -22,7 +22,6 @@ class State {
     set name(n) { __classPrivateFieldSet(this, _State_name, n, "f"); }
     get name() { return __classPrivateFieldGet(this, _State_name, "f"); }
     get world() { return __classPrivateFieldGet(this, _State_world, "f"); }
-    get dispatcher() { return __classPrivateFieldGet(this, _State_world, "f").dispatcher; }
     // This will execute when the state is entered.
     enter(user) { }
     // This is the state's normal update function.
@@ -32,6 +31,9 @@ class State {
     // This executes if the agent receives a message from the dispatcher.
     // returns true if telegram message is used.
     onMessage(user, tgram) { return false; }
+    sendMessage(delay, sender, receiver, msg, extraInfo) {
+        __classPrivateFieldGet(this, _State_world, "f").dispatcher.postTelegram(delay, sender, receiver, msg, extraInfo);
+    }
 }
 _State_name = new WeakMap(), _State_world = new WeakMap();
 //# sourceMappingURL=state.js.map

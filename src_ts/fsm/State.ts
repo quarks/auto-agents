@@ -7,8 +7,6 @@ class State {
     #world: World;
     get world() { return this.#world; }
 
-    get dispatcher() { return this.#world.dispatcher; }
-
     // This will execute when the state is entered.
     enter(user: Entity): void { }
 
@@ -21,6 +19,10 @@ class State {
     // This executes if the agent receives a message from the dispatcher.
     // returns true if telegram message is used.
     onMessage(user: Entity, tgram: Telegram): boolean { return false; }
+
+    sendMessage(delay: number, sender: number | Entity, receiver: number | Entity, msg: number, extraInfo?: object) {
+        this.#world.dispatcher.postTelegram(delay, sender, receiver, msg, extraInfo);
+    }
 
     constructor(world: World, name?: string) {
         if (!name) name = this.constructor.name;

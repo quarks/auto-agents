@@ -78,11 +78,17 @@ class Entity {
 
     update(elapsedTime: number, world: World): void { }
 
+
+    currentState(): State { return this.#fsm?.currentState; }
+
+    isCurrentState(state: State): boolean { return this.#fsm?.currentState == state; }
+
     changeState(newState: State) { this.#fsm?.changeState(newState); }
 
     revertToPreviousState() { this.#fsm?.revertToPreviousState(); }
 
     hasFSM() { return this.#fsm ? true : false; }
+
 
     render(elapsedTime: number, world: World) { if (this.isVisible) this.#painter?.call(this, elapsedTime, world); }
 
