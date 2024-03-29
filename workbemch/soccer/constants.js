@@ -32,10 +32,10 @@ const GOALKEEPER = 1001;
 const ATTACKER = 1002;
 const DEFENDER = 1003;
 
-const BALL_RADIUS = 4.5;
+const BALL_RADIUS = 4.5;    // Collision radius
 const BALL_MASS = 1.0;
 
-const PLAYER_RADIUS = 5.5;
+const PLAYER_RADIUS = 5.5;  // Collision radius
 const PLAYER_MASS = 1.0;
 const PLAYER_TURNRATE = 3.0;
 
@@ -52,7 +52,7 @@ const GOAL_LOW_Y = (PITCH_WIDTH - GOAL_WIDTH) / 2 + BALL_RADIUS;
 
 const KEEPER_TEND_DIST = GOAL_DEPTH / 2;
 
-const MATCH_TIME = 20;              // Change to 120 when tested
+//const MATCH_TIME = 20;              // Change to 120 when tested
 const TIMER_LENGTH = 200;
 
 //these values tweak the various rules used to calculate the support spots

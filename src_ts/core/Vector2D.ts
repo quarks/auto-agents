@@ -1,25 +1,33 @@
 /**
-* Simple 2D vector class
-*
-* Although it is possible to change the x and y properties with the set 
-* methods it is not recommended as it makes the vector mutable.
+* Simple immutable 2D vector class
 * 
-* All other methods return a new vector representing the result of the
-* operation leaving the original vector unchanged i.e. immutable.
+* It is not possible to change the x and y properties of an existing
+* vector instance because the class is immutable.
 * 
-* For instance the statement
+* For instance the statement:
 *
 * <pre> v0.add(v1);  </pre>
 *
 * will return a the sum of the 2 vectors v0 and v1 as a new vector and 
 * will leave v0 unchanged.
 * 
-* To change the vector v0 then you must assign the resukt back to v0 
+* To change the vector v0 then you must assign the result back to v0 
 * like this
 *
 * <pre> v0 = v0.add(v1);  </pre>
+* 
+* Using immutable vectors allows the instance methods to be chained 
+* without changes to any vectors used in the calculation. In this example
+* the vectors 'b' and 'c' are twice but are never changed.
+* 
+* <pre v = a.add(b.add(c)).div(2).sub(c).negate().sub(b); </pre>
 *
-* Last updated: 14 Mar 2024
+* There are times when it makes sense to be able to change the XY
+* properties of an existing vector. The class method mutate can be
+* used to mutate the vector.
+* 
+* 
+* Last updated: 29 Mar 2024
 *
 * @author Peter Lager
 */
@@ -70,13 +78,10 @@ class Vector2D implements _XY_ {
 
     /** X coordinate value */
     get x(): number { return this.#p[0]; }
-    set x(value) { if (Number.isFinite(value)) this.#p[0] = value; }
     /** Y coordinate value */
     get y(): number { return this.#p[1]; }
-    set y(value) { if (Number.isFinite(value)) this.#p[1] = value; }
     /** Angle in 2D plane */
     get angle() { return Math.atan2(this.#p[1], this.#p[0]); }
-    set angle(n: number) { this.#p[0] = Math.cos(n); this.#p[1] = Math.sin(n); }
 
     /**
      * Add a displacement (either vector object or 2 scalars ) 
@@ -271,21 +276,6 @@ class Vector2D implements _XY_ {
     }
 
     /**
-     * =============   MUTATES VECTOR    ====================
-     * @param position change the coordinates to match position
-     * @returns the changed vetor
-     */
-    set(position: Array<number> | _XY_): Vector2D {
-        if (position instanceof Array) {
-            this.#p[0] = position[0]; this.#p[1] = position[1];
-        }
-        else {
-            this.#p[0] = position.x; this.#p[1] = position.y;
-        }
-        return this;
-    }
-
-    /**
      * Determines whether vector v is clockwise of this vector. <br>
      * @param v a vector
      * @return positive (+1) if clockwise else negative (-1)
@@ -337,7 +327,27 @@ class Vector2D implements _XY_ {
         return [this.#p[0], this.#p[1]];
     }
 
-    /**       +++++++++++++ CLASS METHODS +++++++++++++++        */
+    /*       +++++++++++++ CLASS METHODS +++++++++++++++        */
+
+    /**
+      * =============   MUTATES VECTOR    ====================
+      * There maybe times when you want to cahnge the XY coordinates
+      * (mutate) of an existing vector rather that create a new one.
+      * 
+      * This is the only method available that can mutate a vector.
+      * @param vector the vector to mutate
+      * @param position the new xy coordinstes for vector v
+      * @returns 
+      */
+    static mutate(vector: Vector2D, position: Array<number> | _XY_): Vector2D {
+        if (position instanceof Array) {
+            vector.#p[0] = position[0]; vector.#p[1] = position[1];
+        }
+        else {
+            vector.#p[0] = position.x; vector.#p[1] = position.y;
+        }
+        return vector;
+    }
 
     /** 
      * @returns true if these vectors have the same coordinates
@@ -429,7 +439,11 @@ class Vector2D implements _XY_ {
         return this;
     }
 
-    // Return vector as array string su
+    $$(precision = 16): Vector2D {
+        console.log(this.$(precision));
+        return this;
+    }
+
     $(precision = 16): string {
         let xv = this.x.toPrecision(precision);
         let yv = this.y.toPrecision(precision);
@@ -441,6 +455,7 @@ class Vector2D implements _XY_ {
     }
 
 }
+
 /** 
  * Defines a simple object with 2 attributes x and y
  * @interface

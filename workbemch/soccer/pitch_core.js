@@ -21,8 +21,6 @@ class Pitch extends Entity {
         this.teamName = ['', ''];
         this.score = [42, 70];
         this.changeTeams();
-
-
         this.enableFsm(world).born(world);
         this.fsm.globalState = pchGlobal;
         this.gameStarted = 0;
@@ -39,7 +37,6 @@ class Pitch extends Entity {
     setTeams(idx0, idx1) {
         let scheme = [teamDetails[idx0], teamDetails[idx1]];
         this.teamName = [scheme[0].name, scheme[1].name];
-        console.log(this.teamName)
         for (let p of this.team[0].player) p.painter = paintPlayer(scheme[0]);
         for (let p of this.team[1].player) p.painter = paintPlayer(scheme[1]);
     }
@@ -103,15 +100,12 @@ class Ball extends Mover {
 
     constructor(pitch) {
         super([PITCH_LENGTH / 2, PITCH_WIDTH / 2], BALL_RADIUS);
-        // Position on pitch
-        //     BALL_RADIUS, // Collision radius
-        //     new Vector2D(0, 0), // Velocity
-        //     Float.MAX_VALUE, // Maximum velocity
-        //     new Vector2D(0, 1), // Heading
-        //     BALL_MASS, // Ball mass
-        //     1, // Max turning rate
-        //     Float.MAX_VALUE                  // Maximum force
-        // );
+        this.pitch = pitch;
+        this.owner = undefined;
+        this.lastKickedBy = undefined;
+        this.lastKickedAt = 0;
+        this.maxSpeed = 1e12;
+        this.maxForce = 1e12;
         this._pitch = pitch;
     }
 

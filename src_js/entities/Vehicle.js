@@ -22,11 +22,11 @@ class Vehicle extends Mover {
     }
     get pilot() { return __classPrivateFieldGet(this, _Vehicle_autopilot, "f"); }
     get recorder() { return __classPrivateFieldGet(this, _Vehicle_forceRecorder, "f"); }
-    setForce(force) { __classPrivateFieldGet(this, _Vehicle_force, "f").set(force); return this; }
-    set force(force) { __classPrivateFieldGet(this, _Vehicle_force, "f").set(force); }
+    setForce(force) { Vector2D.mutate(__classPrivateFieldGet(this, _Vehicle_force, "f"), force); return this; } //{ this.#force.set(force); return this; }
+    set force(force) { Vector2D.mutate(__classPrivateFieldGet(this, _Vehicle_force, "f"), force); } //        this.#force.set(force); }
     get force() { return __classPrivateFieldGet(this, _Vehicle_force, "f"); }
-    setAccel(accel) { __classPrivateFieldGet(this, _Vehicle_accel, "f").set(accel); return this; }
-    set accel(accel) { __classPrivateFieldGet(this, _Vehicle_accel, "f").set(accel); }
+    setAccel(accel) { Vector2D.mutate(__classPrivateFieldGet(this, _Vehicle_accel, "f"), accel); return this; } //this.#accel.set(accel); return this; }
+    set accel(accel) { Vector2D.mutate(__classPrivateFieldGet(this, _Vehicle_accel, "f"), accel); } //this.#accel.set(accel); }
     get accel() { return __classPrivateFieldGet(this, _Vehicle_accel, "f"); }
     fits_inside(lowX, lowY, highX, highY) {
         let fits = (this.pos.x - this.colRad >= lowX)
@@ -72,12 +72,12 @@ class Vehicle extends Mover {
      */
     update(elapsedTime, world) {
         // Remember the starting position
-        this.prevPos.set(this.pos);
+        Vector2D.mutate(this.prevPos, this.pos); //         this.prevPos.set(this.pos);
         // Init accumulator variables
-        __classPrivateFieldGet(this, _Vehicle_force, "f").set([0, 0]);
-        __classPrivateFieldGet(this, _Vehicle_accel, "f").set([0, 0]);
+        Vector2D.mutate(__classPrivateFieldGet(this, _Vehicle_force, "f"), [0, 0]);
+        Vector2D.mutate(__classPrivateFieldGet(this, _Vehicle_accel, "f"), [0, 0]); //  this.#force.set([0, 0]); this.#accel.set([0, 0]);
         if (__classPrivateFieldGet(this, _Vehicle_autopilot, "f")) {
-            __classPrivateFieldGet(this, _Vehicle_force, "f").set(__classPrivateFieldGet(this, _Vehicle_autopilot, "f").calculateForce(elapsedTime, world));
+            Vector2D.mutate(__classPrivateFieldGet(this, _Vehicle_force, "f"), __classPrivateFieldGet(this, _Vehicle_autopilot, "f").calculateForce(elapsedTime, world)); // this.#force.set(this.#autopilot.calculateForce(elapsedTime, world));
             __classPrivateFieldSet(this, _Vehicle_force, __classPrivateFieldGet(this, _Vehicle_force, "f").truncate(this.maxForce), "f");
             __classPrivateFieldSet(this, _Vehicle_accel, __classPrivateFieldGet(this, _Vehicle_force, "f").mult(elapsedTime / this.mass), "f");
             this.vel = this.vel.add(__classPrivateFieldGet(this, _Vehicle_accel, "f"));
@@ -95,10 +95,10 @@ class Vehicle extends Mover {
         else if (velSq > 0.000001)
             this.rotateHeadingToAlignWith(elapsedTime, this.vel);
         else
-            this.vel.set([0, 0]);
+            Vector2D.mutate(this.vel, [0, 0]); //this.vel.set([0, 0]);
         // Ensure heading and side are normalised
         this.heading = this.heading.normalize();
-        this.side.set([-this.heading.y, this.heading.x]);
+        Vector2D.mutate(this.side, [-this.heading.y, this.heading.x]); //this.side.set([-this.heading.y, this.heading.x]);
     }
 }
 _Vehicle_autopilot = new WeakMap(), _Vehicle_forceRecorder = new WeakMap(), _Vehicle_force = new WeakMap(), _Vehicle_accel = new WeakMap();

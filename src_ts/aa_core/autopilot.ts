@@ -976,120 +976,104 @@ class AutoPilot {
         let owner: Vehicle = this.owner;
         let maxForce = owner.maxForce;
         let recorder: ForceRecorder = owner.recorder;
-        let sumForces = { x: 0, y: 0 };
+        let sumForces = new Vector2D(0, 0); // We will be mutating this vector
 
         if (this.isWallAvoidOn) {
             let f = this.wallAvoidance(owner, world, elapsedTime);
             f = f.mult(this.#weight[IDX_WALL_AVOID]);
             recorder?.addData(IDX_WALL_AVOID, f, this.#weight[IDX_WALL_AVOID]);
-            if (!this.accumulateForce(sumForces, f, maxForce))
-                return Vector2D.from(sumForces);
+            if (!this.accumulateForce(sumForces, f, maxForce)) return sumForces;
         }
         if (this.isObsAvoidOn) {
             let f = this.obstacleAvoidance(owner, world, elapsedTime);
             f = f.mult(this.#weight[IDX_OBSTACLE_AVOID]);
             recorder?.addData(IDX_OBSTACLE_AVOID, f, this.#weight[IDX_OBSTACLE_AVOID]);
-            if (!this.accumulateForce(sumForces, f, maxForce))
-                return Vector2D.from(sumForces);
+            if (!this.accumulateForce(sumForces, f, maxForce)) return sumForces;
         }
         if (this.isEvadeOn) {
             let f = this.evade(owner, this.evadeAgent);
             f = f.mult(this.#weight[IDX_EVADE]);
             recorder?.addData(IDX_EVADE, f, this.#weight[IDX_EVADE]);
-            if (!this.accumulateForce(sumForces, f, maxForce))
-                return Vector2D.from(sumForces);
+            if (!this.accumulateForce(sumForces, f, maxForce)) return sumForces;
         }
         if (this.isFleeOn) {
             let f = this.flee(owner, this.fleeTarget);
             f = f.mult(this.#weight[IDX_FLEE]);
             recorder?.addData(IDX_FLEE, f, this.#weight[IDX_FLEE]);
-            if (!this.accumulateForce(sumForces, f, maxForce))
-                return Vector2D.from(sumForces);
+            if (!this.accumulateForce(sumForces, f, maxForce)) return sumForces;
         }
         if (this.isFlockOn) {
             let f = this.flock(owner, world);
             f = f.mult(this.#weight[IDX_FLOCK]);
             recorder?.addData(IDX_FLOCK, f, this.#weight[IDX_FLOCK]);
-            if (!this.accumulateForce(sumForces, f, maxForce))
-                return Vector2D.from(sumForces);
+            if (!this.accumulateForce(sumForces, f, maxForce)) return sumForces;
         } else {
             if (this.isSeparationOn) {
                 let f = this.separation(owner, world);
                 f.mult(this.#weight[IDX_SEPARATION]);
                 recorder?.addData(IDX_SEPARATION, f, this.#weight[IDX_SEPARATION]);
-                if (!this.accumulateForce(sumForces, f, maxForce))
-                    return Vector2D.from(sumForces);
+                if (!this.accumulateForce(sumForces, f, maxForce)) return sumForces;
             }
             if (this.isAlignmentOn) {
                 let f = this.alignment(owner, world);
                 f.mult(this.#weight[IDX_ALIGNMENT]);
                 recorder?.addData(IDX_ALIGNMENT, f, this.#weight[IDX_ALIGNMENT]);
-                if (!this.accumulateForce(sumForces, f, maxForce))
-                    return Vector2D.from(sumForces);
+                if (!this.accumulateForce(sumForces, f, maxForce)) return sumForces;
             }
             if (this.isCohesionOn) {
                 let f = this.cohesion(owner, world);
                 f.mult(this.#weight[IDX_COHESION]);
                 recorder?.addData(IDX_COHESION, f, this.#weight[IDX_COHESION]);
-                if (!this.accumulateForce(sumForces, f, maxForce))
-                    return Vector2D.from(sumForces);
+                if (!this.accumulateForce(sumForces, f, maxForce)) return sumForces;
             }
         }
         if (this.isSeekOn) {
             let f = this.seek(owner, this.target);
             f = f.mult(this.#weight[IDX_SEEK]);
             recorder?.addData(IDX_SEEK, f, this.#weight[IDX_SEEK]);
-            if (!this.accumulateForce(sumForces, f, maxForce))
-                return Vector2D.from(sumForces);
+            if (!this.accumulateForce(sumForces, f, maxForce)) return sumForces;
         }
         if (this.isArriveOn) {
             let f = this.arrive(owner, this.target);
             f = f.mult(this.#weight[IDX_ARRIVE]);
             recorder?.addData(IDX_ARRIVE, f, this.#weight[IDX_ARRIVE]);
-            if (!this.accumulateForce(sumForces, f, maxForce))
-                return Vector2D.from(sumForces);
+            if (!this.accumulateForce(sumForces, f, maxForce)) return sumForces;
         }
         if (this.isWanderOn) {
             let f = this.wander(owner, elapsedTime);
             f = f.mult(this.#weight[IDX_WANDER]);
             recorder?.addData(IDX_WANDER, f, this.#weight[IDX_WANDER]);
-            if (!this.accumulateForce(sumForces, f, maxForce))
-                return Vector2D.from(sumForces);
+            if (!this.accumulateForce(sumForces, f, maxForce)) return sumForces;
         }
         if (this.isPusuitOn) {
             let f = this.pursuit(owner, this.pursueAgent);
             f = f.mult(this.#weight[IDX_PURSUIT]);
             recorder?.addData(IDX_PURSUIT, f, this.#weight[IDX_PURSUIT]);
-            if (!this.accumulateForce(sumForces, f, maxForce))
-                return Vector2D.from(sumForces);
+            if (!this.accumulateForce(sumForces, f, maxForce)) return sumForces;
         }
         if (this.isOffsetPusuitOn) {
             let f = this.offsetPursuit(owner, this.pursueAgent, this.pursueOffset);
             f = f.mult(this.#weight[IDX_OFFSET_PURSUIT]);
             recorder?.addData(IDX_OFFSET_PURSUIT, f, this.#weight[IDX_OFFSET_PURSUIT]);
-            if (!this.accumulateForce(sumForces, f, maxForce))
-                return Vector2D.from(sumForces);
+            if (!this.accumulateForce(sumForces, f, maxForce)) return sumForces;
         }
         if (this.isInterposeOn) {
             let f = this.interpose(owner, this.agent0, this.agent1);
             f = f.mult(this.#weight[IDX_INTERPOSE]);
             recorder?.addData(IDX_INTERPOSE, f, this.#weight[IDX_INTERPOSE]);
-            if (!this.accumulateForce(sumForces, f, maxForce))
-                return Vector2D.from(sumForces);
+            if (!this.accumulateForce(sumForces, f, maxForce)) return sumForces;
         }
         if (this.isHideOn) {
             let f = this.hide(owner, world, this.hideFromAgent);
             f = f.mult(this.#weight[IDX_HIDE]);
             recorder?.addData(IDX_HIDE, f, this.#weight[IDX_HIDE]);
-            if (!this.accumulateForce(sumForces, f, maxForce))
-                return Vector2D.from(sumForces);
+            if (!this.accumulateForce(sumForces, f, maxForce)) return sumForces;
         }
         if (this.isPathOn) {
             let f = this.path(owner, world);
             f = f.mult(this.#weight[IDX_PATH]);
             recorder?.addData(IDX_PATH, f, this.#weight[IDX_PATH]);
-            if (!this.accumulateForce(sumForces, f, maxForce))
-                return Vector2D.from(sumForces);
+            if (!this.accumulateForce(sumForces, f, maxForce)) return sumForces;
         }
         return Vector2D.from(sumForces);
     }
@@ -1104,7 +1088,7 @@ class AutoPilot {
      * @param maxForce     the maximum force available.
      * @return true if we have not reached the maximum permitted force.
      */
-    accumulateForce(forceSoFar: _XY_, forceToAdd: Vector2D, maxForce: number): boolean {
+    accumulateForce(forceSoFar: Vector2D, forceToAdd: Vector2D, maxForce: number): boolean {
         // calculate how much steering force the vehicle has used so far
         //       let magSoFar = totalForceSoFar.length();
         let magSoFar = Math.sqrt(forceSoFar.x * forceSoFar.x + forceSoFar.y * forceSoFar.y);
@@ -1117,15 +1101,13 @@ class AutoPilot {
         // add together. Otherwise add as much of the ForceToAdd vector is
         // possible without going over the max.
         if (magToAdd < magLeft) {
-            forceSoFar.x = forceSoFar.x + forceToAdd.x;
-            forceSoFar.y = forceSoFar.y + forceToAdd.y;
+            Vector2D.mutate(forceSoFar, [forceSoFar.x + forceToAdd.x, forceSoFar.y + forceToAdd.y]);
             return true;
         } else {
             forceToAdd = forceToAdd.normalize();
             forceToAdd = forceToAdd.mult(magLeft);
             // add it to the steering force
-            forceSoFar.x = forceSoFar.x + forceToAdd.x;
-            forceSoFar.y = forceSoFar.y + forceToAdd.y;
+            Vector2D.mutate(forceSoFar, [forceSoFar.x + forceToAdd.x, forceSoFar.y + forceToAdd.y]);
             return false;
         }
     }

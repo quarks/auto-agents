@@ -97,7 +97,7 @@ class Geom2D {
 		let pnl = Geom2D.po_nearest_line(v0, v1, p);
 		if (pnl) {
 			let d = Math.sqrt((p.x - pnl.x) * (p.x - pnl.x) + (p.y - pnl.y) * (p.y - pnl.y));
-			if (vp) vp.set(pnl);
+			if (vp) Vector2D.mutate(vp, [pnl.x, pnl.y]);  //vp.set(pnl);
 			if (d <= Geom2D.NEARNESS)
 				return true;
 		}
@@ -117,7 +117,7 @@ class Geom2D {
 		let pnl = Geom2D.po_nearest_infinite_line(v0, v1, p);
 		if (pnl) {
 			let d = Math.sqrt((p.x - pnl.x) * (p.x - pnl.x) + (p.y - pnl.y) * (p.y - pnl.y));
-			if (vp) vp.set(pnl);
+			if (vp) Vector2D.mutate(vp, [pnl.x, pnl.y]); //vp.set(pnl);
 			if (d <= Geom2D.NEARNESS)
 				return true;
 		}

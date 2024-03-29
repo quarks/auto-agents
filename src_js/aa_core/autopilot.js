@@ -867,41 +867,41 @@ class AutoPilot {
         let owner = this.owner;
         let maxForce = owner.maxForce;
         let recorder = owner.recorder;
-        let sumForces = { x: 0, y: 0 };
+        let sumForces = new Vector2D(0, 0); // We will be mutating this vector
         if (this.isWallAvoidOn) {
             let f = this.wallAvoidance(owner, world, elapsedTime);
             f = f.mult(__classPrivateFieldGet(this, _AutoPilot_weight, "f")[IDX_WALL_AVOID]);
             recorder?.addData(IDX_WALL_AVOID, f, __classPrivateFieldGet(this, _AutoPilot_weight, "f")[IDX_WALL_AVOID]);
             if (!this.accumulateForce(sumForces, f, maxForce))
-                return Vector2D.from(sumForces);
+                return sumForces;
         }
         if (this.isObsAvoidOn) {
             let f = this.obstacleAvoidance(owner, world, elapsedTime);
             f = f.mult(__classPrivateFieldGet(this, _AutoPilot_weight, "f")[IDX_OBSTACLE_AVOID]);
             recorder?.addData(IDX_OBSTACLE_AVOID, f, __classPrivateFieldGet(this, _AutoPilot_weight, "f")[IDX_OBSTACLE_AVOID]);
             if (!this.accumulateForce(sumForces, f, maxForce))
-                return Vector2D.from(sumForces);
+                return sumForces;
         }
         if (this.isEvadeOn) {
             let f = this.evade(owner, this.evadeAgent);
             f = f.mult(__classPrivateFieldGet(this, _AutoPilot_weight, "f")[IDX_EVADE]);
             recorder?.addData(IDX_EVADE, f, __classPrivateFieldGet(this, _AutoPilot_weight, "f")[IDX_EVADE]);
             if (!this.accumulateForce(sumForces, f, maxForce))
-                return Vector2D.from(sumForces);
+                return sumForces;
         }
         if (this.isFleeOn) {
             let f = this.flee(owner, this.fleeTarget);
             f = f.mult(__classPrivateFieldGet(this, _AutoPilot_weight, "f")[IDX_FLEE]);
             recorder?.addData(IDX_FLEE, f, __classPrivateFieldGet(this, _AutoPilot_weight, "f")[IDX_FLEE]);
             if (!this.accumulateForce(sumForces, f, maxForce))
-                return Vector2D.from(sumForces);
+                return sumForces;
         }
         if (this.isFlockOn) {
             let f = this.flock(owner, world);
             f = f.mult(__classPrivateFieldGet(this, _AutoPilot_weight, "f")[IDX_FLOCK]);
             recorder?.addData(IDX_FLOCK, f, __classPrivateFieldGet(this, _AutoPilot_weight, "f")[IDX_FLOCK]);
             if (!this.accumulateForce(sumForces, f, maxForce))
-                return Vector2D.from(sumForces);
+                return sumForces;
         }
         else {
             if (this.isSeparationOn) {
@@ -909,21 +909,21 @@ class AutoPilot {
                 f.mult(__classPrivateFieldGet(this, _AutoPilot_weight, "f")[IDX_SEPARATION]);
                 recorder?.addData(IDX_SEPARATION, f, __classPrivateFieldGet(this, _AutoPilot_weight, "f")[IDX_SEPARATION]);
                 if (!this.accumulateForce(sumForces, f, maxForce))
-                    return Vector2D.from(sumForces);
+                    return sumForces;
             }
             if (this.isAlignmentOn) {
                 let f = this.alignment(owner, world);
                 f.mult(__classPrivateFieldGet(this, _AutoPilot_weight, "f")[IDX_ALIGNMENT]);
                 recorder?.addData(IDX_ALIGNMENT, f, __classPrivateFieldGet(this, _AutoPilot_weight, "f")[IDX_ALIGNMENT]);
                 if (!this.accumulateForce(sumForces, f, maxForce))
-                    return Vector2D.from(sumForces);
+                    return sumForces;
             }
             if (this.isCohesionOn) {
                 let f = this.cohesion(owner, world);
                 f.mult(__classPrivateFieldGet(this, _AutoPilot_weight, "f")[IDX_COHESION]);
                 recorder?.addData(IDX_COHESION, f, __classPrivateFieldGet(this, _AutoPilot_weight, "f")[IDX_COHESION]);
                 if (!this.accumulateForce(sumForces, f, maxForce))
-                    return Vector2D.from(sumForces);
+                    return sumForces;
             }
         }
         if (this.isSeekOn) {
@@ -931,56 +931,56 @@ class AutoPilot {
             f = f.mult(__classPrivateFieldGet(this, _AutoPilot_weight, "f")[IDX_SEEK]);
             recorder?.addData(IDX_SEEK, f, __classPrivateFieldGet(this, _AutoPilot_weight, "f")[IDX_SEEK]);
             if (!this.accumulateForce(sumForces, f, maxForce))
-                return Vector2D.from(sumForces);
+                return sumForces;
         }
         if (this.isArriveOn) {
             let f = this.arrive(owner, this.target);
             f = f.mult(__classPrivateFieldGet(this, _AutoPilot_weight, "f")[IDX_ARRIVE]);
             recorder?.addData(IDX_ARRIVE, f, __classPrivateFieldGet(this, _AutoPilot_weight, "f")[IDX_ARRIVE]);
             if (!this.accumulateForce(sumForces, f, maxForce))
-                return Vector2D.from(sumForces);
+                return sumForces;
         }
         if (this.isWanderOn) {
             let f = this.wander(owner, elapsedTime);
             f = f.mult(__classPrivateFieldGet(this, _AutoPilot_weight, "f")[IDX_WANDER]);
             recorder?.addData(IDX_WANDER, f, __classPrivateFieldGet(this, _AutoPilot_weight, "f")[IDX_WANDER]);
             if (!this.accumulateForce(sumForces, f, maxForce))
-                return Vector2D.from(sumForces);
+                return sumForces;
         }
         if (this.isPusuitOn) {
             let f = this.pursuit(owner, this.pursueAgent);
             f = f.mult(__classPrivateFieldGet(this, _AutoPilot_weight, "f")[IDX_PURSUIT]);
             recorder?.addData(IDX_PURSUIT, f, __classPrivateFieldGet(this, _AutoPilot_weight, "f")[IDX_PURSUIT]);
             if (!this.accumulateForce(sumForces, f, maxForce))
-                return Vector2D.from(sumForces);
+                return sumForces;
         }
         if (this.isOffsetPusuitOn) {
             let f = this.offsetPursuit(owner, this.pursueAgent, this.pursueOffset);
             f = f.mult(__classPrivateFieldGet(this, _AutoPilot_weight, "f")[IDX_OFFSET_PURSUIT]);
             recorder?.addData(IDX_OFFSET_PURSUIT, f, __classPrivateFieldGet(this, _AutoPilot_weight, "f")[IDX_OFFSET_PURSUIT]);
             if (!this.accumulateForce(sumForces, f, maxForce))
-                return Vector2D.from(sumForces);
+                return sumForces;
         }
         if (this.isInterposeOn) {
             let f = this.interpose(owner, this.agent0, this.agent1);
             f = f.mult(__classPrivateFieldGet(this, _AutoPilot_weight, "f")[IDX_INTERPOSE]);
             recorder?.addData(IDX_INTERPOSE, f, __classPrivateFieldGet(this, _AutoPilot_weight, "f")[IDX_INTERPOSE]);
             if (!this.accumulateForce(sumForces, f, maxForce))
-                return Vector2D.from(sumForces);
+                return sumForces;
         }
         if (this.isHideOn) {
             let f = this.hide(owner, world, this.hideFromAgent);
             f = f.mult(__classPrivateFieldGet(this, _AutoPilot_weight, "f")[IDX_HIDE]);
             recorder?.addData(IDX_HIDE, f, __classPrivateFieldGet(this, _AutoPilot_weight, "f")[IDX_HIDE]);
             if (!this.accumulateForce(sumForces, f, maxForce))
-                return Vector2D.from(sumForces);
+                return sumForces;
         }
         if (this.isPathOn) {
             let f = this.path(owner, world);
             f = f.mult(__classPrivateFieldGet(this, _AutoPilot_weight, "f")[IDX_PATH]);
             recorder?.addData(IDX_PATH, f, __classPrivateFieldGet(this, _AutoPilot_weight, "f")[IDX_PATH]);
             if (!this.accumulateForce(sumForces, f, maxForce))
-                return Vector2D.from(sumForces);
+                return sumForces;
         }
         return Vector2D.from(sumForces);
     }
@@ -1007,16 +1007,14 @@ class AutoPilot {
         // add together. Otherwise add as much of the ForceToAdd vector is
         // possible without going over the max.
         if (magToAdd < magLeft) {
-            forceSoFar.x = forceSoFar.x + forceToAdd.x;
-            forceSoFar.y = forceSoFar.y + forceToAdd.y;
+            Vector2D.mutate(forceSoFar, [forceSoFar.x + forceToAdd.x, forceSoFar.y + forceToAdd.y]);
             return true;
         }
         else {
             forceToAdd = forceToAdd.normalize();
             forceToAdd = forceToAdd.mult(magLeft);
             // add it to the steering force
-            forceSoFar.x = forceSoFar.x + forceToAdd.x;
-            forceSoFar.y = forceSoFar.y + forceToAdd.y;
+            Vector2D.mutate(forceSoFar, [forceSoFar.x + forceToAdd.x, forceSoFar.y + forceToAdd.y]);
             return false;
         }
     }

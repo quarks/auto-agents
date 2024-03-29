@@ -7,13 +7,13 @@ class Vehicle extends Mover {
     get recorder() { return this.#forceRecorder; }
 
     #force = new Vector2D();
-    setForce(force: Vector2D): Vehicle { this.#force.set(force); return this; }
-    set force(force: Vector2D) { this.#force.set(force); }
+    setForce(force: Vector2D): Vehicle { Vector2D.mutate(this.#force, force); return this; } //{ this.#force.set(force); return this; }
+    set force(force: Vector2D) { Vector2D.mutate(this.#force, force); }   //this.#force.set(force); }
     get force() { return this.#force; }
 
     #accel = new Vector2D();
-    setAccel(accel: Vector2D): Vehicle { this.#accel.set(accel); return this; }
-    set accel(accel: Vector2D) { this.#accel.set(accel); }
+    setAccel(accel: Vector2D): Vehicle { Vector2D.mutate(this.#accel, accel); return this; } //this.#accel.set(accel); return this; }
+    set accel(accel: Vector2D) { Vector2D.mutate(this.#accel, accel); }  //this.#accel.set(accel); }
     get accel() { return this.#accel; }
 
     constructor(position: Vector2D, radius: number) {
@@ -71,11 +71,11 @@ class Vehicle extends Mover {
      */
     update(elapsedTime: number, world: World): void {
         // Remember the starting position
-        this.prevPos.set(this.pos);
+        Vector2D.mutate(this.prevPos, this.pos); //         this.prevPos.set(this.pos);
         // Init accumulator variables
-        this.#force.set([0, 0]); this.#accel.set([0, 0]);
+        Vector2D.mutate(this.#force, [0, 0]); Vector2D.mutate(this.#accel, [0, 0]);    //  this.#force.set([0, 0]); this.#accel.set([0, 0]);
         if (this.#autopilot) {
-            this.#force.set(this.#autopilot.calculateForce(elapsedTime, world));
+            Vector2D.mutate(this.#force, this.#autopilot.calculateForce(elapsedTime, world));  // this.#force.set(this.#autopilot.calculateForce(elapsedTime, world));
             this.#force = this.#force.truncate(this.maxForce);
             this.#accel = this.#force.mult(elapsedTime / this.mass);
             this.vel = this.vel.add(this.#accel);
@@ -93,10 +93,10 @@ class Vehicle extends Mover {
         else if (velSq > 0.000001)
             this.rotateHeadingToAlignWith(elapsedTime, this.vel);
         else
-            this.vel.set([0, 0]);
+            Vector2D.mutate(this.vel, [0, 0]); //this.vel.set([0, 0]);
         // Ensure heading and side are normalised
         this.heading = this.heading.normalize();
-        this.side.set([-this.heading.y, this.heading.x]);
+        Vector2D.mutate(this.side, [-this.heading.y, this.heading.x]);  //this.side.set([-this.heading.y, this.heading.x]);
     }
 
 }

@@ -5,27 +5,35 @@ var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (
 };
 var _Vector2D_p;
 /**
-* Simple 2D vector class
+* Simple immutable 2D vector class
 *
-* Although it is possible to change the x and y properties with the set
-* methods it is not recommended as it makes the vector mutable.
+* It is not possible to change the x and y properties of an existing
+* vector instance because the class is immutable.
 *
-* All other methods return a new vector representing the result of the
-* operation leaving the original vector unchanged i.e. immutable.
-*
-* For instance the statement
+* For instance the statement:
 *
 * <pre> v0.add(v1);  </pre>
 *
 * will return a the sum of the 2 vectors v0 and v1 as a new vector and
 * will leave v0 unchanged.
 *
-* To change the vector v0 then you must assign the resukt back to v0
+* To change the vector v0 then you must assign the result back to v0
 * like this
 *
 * <pre> v0 = v0.add(v1);  </pre>
 *
-* Last updated: 14 Mar 2024
+* Using immutable vectors allows the instance methods to be chained
+* without changes to any vectors used in the calculation. In this example
+* the vectors 'b' and 'c' are twice but are never changed.
+*
+* <pre v = a.add(b.add(c)).div(2).sub(c).negate().sub(b); </pre>
+*
+* There are times when it makes sense to be able to change the XY
+* properties of an existing vector. The class method mutate can be
+* used to mutate the vector.
+*
+*
+* Last updated: 29 Mar 2024
 *
 * @author Peter Lager
 */
@@ -43,15 +51,10 @@ class Vector2D {
     }
     /** X coordinate value */
     get x() { return __classPrivateFieldGet(this, _Vector2D_p, "f")[0]; }
-    set x(value) { if (Number.isFinite(value))
-        __classPrivateFieldGet(this, _Vector2D_p, "f")[0] = value; }
     /** Y coordinate value */
     get y() { return __classPrivateFieldGet(this, _Vector2D_p, "f")[1]; }
-    set y(value) { if (Number.isFinite(value))
-        __classPrivateFieldGet(this, _Vector2D_p, "f")[1] = value; }
     /** Angle in 2D plane */
     get angle() { return Math.atan2(__classPrivateFieldGet(this, _Vector2D_p, "f")[1], __classPrivateFieldGet(this, _Vector2D_p, "f")[0]); }
-    set angle(n) { __classPrivateFieldGet(this, _Vector2D_p, "f")[0] = Math.cos(n); __classPrivateFieldGet(this, _Vector2D_p, "f")[1] = Math.sin(n); }
     /**
      * Add a displacement (either vector object or 2 scalars )
      * to this vector to create a new vector.
@@ -230,22 +233,6 @@ class Vector2D {
         return new Vector2D(__classPrivateFieldGet(this, _Vector2D_p, "f")[0] * ratio, __classPrivateFieldGet(this, _Vector2D_p, "f")[1] * ratio);
     }
     /**
-     * =============   MUTATES VECTOR    ====================
-     * @param position change the coordinates to match position
-     * @returns the changed vetor
-     */
-    set(position) {
-        if (position instanceof Array) {
-            __classPrivateFieldGet(this, _Vector2D_p, "f")[0] = position[0];
-            __classPrivateFieldGet(this, _Vector2D_p, "f")[1] = position[1];
-        }
-        else {
-            __classPrivateFieldGet(this, _Vector2D_p, "f")[0] = position.x;
-            __classPrivateFieldGet(this, _Vector2D_p, "f")[1] = position.y;
-        }
-        return this;
-    }
-    /**
      * Determines whether vector v is clockwise of this vector. <br>
      * @param v a vector
      * @return positive (+1) if clockwise else negative (-1)
@@ -295,7 +282,28 @@ class Vector2D {
     toArray() {
         return [__classPrivateFieldGet(this, _Vector2D_p, "f")[0], __classPrivateFieldGet(this, _Vector2D_p, "f")[1]];
     }
-    /**       +++++++++++++ CLASS METHODS +++++++++++++++        */
+    /*       +++++++++++++ CLASS METHODS +++++++++++++++        */
+    /**
+      * =============   MUTATES VECTOR    ====================
+      * There maybe times when you want to cahnge the XY coordinates
+      * (mutate) of an existing vector rather that create a new one.
+      *
+      * This is the only method available that can mutate a vector.
+      * @param vector the vector to mutate
+      * @param position the new xy coordinstes for vector v
+      * @returns
+      */
+    static mutate(vector, position) {
+        if (position instanceof Array) {
+            __classPrivateFieldGet(vector, _Vector2D_p, "f")[0] = position[0];
+            __classPrivateFieldGet(vector, _Vector2D_p, "f")[1] = position[1];
+        }
+        else {
+            __classPrivateFieldGet(vector, _Vector2D_p, "f")[0] = position.x;
+            __classPrivateFieldGet(vector, _Vector2D_p, "f")[1] = position.y;
+        }
+        return vector;
+    }
     /**
      * @returns true if these vectors have the same coordinates
      */
@@ -377,7 +385,10 @@ class Vector2D {
         console.log(this.$(precision));
         return this;
     }
-    // Return vector as array string su
+    $$(precision = 16) {
+        console.log(this.$(precision));
+        return this;
+    }
     $(precision = 16) {
         let xv = this.x.toPrecision(precision);
         let yv = this.y.toPrecision(precision);

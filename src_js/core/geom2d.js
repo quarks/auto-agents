@@ -79,7 +79,7 @@ class Geom2D {
         if (pnl) {
             let d = Math.sqrt((p.x - pnl.x) * (p.x - pnl.x) + (p.y - pnl.y) * (p.y - pnl.y));
             if (vp)
-                vp.set(pnl);
+                Vector2D.mutate(vp, [pnl.x, pnl.y]); //vp.set(pnl);
             if (d <= Geom2D.NEARNESS)
                 return true;
         }
@@ -99,7 +99,7 @@ class Geom2D {
         if (pnl) {
             let d = Math.sqrt((p.x - pnl.x) * (p.x - pnl.x) + (p.y - pnl.y) * (p.y - pnl.y));
             if (vp)
-                vp.set(pnl);
+                Vector2D.mutate(vp, [pnl.x, pnl.y]); //vp.set(pnl);
             if (d <= Geom2D.NEARNESS)
                 return true;
         }

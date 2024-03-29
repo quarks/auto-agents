@@ -1,13 +1,13 @@
-var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
-    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
-};
 var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
     if (kind === "m") throw new TypeError("Private method is not writable");
     if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
     if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
     return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
+};
+var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
 };
 var _Mover_domain, _Mover_prevPos, _Mover_vel, _Mover_side;
 class Mover extends Entity {
@@ -36,7 +36,7 @@ class Mover extends Entity {
         /** Field of view (radians) */
         this.__viewFOV = 1.047; // Default is 60 degrees
         this.Z = 128;
-        __classPrivateFieldGet(this, _Mover_prevPos, "f").set(this.pos);
+        __classPrivateFieldSet(this, _Mover_prevPos, this.pos, "f");
         this.__mass = 1;
         __classPrivateFieldSet(this, _Mover_side, this.__heading.getPerp(), "f");
     }
@@ -56,13 +56,13 @@ class Mover extends Entity {
     set heading(v) { this.__heading = v; }
     get heading() { return this.__heading; }
     /** Heading / facing angle */
-    set headingAngle(n) { this.__heading.x = Math.cos(n); this.__heading.x = Math.sin(n); }
+    set headingAngle(n) { this.__heading = new Vector2D(Math.cos(n), Math.sin(n)); }
     get headingAngle() { return this.heading.angle; }
     set headingAtRest(v) { this.__headingAtRest = v; }
     get headingAtRest() { return this.__headingAtRest; }
     /** Heading at rest angle */
-    set headingAtRestAngle(n) { this.__heading.x = Math.cos(n); this.__heading.x = Math.sin(n); }
-    get headingAtRestAngle() { return this.heading.angle; }
+    set headingAtRestAngle(n) { this.__headingAtRest.x = new Vector2D(Math.cos(n), Math.sin(n)); }
+    get headingAtRestAngle() { return this.headingAtRest.angle; }
     get side() { return __classPrivateFieldGet(this, _Mover_side, "f"); }
     set side(n) { __classPrivateFieldSet(this, _Mover_side, n, "f"); }
     set mass(n) { this.__mass = n; }
@@ -106,27 +106,34 @@ class Mover extends Entity {
      * the domain constraint REBOUND, WRAP or PASS_THROUGH (not constrained)
      */
     applyDomainConstraint(domain) {
+        let nx, ny;
         if (domain)
             switch (domain.constraint) {
                 case WRAP:
+                    nx = this.pos.x;
+                    ny = this.pos.y;
                     if (this.pos.x < domain.lowX)
-                        this.pos.x += domain.width;
+                        nx += domain.width;
                     else if (this.pos.x > domain.highX)
-                        this.pos.x -= domain.width;
+                        nx -= domain.width;
                     if (this.pos.y < domain.lowY)
-                        this.pos.y += domain.height;
+                        ny += domain.height;
                     else if (this.pos.y > domain.highY)
-                        this.pos.y -= domain.height;
+                        ny -= domain.height;
+                    Vector2D.mutate(this.pos, [nx, ny]);
                     break;
                 case REBOUND:
+                    nx = this.vel.x;
+                    ny = this.vel.y;
                     if (this.pos.x < domain.lowX)
-                        __classPrivateFieldGet(this, _Mover_vel, "f").x = Math.abs(__classPrivateFieldGet(this, _Mover_vel, "f").x);
+                        nx = Math.abs(__classPrivateFieldGet(this, _Mover_vel, "f").x);
                     else if (this.pos.x > domain.highX)
-                        __classPrivateFieldGet(this, _Mover_vel, "f").x = -Math.abs(__classPrivateFieldGet(this, _Mover_vel, "f").x);
+                        nx = -Math.abs(__classPrivateFieldGet(this, _Mover_vel, "f").x);
                     if (this.pos.y < domain.lowY)
-                        __classPrivateFieldGet(this, _Mover_vel, "f").y = Math.abs(__classPrivateFieldGet(this, _Mover_vel, "f").y);
+                        ny = Math.abs(__classPrivateFieldGet(this, _Mover_vel, "f").y);
                     else if (this.pos.y > domain.highY)
-                        __classPrivateFieldGet(this, _Mover_vel, "f").y = -Math.abs(__classPrivateFieldGet(this, _Mover_vel, "f").y);
+                        ny = -Math.abs(__classPrivateFieldGet(this, _Mover_vel, "f").y);
+                    Vector2D.mutate(this.vel, [nx, ny]);
                     break;
                 default:
                     break;
@@ -256,7 +263,7 @@ class Mover extends Entity {
      */
     update(elapsedTime, world) {
         // Remember the starting position
-        __classPrivateFieldGet(this, _Mover_prevPos, "f").set(this.pos);
+        __classPrivateFieldSet(this, _Mover_prevPos, this.pos, "f");
         // Update position
         this.pos = this.pos.add(__classPrivateFieldGet(this, _Mover_vel, "f").mult(elapsedTime));
         // Apply domain constraint
@@ -265,7 +272,7 @@ class Mover extends Entity {
         if (__classPrivateFieldGet(this, _Mover_vel, "f").lengthSq() > 0.01)
             this.rotateHeadingToAlignWith(elapsedTime, __classPrivateFieldGet(this, _Mover_vel, "f"));
         else {
-            __classPrivateFieldGet(this, _Mover_vel, "f").set([0, 0]);
+            Vector2D.mutate(__classPrivateFieldGet(this, _Mover_vel, "f"), [0, 0]); //this.#vel = .set([0, 0]);
             if (this.headingAtRest)
                 this.rotateHeadingToAlignWith(elapsedTime, this.headingAtRest);
         }

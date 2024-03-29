@@ -27,7 +27,7 @@ class Mover extends Entity {
     set heading(v: Vector2D) { this.__heading = v; }
     get heading(): Vector2D { return this.__heading; }
     /** Heading / facing angle */
-    set headingAngle(n: number) { this.__heading.x = Math.cos(n); this.__heading.x = Math.sin(n); }
+    set headingAngle(n: number) { this.__heading = new Vector2D(Math.cos(n), Math.sin(n)); }
     get headingAngle(): number { return this.heading.angle; }
 
     /** Heading at rest (normalised */
@@ -36,8 +36,8 @@ class Mover extends Entity {
     get headingAtRest(): Vector2D { return this.__headingAtRest; }
 
     /** Heading at rest angle */
-    set headingAtRestAngle(n: number) { this.__heading.x = Math.cos(n); this.__heading.x = Math.sin(n); }
-    get headingAtRestAngle(): number { return this.heading.angle; }
+    set headingAtRestAngle(n: number) { this.__headingAtRest.x = new Vector2D(Math.cos(n), Math.sin(n)); }
+    get headingAtRestAngle(): number { return this.headingAtRest.angle; }
 
     /** Perpendiclar to heading (normalised) */
     #side: Vector2D;
@@ -77,7 +77,7 @@ class Mover extends Entity {
     constructor(position: Array<number> | Vector2D, colRadius = 0) {
         super(position, colRadius);
         this.Z = 128;
-        this.#prevPos.set(this.pos);
+        this.#prevPos = this.pos;
         this.__mass = 1;
         this.#side = this.__heading.getPerp();
     }
@@ -112,27 +112,32 @@ class Mover extends Entity {
      * the domain constraint REBOUND, WRAP or PASS_THROUGH (not constrained)
      */
     applyDomainConstraint(domain: Domain): void {
+        let nx: number, ny: number;
         if (domain)
             switch (domain.constraint) {
                 case WRAP:
+                    nx = this.pos.x; ny = this.pos.y;
                     if (this.pos.x < domain.lowX)
-                        this.pos.x += domain.width;
+                        nx += domain.width;
                     else if (this.pos.x > domain.highX)
-                        this.pos.x -= domain.width;
+                        nx -= domain.width;
                     if (this.pos.y < domain.lowY)
-                        this.pos.y += domain.height;
+                        ny += domain.height;
                     else if (this.pos.y > domain.highY)
-                        this.pos.y -= domain.height;
+                        ny -= domain.height;
+                    Vector2D.mutate(this.pos, [nx, ny]);
                     break;
                 case REBOUND:
+                    nx = this.vel.x; ny = this.vel.y;
                     if (this.pos.x < domain.lowX)
-                        this.#vel.x = Math.abs(this.#vel.x);
+                        nx = Math.abs(this.#vel.x);
                     else if (this.pos.x > domain.highX)
-                        this.#vel.x = -Math.abs(this.#vel.x);
+                        nx = -Math.abs(this.#vel.x);
                     if (this.pos.y < domain.lowY)
-                        this.#vel.y = Math.abs(this.#vel.y);
+                        ny = Math.abs(this.#vel.y);
                     else if (this.pos.y > domain.highY)
-                        this.#vel.y = -Math.abs(this.#vel.y);
+                        ny = -Math.abs(this.#vel.y);
+                    Vector2D.mutate(this.vel, [nx, ny]);
                     break;
                 default:
                     break;
@@ -275,7 +280,7 @@ class Mover extends Entity {
      */
     update(elapsedTime: number, world: World) {
         // Remember the starting position
-        this.#prevPos.set(this.pos);
+        this.#prevPos = this.pos;
         // Update position
         this.pos = this.pos.add(this.#vel.mult(elapsedTime));
         // Apply domain constraint
@@ -284,7 +289,7 @@ class Mover extends Entity {
         if (this.#vel.lengthSq() > 0.01)
             this.rotateHeadingToAlignWith(elapsedTime, this.#vel);
         else {
-            this.#vel.set([0, 0]);
+            Vector2D.mutate(this.#vel, [0, 0]); //this.#vel = .set([0, 0]);
             if (this.headingAtRest)
                 this.rotateHeadingToAlignWith(elapsedTime, this.headingAtRest);
         }

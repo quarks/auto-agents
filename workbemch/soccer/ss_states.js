@@ -2,8 +2,10 @@ class EndMatch extends State { // Pitch state
     constructor(world) { super(world, 'End match'); }
 
     enter(pitch) {
+        pitch.gameOn = false;
+        pitch.clock = $('MatchTime') * 1000;
+        pitch.ball.vel = Vector2D.ZERO;
         pitch.counterA = 0;
-        pitch.ball.pos = pitch.centerSpot; pitch.ball.vel = Vector2D.ZERO;
         for (let p of pitch.getAllPlayers())
             p.changeState(plyLeavePitch);
     }
@@ -16,19 +18,21 @@ class EndMatch extends State { // Pitch state
     }
 
     exit(pitch) {
+        pitch.ball.pos = pitch.centerSpot; pitch.ball.vel = Vector2D.ZERO;
         pitch.team[0].setTeamMode(DEFENDING, false);
         pitch.team[1].setTeamMode(DEFENDING, false);
     }
 }
 
 
-class PreMatch extends State { // Pitch state
+class PreMatch extends State {
     constructor(world) { super(world, 'Pre match'); }
 
     enter(pitch) {
         pitch.clock = 0;
         pitch.changeTeams();
-        this.sendMessage(8, pitch.id, pitch.id, PREPARE_FOR_KICKOFF);
+        if ($('AutoRepeat'))
+            this.sendMessage(5, pitch, pitch, PREPARE_FOR_KICKOFF);
     }
 }
 
@@ -60,9 +64,11 @@ class KickOff extends State {
 
     enter(pitch) {
         if (pitch.clock == 0) {
+            pitch.gameOn = true;
             pitch.gameStarted = millis();
-            this.sendMessage(MATCH_TIME, pitch.id, pitch.id, STOP_GAME);
+            this.sendMessage($('MatchTime'), pitch.id, pitch.id, STOP_GAME);
         }
+        pitch.ball.pos = pitch.centerSpot; pitch.ball.vel = Vector2D.ZERO;
         pitch.team[0].getClosestTeamMemberToBall().changeState(plyChaseBall);
         pitch.team[1].getClosestTeamMemberToBall().changeState(plyChaseBall);
         pitch.changeState(pchGameOn);
@@ -183,10 +189,14 @@ class PitchGlobal extends State {
             case GOAL_SCORED:
                 return true;
             case STOP_GAME:
-                pitch.clock = MATCH_TIME * 1000;
+                pitch.clock = $('MatchTime') * 1000;
                 pitch.changeState(pchEndMatch);
                 return true;
         }
         return false;
+    }
+
+    execute(pitch, elapsedTime) {
+        if (pitch.gameOn) pitch.clock = millis() - pitch.gameStarted;
     }
 }
