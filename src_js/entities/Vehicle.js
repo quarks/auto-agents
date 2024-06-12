@@ -23,7 +23,7 @@ class Vehicle extends Mover {
     get pilot() { return __classPrivateFieldGet(this, _Vehicle_autopilot, "f"); }
     get recorder() { return __classPrivateFieldGet(this, _Vehicle_forceRecorder, "f"); }
     setForce(force) { Vector2D.mutate(__classPrivateFieldGet(this, _Vehicle_force, "f"), force); return this; } //{ this.#force.set(force); return this; }
-    set force(force) { Vector2D.mutate(__classPrivateFieldGet(this, _Vehicle_force, "f"), force); } //        this.#force.set(force); }
+    set force(force) { Vector2D.mutate(__classPrivateFieldGet(this, _Vehicle_force, "f"), force); } //this.#force.set(force); }
     get force() { return __classPrivateFieldGet(this, _Vehicle_force, "f"); }
     setAccel(accel) { Vector2D.mutate(__classPrivateFieldGet(this, _Vehicle_accel, "f"), accel); return this; } //this.#accel.set(accel); return this; }
     set accel(accel) { Vector2D.mutate(__classPrivateFieldGet(this, _Vehicle_accel, "f"), accel); } //this.#accel.set(accel); }

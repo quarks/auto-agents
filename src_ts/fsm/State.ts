@@ -29,6 +29,5 @@ class State {
         this.#name = name;
         this.#world = world;
     }
-
 }
 

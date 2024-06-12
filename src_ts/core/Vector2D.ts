@@ -23,11 +23,11 @@
 * <pre v = a.add(b.add(c)).div(2).sub(c).negate().sub(b); </pre>
 *
 * There are times when it makes sense to be able to change the XY
-* properties of an existing vector. The class method mutate can be
-* used to mutate the vector.
+* properties of an existing vector. The class method Vector2D.mutate 
+* can be used to change the coordinates inside a vector.
 * 
 * 
-* Last updated: 29 Mar 2024
+* Last updated: 30 Mar 2024
 *
 * @author Peter Lager
 */
@@ -259,6 +259,7 @@ class Vector2D implements _XY_ {
 
     /**
      * Normalise this vector
+     * @return a normalised version of this vector
      */
     normalize(): Vector2D {
         let mag = this.length();
@@ -267,10 +268,15 @@ class Vector2D implements _XY_ {
         return new Vector2D(this.#p[0] / mag, this.#p[1] / mag);
     }
 
+    /**
+     * Calculate and return a scaled version of this vector of the required length/
+     * magnitude
+     * @param size the new length / magnitude  
+     * @returns  a resized version of this vector
+     */
     resize(size: number): Vector2D {
         let mag = this.length();
-        if (!Number.isFinite(mag) || mag == 0)
-            throw new Error('Cannot resize a vector of zero or infinite length');
+        if (!Number.isFinite(mag) || mag == 0) return new Vector2D(0, 0);
         let ratio = size / mag;
         return new Vector2D(this.#p[0] * ratio, this.#p[1] * ratio);
     }
@@ -434,10 +440,7 @@ class Vector2D implements _XY_ {
             return new Vector2D(position.x, position.y);
     }
 
-    print(precision = 16): Vector2D {
-        console.log(this.$(precision));
-        return this;
-    }
+    print(precision = 16): Vector2D { return this.$$(precision); }
 
     $$(precision = 16): Vector2D {
         console.log(this.$(precision));

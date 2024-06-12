@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Soccer</title>
+
+    <!-- LINK TO EXTERNAL LIBRARIES -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.8.0/p5.min.js"></script>
+    <!--    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.8.0/addons/p5.sound.min.js"></script>    -->
+    <script src="http://lagers.org.uk/libs/canvasgui/0.9.4/gui.min.js"></script>
+
+    <!-- LINK TO AA FILES -->
+    <!-- LINK TO AA FILES -->
+    <script language="javascript" type="text/javascript" src="../../src_js/util/forcerecorder.js"></script>
+
+    <script language="javascript" type="text/javascript" src="../../src_js/aa_core/constants.js"></script>
+    <script language="javascript" type="text/javascript" src="../../src_js/aa_core/autopilot.js"></script>
+    <script language="javascript" type="text/javascript" src="../../src_js/aa_core/domain.js"></script>
+    <script language="javascript" type="text/javascript" src="../../src_js/aa_core/world.js"></script>
+    <script language="javascript" type="text/javascript" src="../../src_js/aa_core/quad_tree.js"></script>
+
+    <script language="javascript" type="text/javascript" src="../../src_js/core/vector2d.js"></script>
+    <script language="javascript" type="text/javascript" src="../../src_js/core/matrix2d.js"></script>
+    <script language="javascript" type="text/javascript" src="../../src_js/core/geom2d.js"></script>
+    <script language="javascript" type="text/javascript" src="../../src_js/core/transform.js"></script>
+
+    <script language="javascript" type="text/javascript" src="../../src_js/entities/entity.js"></script>
+    <script language="javascript" type="text/javascript" src="../../src_js/entities/artefact.js"></script>
+    <script language="javascript" type="text/javascript" src="../../src_js/entities/obstacle.js"></script>
+    <script language="javascript" type="text/javascript" src="../../src_js/entities/wall.js"></script>
+    <script language="javascript" type="text/javascript" src="../../src_js/entities/fence.js"></script>
+    <script language="javascript" type="text/javascript" src="../../src_js/entities/mover.js"></script>
+    <script language="javascript" type="text/javascript" src="../../src_js/entities/vehicle.js"></script>
+
+    <script language="javascript" type="text/javascript" src="../../src_js/fsm/postoffice.js"></script>
+    <script language="javascript" type="text/javascript" src="../../src_js/fsm/fsm.js"></script>
+    <script language="javascript" type="text/javascript" src="../../src_js/fsm/state.js"></script>
+
+
+    <script language="javascript" type="text/javascript" src="painters.js"></script>
+    <script language="javascript" type="text/javascript" src="constants.js"></script>
+    <script language="javascript" type="text/javascript" src="pitch_core.js"></script>
+    <script language="javascript" type="text/javascript" src="player_core.js"></script>
+    <script language="javascript" type="text/javascript" src="team_core.js"></script>
+    <script language="javascript" type="text/javascript" src="states_pitch.js"></script>
+    <script language="javascript" type="text/javascript" src="states_team.js"></script>
+    <script language="javascript" type="text/javascript" src="states_keeper.js"></script>
+    <script language="javascript" type="text/javascript" src="states_fielder.js"></script>
+
+
+    <script language="javascript" type="text/javascript" src="_soccer.js"></script>
+
+    <!-- This line removes any default padding and style.
+       You might only need one of these values set. -->
+    <style>
+        body {
+            padding: 0;
+            margin: 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id='sketch'></div>
+
+</body>
+
+</html>

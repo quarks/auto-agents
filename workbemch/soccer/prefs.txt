@@ -1,6 +1,6 @@
 {
     "OPTIONS" :[
-        {"name" : "MatchTime", "value" :20},
+        {"name" : "MatchTime", "value" :30},
         {"name" : "AutoRepeat", "value" :true}
     ]
 

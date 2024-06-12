@@ -1,5 +1,7 @@
 /**
  * A message that can be passed between entities.
+ * 
+ * Internally the dispatch time is measured in ms
  */
 class Telegram {
     #sender: Entity;
@@ -11,15 +13,14 @@ class Telegram {
     #msgID: number;
     get msgID(): number { return this.#msgID; }
 
-    #delay: number;
-    get delay(): number { return this.#delay; }
-    reduceeDelayBy(time) { this.#delay -= time; }
+    #dispatchAt: number;
+    get dispatchAt(): number { return this.#dispatchAt; }
 
     #extraInfo: object;
     get extraInfo(): object { return this.#extraInfo; }
 
-    constructor(despatchAt: number, sender: Entity, receiver: Entity, msg: number, extraInfo?: object) {
-        this.#delay = despatchAt;
+    constructor(dispatchAt: number, sender: Entity, receiver: Entity, msg: number, extraInfo?: object) {
+        this.#dispatchAt = dispatchAt;
         this.#sender = sender;
         this.#receiver = receiver;
         this.#msgID = msg;
@@ -40,35 +41,34 @@ class Dispatcher {
     }
 
     /**
-     * Receive a telegram for later sending.
-     * @param delay time to wait before sending in seconds
-     * @param sender id of sender
-     * @param receiver id of receiver
-     * @param msg message string
-     * @param extraInfo optional object holding any extra information
+     * Receive telegram details for later delivery.
+     * @param delay time to wait before sending to receiver (seconds)
+     * @param sender sender or sender id
+     * @param receiver receiver or receiver id
+     * @param msgID message ID (integer number set in constants)
+     * @param extraInfo optional object holding any extra information for receiver
      */
-    postTelegram(delay: number, sender: number | Entity, receiver: number | Entity, msg: number, extraInfo?: object) {
+    postTelegram(delay: number, sender: number | Entity, receiver: number | Entity, msgID: number, extraInfo?: object) {
         let pop = this.#world.populationMap;
         sender = sender instanceof Entity ? sender : pop.get(sender);
         receiver = receiver instanceof Entity ? receiver : pop.get(receiver);
         if (sender && receiver && receiver.hasFSM()) {
-            let tgram = new Telegram(delay, sender, receiver, msg, extraInfo);
+            let desptachAt = Date.now() / 1000 + delay;
+            let tgram = new Telegram(desptachAt, sender, receiver, msgID, extraInfo);
             this.#telegrams.push(tgram);
         }
     }
 
-    /** Send the telegram     */
-    sendTelegram(tgram: Telegram) {
-        tgram.receiver.fsm.onMessage(tgram);
-    }
-
-    /** Send telegram and remove from tem from postnag */
+    /** Send telegram and remove from them from postbag */
     update(elapsedTime: number) {
-        this.#telegrams.forEach(tgram => tgram.reduceeDelayBy(elapsedTime));
-        let toSend = this.#telegrams.filter(x => x.delay <= 0);
-        for (let tgram of toSend)
-            this.sendTelegram(tgram);
-        if (toSend.length > 0)
-            this.#telegrams = this.#telegrams.filter(x => x.delay > 0);
+        let presentTime = Date.now() / 1000;
+        let toSend = this.#telegrams.filter(x => x.dispatchAt <= presentTime);
+        if (toSend.length > 0) {
+            // Remove these from waiting telegrams
+            this.#telegrams = this.#telegrams.filter(x => x.dispatchAt > presentTime);
+            // Make sure telegrams are dispatched in chronological order
+            toSend.sort((a, b) => a.dispatchAt - b.dispatchAt);
+            toSend.forEach(tgram => { tgram.receiver.fsm.onMessage(tgram); });
+        }
     }
 }

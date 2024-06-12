@@ -79,3 +79,7 @@ const WRAP = Symbol.for('wrap');
 const REBOUND = Symbol.for('rebound');
 
 const EPSILON = 1E-10;
+
+const randomClamped = function () {
+    return (Math.random() - Math.random());
+}

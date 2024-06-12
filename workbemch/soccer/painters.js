@@ -16,7 +16,7 @@ function paintPlayer(scheme, p = p5.instance) {
     });
 }
 
-function initTeamDetails() {
+function initTeamInfo() {
     let t = [];
     t.push({ name: 'Red Roses', stroke: color(255, 0, 0), body: color(255, 190, 190), head: color(128, 0, 0) });
     t.push({ name: 'Blue Bottles', stroke: color(0, 0, 255), body: color(200, 200, 255), head: color(0, 0, 128) });
@@ -31,7 +31,7 @@ function getGoalImage(side) {
     let f = 0.7, inset = 2;
     let pg = createGraphics(GOAL_NET_DEPTH, GOAL_WIDTH);
     pg.clear();
-    if (side == 'left') {
+    if (side == LHS) {
         pg.translate(GOAL_NET_DEPTH, GOAL_WIDTH);
         pg.rotate(PI);
     }
@@ -53,21 +53,21 @@ function getGoalImage(side) {
     return pg;
 }
 
-function drawScoreBoard(ms) {
+function drawScoreBoard(secs) {
     let ha = LEFT, va = CENTER, hi = 10, vi = 0, tsize = 20;
     let bkCol = color('bisque'), tCol = color('darkslategrey');
     let bdrCol = color('darkslategrey'), bdrWeight = 1, cnrRad = 4;
     push();
-    drawit(0, 20, 180, 40, pitch.teamName[0]);
+    drawit(0, 20, 180, 40, team[0].name);
     ha = RIGHT;
-    drawit(420, 20, 180, 40, pitch.teamName[1]);
+    drawit(420, 20, 180, 40, team[1].name);
     bkCol = color('aliceblue'); tsize = 18;
     ha = CENTER; hi = 0;
-    drawit(180 - 35, 25, 30, 30, pitch.score[0]);
-    drawit(425, 25, 30, 30, pitch.score[1]);
+    drawit(180 - 35, 25, 30, 30, score[0]);
+    drawit(425, 25, 30, 30, score[1]);
 
     tsize = 20;
-    let pc = getMatchTime(ms);
+    let pc = getMatchTime(secs);
     drawit(250, 20, 100, 30, pc.time);
 
     // drawarc(pc.factor);
@@ -85,13 +85,11 @@ function drawScoreBoard(ms) {
         text(name, x + hi, y + vi, w - 2 * hi, h - 2 * vi);
     }
 
-    function getMatchTime(ms) {
-        let f = ms * 0.001 / $('MatchTime');
-        // console.log(ms, f)
-        let m = floor(ms / 60000); ms -= m * 60000;
-        let s = (ms / 1000).toFixed(1);
+    function getMatchTime(secs) {
+        let m = floor(secs / 60); secs -= m * 60;
+        let s = secs.toFixed(1);
         return {
-            factor: ms * 0.001 / $('MatchTime'),
+            factor: secs / $('MatchTime'),
             time: m.toString().padStart(2, '0') + ':' + s.toString().padStart(4, '0')
         };
     }

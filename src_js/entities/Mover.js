@@ -272,7 +272,7 @@ class Mover extends Entity {
         if (__classPrivateFieldGet(this, _Mover_vel, "f").lengthSq() > 0.01)
             this.rotateHeadingToAlignWith(elapsedTime, __classPrivateFieldGet(this, _Mover_vel, "f"));
         else {
-            Vector2D.mutate(__classPrivateFieldGet(this, _Mover_vel, "f"), [0, 0]); //this.#vel = .set([0, 0]);
+            Vector2D.mutate(__classPrivateFieldGet(this, _Mover_vel, "f"), [0, 0]);
             if (this.headingAtRest)
                 this.rotateHeadingToAlignWith(elapsedTime, this.headingAtRest);
         }

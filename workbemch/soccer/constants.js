@@ -6,6 +6,10 @@ const PLAYER_PREPARE_FOR_KICKOFF = 104;
 const GO_TO_REGION = 105;
 const TEND_GOAL = 107;
 const AT_TARGET = 108;
+const CHASE_BALL = 110;
+const RETURN_HOME = 130;
+const LEAVE_PITCH = 131;
+const ARIVED_OFF_PITCH = 132;
 const WAIT = 199;
 
 // Team messages;
@@ -18,10 +22,7 @@ const TEAMS_PREPARE_FOR_KICK_OFF = 301;
 const TEAMS_READY_FOR_KICK_OFF = 302;
 const GOAL_SCORED = 303;
 const STOP_GAME = 304;
-
-const START_CLOCK = 310;
 const KICKOFF = 311;
-const PREMATCH = 312;
 
 // State IDs
 const PREPARE_FOR_KICKOFF_STATE = 901;
@@ -39,6 +40,12 @@ const PLAYER_RADIUS = 5.5;  // Collision radius
 const PLAYER_MASS = 1.0;
 const PLAYER_TURNRATE = 3.0;
 
+// Do not change thses 2 cosnatnt values, used as array index
+const LHS = 0;          // Left hand side
+const RHS = 1;          // Right hand side
+const BY_TEAM = 400;
+const BY_PLAYER = 401;
+const BY_RANDOM = 402;
 
 const PITCH_LENGTH = 600;
 const PITCH_WIDTH = 300;

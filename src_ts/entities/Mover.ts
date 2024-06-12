@@ -289,7 +289,7 @@ class Mover extends Entity {
         if (this.#vel.lengthSq() > 0.01)
             this.rotateHeadingToAlignWith(elapsedTime, this.#vel);
         else {
-            Vector2D.mutate(this.#vel, [0, 0]); //this.#vel = .set([0, 0]);
+            Vector2D.mutate(this.#vel, [0, 0]);
             if (this.headingAtRest)
                 this.rotateHeadingToAlignWith(elapsedTime, this.headingAtRest);
         }
